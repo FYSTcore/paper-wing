@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Paper Wing</title>
+<meta name="description" content="Guide a paper plane between frozen clock towers under a giant black hole.">
+<meta name="theme-color" content="#1b1838">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Paper Wing">
+<style>
+  @font-face { font-family: "Bungee"; src: url("fonts/bungee-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+  @font-face { font-family: "Figtree"; src: url("fonts/figtree-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+  @font-face { font-family: "Figtree"; src: url("fonts/figtree-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+  @font-face { font-family: "Figtree"; src: url("fonts/figtree-latin-800-normal.woff2") format("woff2"); font-weight: 800; font-display: swap; }
+  /* Tek dünya: alacakaranlıkta donmuş şehir, bu kez üç boyutlu. Tema bilinçli olarak koyu. */
+  :root {
+    --ink: #1b1838;
+    --dusk: #5a3a6e;
+    --paper: #fbf7ef;
+    --glow: #ffcf6b;
+    --panel: rgba(27, 24, 56, 0.86);
+    --panel-edge: #4a3f7a;
+    --font-display: "Bungee", "Impact", "Arial Black", sans-serif;
+    --font-body: "Figtree", "Segoe UI", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--ink); color: var(--paper); font-family: var(--font-body);
+    overflow: hidden; overscroll-behavior: none; -webkit-tap-highlight-color: transparent;
+    user-select: none; -webkit-user-select: none;
+  }
+  #stage { position: fixed; inset: 0; display: grid; place-items: center; background: var(--ink); touch-action: none; }
+  #wrap { position: relative; }
+  #game { display: block; touch-action: none; }
+  #hud { position: absolute; inset: 0; pointer-events: none; }
+  #score {
+    position: absolute; top: 9%; left: 0; right: 0; text-align: center;
+    font-family: var(--font-display); font-size: clamp(40px, 12vmin, 72px); color: var(--paper);
+    text-shadow: 0 3px 0 var(--ink), 0 0 18px rgba(255, 207, 107, 0.35);
+    font-variant-numeric: tabular-nums;
+  }
+  #flash { position: absolute; inset: 0; background: var(--paper); opacity: 0; }
+  #ui { position: fixed; inset: 0; touch-action: none; }
+  #fallback { position: fixed; inset: 0; display: grid; place-items: center; padding-inline: 24px; text-align: center; background: var(--ink); }
+  #fallback[hidden] { display: none; }
+</style>
+<link rel="stylesheet" href="ui.css">
+</head>
+<body>
+
+<div id="stage">
+  <div id="wrap">
+    <canvas id="game" aria-label="Paper Wing game"></canvas>
+    <div id="hud"><div id="score" hidden></div><div id="flash"></div></div>
+  </div>
+</div>
+<div id="ui"></div>
+<p id="fallback" hidden>This device can't run 3D graphics (WebGL).</p>
+
+<script src="three.min.js"></script>
+<script>
+  window.KK = window.KK || {};
+  KK.W = 360; KK.H = 640; KK.GROUND_Y = 584;
+  KK.PALETTE = { skyTop:'#1b1838', skyMid:'#5a3a6e', skyLow:'#e9825a', sun:'#ffcf6b', cityFar:'#3a2f5c', cityNear:'#26203f', tower:'#2e2852', towerEdge:'#4a3f7a', clockFace:'#f3ead8', clockInk:'#1b1838', paper:'#fbf7ef', paperShade:'#d9d0c0', ground:'#171430', groundTop:'#3d335f', glow:'#ffcf6b', text:'#fbf7ef' };
+</script>
+<!-- game.js ve ui.js 2D sürümden geldi; çizim modülü 3D ile değiştirildi -->
+<script src="game.js"></script>
+<script src="render3d.js"></script>
+<script src="ui.js"></script>
+<script>
+(function () {
+  var canvas = document.getElementById('game');
+  if (!window.THREE) { document.getElementById('fallback').hidden = false; return; }
+
+  function resize() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 1.75); // 3D'de piksel yükünü sınırla
+    var scale = Math.min(window.innerWidth / KK.W, window.innerHeight / KK.H);
+    var cssW = Math.floor(KK.W * scale), cssH = Math.floor(KK.H * scale);
+    canvas.style.width = cssW + 'px'; canvas.style.height = cssH + 'px';
+    document.getElementById('wrap').style.width = cssW + 'px';
+    document.getElementById('wrap').style.height = cssH + 'px';
+    KK.Render3D.resize(cssW, cssH, dpr);
+  }
+
+  var state = KK.Game.create();
+  try { KK.Render3D.init(canvas, document.getElementById('hud')); }
+  catch (err) { document.getElementById('fallback').hidden = false; return; }
+  window.addEventListener('resize', resize);
+  resize();
+
+  KK.UI.init({
+    root: document.getElementById('ui'),
+    canvas: canvas,
+    getState: function () { return state; },
+    onFlap: function () { KK.Game.flap(state); },
+    onRestart: function () { KK.Game.reset(state); }
+  });
+
+  var last = performance.now();
+  function frame(now) {
+    var dt = Math.min((now - last) / 1000, 1 / 30);
+    last = now;
+    KK.Game.update(state, dt);
+    state.best = KK.UI.getBest();
+    KK.Render3D.draw(state, dt);
+    KK.UI.handleEvents(state.events, state);
+    KK.UI.update(state);
+    state.events.length = 0;
+    requestAnimationFrame(frame);
+  }
+  // ---- Test modu: linkin sonuna #bot eklenince otomatik pilot + fps sayacı ----
+  var BOT = location.hash === '#bot';
+  var fpsEl = null, fpsN = 0, fpsT = performance.now();
+  if (BOT) {
+    fpsEl = document.createElement('div');
+    fpsEl.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:9;padding:4px 8px;border-radius:6px;background:rgba(27,24,56,.8);color:#ffcf6b;font:600 13px/1.2 monospace;pointer-events:none';
+    document.body.appendChild(fpsEl);
+  }
+  function bot(now) {
+    fpsN++;
+    if (now - fpsT >= 1000) {
+      fpsEl.textContent = fpsN + ' fps · ' + renderer() + ' · score ' + state.score;
+      fpsN = 0; fpsT = now;
+    }
+    var p = state.plane;
+    if (state.mode === 'dead') { if (state.modeTime > 1.2) KK.Game.reset(state); return; }
+    var g = state.gates.find(function (g) { return g.x + g.w > p.x - 15; });
+    var target = g ? g.gapY + 16 : 320;
+    if (state.mode === 'ready' || (p.y > target && p.vy > -40)) KK.Game.flap(state);
+  }
+  var glName = null;
+  function renderer() {
+    if (glName) return glName;
+    try {
+      var gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
+      var ext = gl && gl.getExtension('WEBGL_debug_renderer_info');
+      glName = ext ? String(gl.getParameter(ext.UNMASKED_RENDERER_WEBGL)).replace(/^ANGLE \(|\)$/g, '').slice(0, 48) : 'WebGL';
+    } catch (e) { glName = 'WebGL'; }
+    return glName;
+  }
+  if (BOT) {
+    var inner = frame;
+    frame = function (now) { bot(now); inner(now); };
+  }
+  requestAnimationFrame(frame);
+  KK.__state = function () { return state; };
+})();
+</script>
+<script>
+  // Çevrimdışı çalışma + "Uygulamayı yükle" için service worker
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  }
+</script>
+</body>
+</html>

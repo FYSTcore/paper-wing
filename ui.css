@@ -1,0 +1,351 @@
+@charset "UTF-8";
+/* Kağıt Kanat — arayüz katmanları
+   Renkler yalnızca index.html değişkenlerinden: --ink --paper --glow --dusk --panel --panel-edge */
+
+.kk-ui {
+  --kk-x: 0px;
+  --kk-y: 0px;
+  --kk-w: 100vw;
+  --kk-h: 100vh;
+  --kk-r: 0px;
+  --kk-ease: cubic-bezier(.2, .8, .2, 1);
+  font-family: var(--font-body);
+  color: var(--paper);
+  -webkit-touch-callout: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+}
+
+/* Canvas'ın ekrandaki dikdörtgenine hizalı çerçeve (JS konumlar) */
+.kk-frame {
+  position: absolute;
+  left: var(--kk-x);
+  top: var(--kk-y);
+  width: var(--kk-w);
+  height: var(--kk-h);
+  container-type: size;
+  pointer-events: none;
+}
+
+/* ---------- Ortak katman geçişi ---------- */
+.kk-layer {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;          /* gizliyken tıklanamaz ve odaklanamaz */
+  pointer-events: none;
+  transition: opacity .28s ease, visibility 0s linear .28s;
+}
+.kk-layer.is-on {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity .28s ease, visibility 0s;
+}
+
+/* ---------- Hazır ekranı ---------- */
+.kk-ready > * {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: 0;
+  text-align: center;
+}
+
+.kk-eyebrow {
+  top: max(9%, calc(env(safe-area-inset-top, 0px) + 12px - var(--kk-y)));
+  font-size: 13px;
+  font-size: clamp(11px, 3.4cqw, 15px);
+  font-weight: 600;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--glow);
+  opacity: .85;
+}
+
+.kk-title {
+  top: 13%;
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: .92;
+  letter-spacing: .01em;
+  transform: rotate(-3deg);
+  transform-origin: 50% 50%;
+  transition: transform .5s var(--kk-ease);
+}
+.kk-title span { display: block; }
+.kk-title-a {
+  font-size: 44px;
+  font-size: clamp(34px, 12.5cqw, 64px);
+  color: var(--paper);
+  text-shadow:
+    0 2px 0 var(--dusk),
+    0 0 18px rgba(255, 207, 107, .35);           /* --glow */
+  text-shadow:
+    0 2px 0 var(--dusk),
+    0 0 18px color-mix(in srgb, var(--glow) 35%, transparent);
+}
+.kk-title-b {
+  font-size: 58px;
+  font-size: clamp(44px, 16.5cqw, 84px);
+  color: var(--glow);
+  margin-left: .6em;                               /* kanat gibi hafif kayık */
+  text-shadow:
+    0 3px 0 var(--ink),
+    0 0 26px rgba(255, 207, 107, .45);
+  text-shadow:
+    0 3px 0 var(--ink),
+    0 0 26px color-mix(in srgb, var(--glow) 45%, transparent);
+}
+.kk-ready:not(.is-on) .kk-title { transform: rotate(-3deg) translateY(-14px); }
+
+.kk-tap {
+  top: 66%;
+  font-size: 20px;
+  font-size: clamp(17px, 5.4cqw, 24px);
+  font-weight: 800;
+  letter-spacing: .02em;
+  text-shadow: 0 2px 8px var(--ink);
+  animation: kk-pulse 1.6s ease-in-out infinite;
+}
+
+.kk-ready-best {
+  top: calc(66% + 2.4em);
+  font-size: 15px;
+  font-size: clamp(13px, 4cqw, 17px);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.kk-ready-best::before,
+.kk-ready-best::after {
+  content: "";
+  display: inline-block;
+  width: 1.6em;
+  height: 1px;
+  margin: 0 .6em;
+  vertical-align: middle;
+  background: var(--glow);
+  opacity: .6;
+}
+.kk-ready-best {
+  color: var(--paper);
+  opacity: .9;
+}
+
+@keyframes kk-pulse {
+  0%, 100% { opacity: .55; transform: scale(.98); }
+  50%      { opacity: 1;   transform: scale(1.02); }
+}
+
+/* ---------- Ölüm paneli ---------- */
+.kk-dead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 0 16px;
+  background: radial-gradient(ellipse at 50% 45%, rgba(27, 24, 56, .15), rgba(27, 24, 56, .6));
+  background: radial-gradient(ellipse at 50% 45%,
+    color-mix(in srgb, var(--ink) 15%, transparent),
+    color-mix(in srgb, var(--ink) 60%, transparent));
+}
+
+/* Kağıt kart: çizgili defter yaprağı + kıvrık köşe */
+.kk-card {
+  position: relative;
+  box-sizing: border-box;
+  width: min(84%, 300px);
+  padding: 26px 22px 22px;
+  text-align: center;
+  color: var(--ink);
+  background-color: var(--paper);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 27px,
+    rgba(90, 58, 110, .14) 27px 28px);            /* --dusk çizgiler */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0 27px,
+    color-mix(in srgb, var(--dusk) 14%, transparent) 27px 28px);
+  border-radius: 3px;
+  box-shadow:
+    0 1px 0 var(--panel-edge),
+    0 18px 40px rgba(27, 24, 56, .55);
+  box-shadow:
+    0 1px 0 var(--panel-edge),
+    0 18px 40px color-mix(in srgb, var(--ink) 55%, transparent);
+  clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 0 100%);
+  transform: rotate(-1.5deg);
+  transition: transform .45s var(--kk-ease);
+}
+/* Kıvrık köşe (kartın kesilen köşesinin katlanmış hali) */
+.kk-card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(225deg, transparent 50%, var(--glow) 50%);
+  background: linear-gradient(225deg, transparent 50%,
+    color-mix(in srgb, var(--glow) 55%, var(--paper)) 50%);
+}
+.kk-dead:not(.is-on) .kk-card {
+  transform: translateY(26px) rotate(-5deg) scale(.96);
+}
+
+.kk-card-title {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 34px;
+  font-size: clamp(28px, 9.5cqw, 40px);
+  line-height: 1;
+  color: var(--dusk);
+}
+
+.kk-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .24em;
+  text-transform: uppercase;
+  color: var(--dusk);
+}
+
+.kk-score {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 72px;
+  font-size: clamp(60px, 21cqw, 96px);
+  line-height: 1.05;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.kk-card-best {
+  margin: 2px 0 18px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* "Yeni rekor!" damgası (başlığın üstünde, sadece rekor olunca yer kaplar) */
+.kk-badge {
+  display: none;
+  margin: -6px 0 10px;
+  padding: 5px 12px 4px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  letter-spacing: .03em;
+  color: var(--ink);
+  background: var(--glow);
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  transform: rotate(-6deg);
+}
+.kk-badge.is-on { display: inline-block; }
+.kk-dead.is-on .kk-badge.is-on { animation: kk-stamp .4s var(--kk-ease) .3s both; }
+
+@keyframes kk-stamp {
+  from { opacity: 0; transform: rotate(-14deg) scale(1.8); }
+  to   { opacity: 1; transform: rotate(-6deg) scale(1); }
+}
+
+/* ---------- Butonlar ---------- */
+.kk-btn {
+  pointer-events: auto;
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.kk-btn:focus { outline: none; }
+.kk-btn:focus-visible {
+  outline: 3px solid var(--glow);
+  outline-offset: 3px;
+}
+
+.kk-again {
+  display: block;
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 18px;
+  border: 0;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: .02em;
+  color: var(--paper);
+  background: var(--ink);
+  box-shadow: inset 0 -3px 0 var(--dusk), 0 0 0 2px var(--ink);
+  transition: transform .12s ease, box-shadow .12s ease, background-color .12s ease;
+}
+.kk-again:hover { background: var(--dusk); box-shadow: inset 0 -3px 0 var(--ink), 0 0 0 2px var(--ink); }
+.kk-again:active { transform: translateY(2px); box-shadow: inset 0 -1px 0 var(--dusk), 0 0 0 2px var(--ink); }
+.kk-again:focus-visible { outline-color: var(--dusk); }
+
+.kk-hint {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--paper);
+  text-shadow: 0 2px 8px var(--ink);
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+.kk-hint.is-on { opacity: .85; }
+
+/* Sessiz düğmesi: çerçevenin sağ üstü, güvenli alanın içinde */
+.kk-mute {
+  position: absolute;
+  top: max(10px, calc(env(safe-area-inset-top, 0px) + 8px - var(--kk-y)));
+  right: max(10px, calc(env(safe-area-inset-right, 0px) + 8px - var(--kk-r)));
+  width: 44px;
+  height: 44px;
+  padding: 10px;
+  display: grid;
+  place-items: center;
+  color: var(--paper);
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: 50%;
+  transition: background-color .15s ease, color .15s ease;
+}
+.kk-mute svg { width: 22px; height: 22px; display: block; }
+.kk-mute[aria-pressed="true"] { color: var(--glow); }
+.kk-mute:hover { background: var(--dusk); }
+
+/* Ekran okuyucu metni */
+.kk-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Kısa ekranlar (yatay telefon vb.) */
+@container (max-height: 520px) {
+  .kk-dead { gap: 10px; }
+  .kk-card { padding: 16px 18px 16px; }
+  .kk-card-title { margin-bottom: 4px; }
+  .kk-card-best { margin-bottom: 10px; }
+}
+
+/* Hareket azaltma: animasyon ve geçiş yok */
+@media (prefers-reduced-motion: reduce) {
+  .kk-ui *,
+  .kk-ui *::before,
+  .kk-ui *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+  .kk-dead:not(.is-on) .kk-card { transform: rotate(-1.5deg); }
+  .kk-ready:not(.is-on) .kk-title { transform: rotate(-3deg); }
+  .kk-tap { opacity: 1; }
+}
