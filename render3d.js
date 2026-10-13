@@ -451,6 +451,103 @@ window.KK = window.KK || {};
     boost = 0;
   }
 
+
+  // ---- Puan sayacı ateşi ----
+  // Seviye: 10'da küçük, 50'de orta, 100'de büyük. 200'den sonra her 100'de renk değişir.
+  // Renk YALNIZCA puana bağlı (sabit tablo) → 300 her maçta, her telefonda aynı renk.
+  var FIRE_COLORS = { 1: '#ff7a1a', 2: '#2f8bff', 3: '#2ee86b', 4: '#a24bff', 5: '#ff4fb4',
+                      6: '#26e0e8', 7: '#ff2a3a', 8: '#ffd23a', 9: '#f2f0ff' };
+  function fireLevel(score) { return score < 10 ? 0 : score < 50 ? 1 : score < 100 ? 2 : 3; }
+  function fireColor(score) {
+    var h = Math.floor(score / 100);
+    if (h < 2) return FIRE_COLORS[1];                       // 10-199: klasik turuncu
+    if (FIRE_COLORS[h]) return FIRE_COLORS[h];
+    return 'hsl(' + ((h * 53) % 360) + ', 95%, 62%)';       // 1000+: yine puana bağlı, sabit formül
+  }
+  var FIRE_SCALE = [0, 0.75, 1.0, 1.35];                      // alev boyu çarpanı
+  var FIRE_RATE = [0, 45, 80, 130];                         // saniyede doğan alev parçacığı
+  var fire = { cv: null, ctx: null, w: 300, h: 240, dpr: 1, parts: [], sprites: {}, acc: 0, burst: 0, color: null, font: 60 };
+  function fireSprite(col) {
+    if (fire.sprites[col]) return fire.sprites[col];
+    var s = document.createElement('canvas'); s.width = s.height = 64;
+    var g = s.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    gr.addColorStop(0, 'rgba(255,255,235,1)');
+    gr.addColorStop(0.28, col);
+    gr.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+    return (fire.sprites[col] = s);
+  }
+  function initFire(hud) {
+    var cv = document.createElement('canvas');
+    cv.id = 'fire';
+    cv.style.cssText = 'position:absolute;pointer-events:none;';
+    hud.insertBefore(cv, hudScore);                           // rakamların ARKASINDA
+    fire.cv = cv; fire.ctx = cv.getContext('2d');
+    sizeFire();
+    window.addEventListener('resize', sizeFire);
+  }
+  function sizeFire() {
+    fire.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    fire.font = parseFloat(getComputedStyle(hudScore).fontSize) || 60;
+    fire.w = Math.round(fire.font * 5.2); fire.h = Math.round(fire.font * 4);
+    fire.cv.width = fire.w * fire.dpr; fire.cv.height = fire.h * fire.dpr;
+    fire.cv.style.width = fire.w + 'px'; fire.cv.style.height = fire.h + 'px';
+  }
+  function updateFire(state, dt) {
+    var lvl = state.mode === 'playing' ? fireLevel(state.score) : 0;
+    if (!lvl && !fire.parts.length) { fire.cv.style.display = 'none'; hudScore.style.textShadow = ''; return; }
+    fire.cv.style.display = '';
+    // Tuvali rakamların üstüne ortala; alevin tabanı rakamların alt kenarının biraz altında
+    var cx = hudScore.offsetLeft + hudScore.offsetWidth / 2;
+    var base = hudScore.offsetTop + hudScore.offsetHeight * 0.92;
+    fire.cv.style.left = (cx - fire.w / 2) + 'px';
+    fire.cv.style.top = (base - fire.h * 0.86) + 'px';
+    var col = fireColor(state.score);
+    fire.burst = Math.max(0, fire.burst - dt * 1.6);
+    var sc = FIRE_SCALE[lvl] * (1 + fire.burst * 0.6);
+    var digits = String(state.score).length;
+    var baseW = fire.font * 0.62 * digits;                     // rakamların genişliği kadar taban
+    // Parçacık doğur
+    if (lvl) {
+      fire.acc += dt * FIRE_RATE[lvl] * (1 + fire.burst * 3);
+      while (fire.acc >= 1 && fire.parts.length < 260) {
+        fire.acc -= 1;
+        var life = 0.45 + Math.random() * 0.45;
+        fire.parts.push({
+          x: fire.w / 2 + (Math.random() - 0.5) * baseW,
+          y: fire.h * 0.86 + Math.random() * 6,
+          vx: (Math.random() - 0.5) * 30,
+          vy: -(70 + Math.random() * 90) * sc,
+          size: (20 + Math.random() * 18) * sc * (fire.font / 60),
+          life: life, max: life, ph: Math.random() * 6.28, col: col
+        });
+      }
+    }
+    // Güncelle + çiz
+    var c = fire.ctx;
+    c.setTransform(fire.dpr, 0, 0, fire.dpr, 0, 0);
+    c.clearRect(0, 0, fire.w, fire.h);
+    c.globalCompositeOperation = 'lighter';
+    for (var i = fire.parts.length - 1; i >= 0; i--) {
+      var p = fire.parts[i];
+      p.life -= dt;
+      if (p.life <= 0) { fire.parts.splice(i, 1); continue; }
+      var k = p.life / p.max;                                  // 1 doğum → 0 ölüm
+      p.ph += dt * 9;
+      p.x += (p.vx + Math.sin(p.ph) * 22) * dt;
+      p.y += p.vy * dt;
+      p.x += (fire.w / 2 - p.x) * dt * 1.4;                    // alev uca doğru incelir
+      var s = p.size * (0.35 + 0.65 * k);
+      c.globalAlpha = Math.min(1, k * 1.6) * 0.75;
+      c.drawImage(fireSprite(p.col), p.x - s / 2, p.y - s / 2, s, s);
+    }
+    c.globalAlpha = 1; c.globalCompositeOperation = 'source-over';
+    // Rakamlar alev rengiyle parlasın; tutuşma anında sayaç bir an büyüsün
+    hudScore.style.textShadow = lvl ? '0 3px 0 #1b1838, 0 0 ' + Math.round(14 + 18 * sc) + 'px ' + col : '';
+    hudScore.style.transform = fire.burst > 0 ? 'scale(' + (1 + fire.burst * 0.35).toFixed(3) + ')' : '';
+  }
+  function igniteFire() { fire.burst = 1; }
+
   KK.Render3D = {
     init: function (canvas, hud) {
       renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, powerPreference: 'high-performance' });
@@ -569,6 +666,7 @@ window.KK = window.KK || {};
 
       hudScore = hud.querySelector('#score');
       hudFlash = hud.querySelector('#flash');
+      initFire(hud);
     },
 
     resize: function (w, h, dpr) {
@@ -587,6 +685,7 @@ window.KK = window.KK || {};
       for (var e = 0; e < state.events.length; e++) {
         var ev = state.events[e];
         if (ev === 'flap') { spawnBits(px, py, 4, 2.5); flapBurstPending = true; }
+        if (ev === 'milestone') igniteFire();
         if (ev === 'hit') { shakeT = reduced ? 0 : 0.3; flashT = 0.25; spawnBits(px, py, 12, 4); }
       }
 
@@ -635,6 +734,7 @@ window.KK = window.KK || {};
         if (state.score !== lastScore) { hudScore.textContent = state.score; lastScore = state.score; }
         hudScore.hidden = false;
       } else { hudScore.hidden = true; lastScore = -1; }
+      updateFire(state, dt);
       if (flashT > 0) { flashT -= dt; hudFlash.style.opacity = Math.max(flashT, 0) / 0.25 * 0.7; }
       else hudFlash.style.opacity = 0;
     }

@@ -14,14 +14,14 @@
     TOWER_INSET: 3,       // kule kutusu her yandan bu kadar küçültülür (affedici)
 
     GATE_W: 64,           // kule genişliği
-    GATE_SPACING: 200,    // iki kule arası yatay mesafe (sol kenardan sol kenara)
+    GATE_SPACING: 240,    // iki kule arası yatay mesafe (sol kenardan sol kenara)
     FIRST_GATE_X: 560,    // ilk kule nereden başlasın (ekranın biraz sağı)
     GAP_START: 160,       // başlangıç boşluk yüksekliği
     GAP_MIN: 118,         // en dar boşluk (sonsuza giderken yaklaşılan değer)
     SPEED_START: 175,     // başlangıç yatay hız
     SPEED_MAX: 310,       // hız buna asimptotik yaklaşır (hiç tam ulaşmaz)
     RAMP_SCORE: 32,       // zorluk eğrisinin 'yarı ömrü' gibi: skor/32 üstel yaklaşım
-    SPACING_MIN: 172,     // zorlaştıkça kuleler birbirine yaklaşır (200 → 172)
+    SPACING_MIN: 205,     // zorlaştıkça kuleler birbirine yaklaşır (240 → 205)
     MOVE_FROM: 10,        // bu skordan sonra boşluklar yukarı-aşağı oynamaya başlar
     MOVE_AMP_MAX: 52,     // hareket genliği tavanı (birim)
     MOVE_SPEED: 1.1,      // hareket hızı (radyan/sn), skorla artar
@@ -213,6 +213,8 @@
           g.passed = true;
           s.score++;
           s.events.push('score');
+          // Kilometre taşları: 10, 50 ve 100'ün her katı (ateş tutuşur / büyür / renk değiştirir)
+          if (s.score === 10 || s.score === 50 || s.score % 100 === 0) s.events.push('milestone');
         }
         if (hitsGate(p, g)) { die(s, true); return s; }
       }

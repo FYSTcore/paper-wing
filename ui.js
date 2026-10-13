@@ -8,7 +8,7 @@
   // ---------- Sabitler ----------
   var BEST_KEY = 'kk.best';
   var MUTE_KEY = 'kk.muted';
-  var MASTER_VOL = 0.4;        // toplam ses seviyesi
+  var MASTER_VOL = 1.0;        // toplam ses seviyesi (limiter sayesinde bozulmadan yüksek)
   var PANEL_DELAY = 0.4;       // ölüm panelinin görünme gecikmesi (sn)
   var RESTART_DELAY = 0.6;     // ekrana dokununca yeniden başlama gecikmesi (sn)
 
@@ -37,7 +37,18 @@
       try { A.ctx = new AC(); } catch (e) { return; }
       A.master = A.ctx.createGain();
       A.master.gain.value = muted ? 0 : MASTER_VOL;
-      A.master.connect(A.ctx.destination);
+      // Telefon hoparlörleri ~200 Hz altını çalamaz; bizim tok seslerin gövdesi 22-165 Hz.
+      // Hafif saturasyon harmonik ekler (70 Hz → 140, 210, 280 Hz...), beyin temeli kendisi tamamlar.
+      var pre = A.ctx.createGain(); pre.gain.value = 1.7;
+      var drive = A.ctx.createWaveShaper();
+      var n = 1024, curve = new Float32Array(n), k = 2.2;
+      for (var i = 0; i < n; i++) { var x = i / (n - 1) * 2 - 1; curve[i] = Math.tanh(k * x) / Math.tanh(k); }
+      drive.curve = curve; drive.oversample = '2x';
+      // Limiter: tepeleri kırpar, genel sesi yüksek tutar
+      var lim = A.ctx.createDynamicsCompressor();
+      lim.threshold.value = -9; lim.knee.value = 4; lim.ratio.value = 16; lim.attack.value = 0.002; lim.release.value = 0.18;
+      var out = A.ctx.createGain(); out.gain.value = 1.0;
+      A.master.connect(pre); pre.connect(drive); drive.connect(lim); lim.connect(out); out.connect(A.ctx.destination);
       A.noise = makeNoiseBuffer(A.ctx, 1);
     }
     if (A.ctx.state !== 'running') { // 'suspended' ya da iOS'taki 'interrupted'
@@ -206,7 +217,25 @@
     n2.start(t2); n2.stop(t2 + 1.6);
   }
 
-  var SFX = { flap: sfxFlap, score: sfxScore, hit: sfxHit, die: sfxDie };
+  // milestone: puan sayacı tutuşunca — yükselen alev "fuuş"u ve alçak bir gürleme
+  function sfxMilestone() {
+    var c = A.ctx, t = c.currentTime;
+    var n = c.createBufferSource(), bp = c.createBiquadFilter(), g = c.createGain();
+    n.buffer = A.noise; n.loop = true;
+    bp.type = 'bandpass'; bp.Q.value = 1.2;
+    bp.frequency.setValueAtTime(350, t); bp.frequency.exponentialRampToValueAtTime(2600, t + 0.45);
+    envelope(g, t, 0.55, 0.12, 0.5);
+    chain(n, bp, g, A.master);
+    n.start(t); n.stop(t + 0.7);
+    var o = c.createOscillator(), og = c.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(90, t); o.frequency.exponentialRampToValueAtTime(140, t + 0.4);
+    envelope(og, t, 0.45, 0.05, 0.5);
+    chain(o, og, A.master);
+    o.start(t); o.stop(t + 0.6);
+  }
+
+  var SFX = { flap: sfxFlap, score: sfxScore, hit: sfxHit, die: sfxDie, milestone: sfxMilestone };
 
   function setMuted(v) {
     muted = !!v;
