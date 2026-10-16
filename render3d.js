@@ -180,7 +180,7 @@ window.KK = window.KK || {};
   ].join('\n');
   var bhMat = null;
 
-  // ---- v1.6: Güneş sistemi turu — her 200 puanda yeni bir gök cismi VE ona uygun bir şehir ----
+  // ---- v1.6: Güneş sistemi turu — her 250 puanda (v1.9) yeni bir gök cismi VE ona uygun bir şehir ----
   // Gök cismi ekranın sol kenarına yaslanır (yarısı ekran dışında), hepsi benzer boyutta görünür.
   // Hepsi ekran kartında prosedürel çizilir (doku dosyası yok): küre normali uv'den hesaplanır,
   // yüzey 3B gürültüyle boyanır, ışık sağdan gelir (ekranın ortasına bakan yarı aydınlık).
@@ -238,7 +238,7 @@ window.KK = window.KK || {};
       city: [P.cityFar, P.cityNear, '#1f1a38'], win: P.glow, tower: P.tower, edge: P.towerEdge, base: '#211c3c',
       road: '#b4a6e6', lamp: '#ffd98a', haze: '#ffa874', stars: 0.2, shapes: { box: 1, spire: 0.25 } }
   ];
-  var PLANET_EVERY = 200;                                   // kaç puanda bir gök cismi değişir
+  var PLANET_EVERY = 250;                                   // kaç puanda bir gök cismi değişir (v1.9: 200 → 250)
   var PL_HX = 2.6, PL_HY = 1.6;                             // dörtgenin yarı boyu (gezegen yarıçapı biriminde)
   var PL_FRAG = [
     'uniform float uTime; uniform float uFade; uniform float uSpin; uniform float uTilt; uniform float uIncl; uniform float uAtmK;',
@@ -585,7 +585,7 @@ window.KK = window.KK || {};
     var m = '×' + (state.mult || 1).toFixed(2);
     if (state.fireOut) m += '  \u00b7  FIRE ' + Math.max(0, state.score - state.fireHitScore) + '/' + ((KK.Game.config && KK.Game.config.FIRE_RELIGHT) || 150);
     if (m !== lastMult) { multEl.textContent = 'SPEED ' + m; lastMult = m; }
-    multEl.style.color = (state.mult || 1) >= 1.499 ? 'var(--glow)' : '';
+    multEl.style.color = (state.mult || 1) >= ((KK.Game.config && KK.Game.config.SPEED_MULT_MAX) || 2) - 0.001 ? 'var(--glow)' : '';
   }
 
   // Aydınlık pencere: içeriden yanan cam, ortada kayıt (pencere kasası)

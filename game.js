@@ -18,9 +18,10 @@
     FIRST_GATE_X: 560,    // ilk kule nereden başlasın (ekranın biraz sağı)
     GAP_START: 165,       // başlangıç boşluk yüksekliği (v1.4: 160 → 165)
     GAP_MIN: 150,         // en dar boşluk (v1.4: 118 → 150; 1000'e ulaşılabilsin diye)
-    SPEED_START: 165,     // başlangıç yatay hız (katsayı 1.00)
+    SPEED_START: 180,     // başlangıç yatay hız (katsayı 1.00) — v1.9: 165 → 180
     SPEED_STEP: 0.02,     // v1.5: her geçilen kulede hız katsayısı +0.02
-    SPEED_MULT_MAX: 1.5,  // katsayı tavanı: 1.50 → 165 · 1.5 ≈ 248 birim/sn (25 kulede dolar)
+    SPEED_MULT_MAX: 2.0,  // katsayı tavanı (v1.9: 1.5 → 2.0): 180 · 2 = 360 birim/sn, 50 kulede dolar
+    SPACING_PER_SPEED: 0.6, // v1.9: hızdaki her +1 birim/sn için kule mesafesi +0.6 birim
     ACCEL: 150,           // çarpmadan sonra 0'dan hızlanma (birim/sn²) → 165'e ~1.1 sn
     LIVES: 2,             // v1.5: tur başına 2 çarpma hakkı; 3. çarpma oyunu bitirir
     FIRE_RELIGHT: 150,    // v1.7: çarpınca puan ateşi söner; çarpmadan sonra bu kadar puanla geri yanar
@@ -52,8 +53,12 @@
   // skor 10 → 0.18, 50 → 0.63, 100 → 0.86, 200 → 0.98
   function difficulty(score) { return 1 - Math.exp(-score / CFG.RAMP_SCORE); }
 
-  function spacing(score) {
-    return CFG.GATE_SPACING - (CFG.GATE_SPACING - CFG.SPACING_MIN) * difficulty(score);
+  // v1.9: hız katsayısı arttıkça kuleler arası mesafe de açılır → oyun hızlı görünür ama
+  // iki kule arasındaki SÜRE çok kısalmaz (adil ritim). mesafe = 290 + SPACING_PER_SPEED · (hedef hız − başlangıç hızı)
+  function spacing(s) {
+    var base = CFG.GATE_SPACING - (CFG.GATE_SPACING - CFG.SPACING_MIN) * difficulty(s.score);
+    var mult = Math.min(CFG.SPEED_MULT_MAX, 1 + CFG.SPEED_STEP * s.streak);
+    return base + CFG.SPACING_PER_SPEED * CFG.SPEED_START * (mult - 1);
   }
 
   // ---- State'i başlangıç değerlerine getir (create ve reset ortak kullanır) ----
@@ -239,7 +244,7 @@
       }
       var last = s.gates[s.gates.length - 1];
       if (!last) spawnGate(s, CFG.FIRST_GATE_X);
-      else if (last.x + spacing(s.score) <= W() + CFG.SPAWN_AHEAD) spawnGate(s, last.x + spacing(s.score));
+      else if (last.x + spacing(s) <= W() + CFG.SPAWN_AHEAD) spawnGate(s, last.x + spacing(s));
       while (s.gates.length && s.gates[0].x + s.gates[0].w < -CFG.DESPAWN_BEHIND) s.gates.shift();
 
       // Skor ve çarpışma
