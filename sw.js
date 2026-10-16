@@ -1,6 +1,6 @@
 // Paper Wing service worker: oyunun tüm dosyalarını telefona kaydeder, internetsiz de açılır.
 // Oyunu güncellediğinde VERSION'ı artır ki telefonlar yeni sürümü indirsin.
-var VERSION = 'paper-wing-v5';  // v5 = oyun sürümü 1.3
+var VERSION = 'paper-wing-v6';  // v6 = oyun sürümü 1.4
 var FILES = [
   './', 'index.html', 'manifest.webmanifest', 'game.js', 'render3d.js', 'ui.js', 'ui.css', 'three.min.js',
   'fonts/bungee-latin-400-normal.woff2', 'fonts/figtree-latin-400-normal.woff2',

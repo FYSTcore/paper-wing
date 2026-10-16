@@ -16,14 +16,14 @@
     GATE_W: 64,           // kule genişliği
     GATE_SPACING: 240,    // iki kule arası yatay mesafe (sol kenardan sol kenara)
     FIRST_GATE_X: 560,    // ilk kule nereden başlasın (ekranın biraz sağı)
-    GAP_START: 160,       // başlangıç boşluk yüksekliği
-    GAP_MIN: 118,         // en dar boşluk (sonsuza giderken yaklaşılan değer)
+    GAP_START: 165,       // başlangıç boşluk yüksekliği (v1.4: 160 → 165)
+    GAP_MIN: 150,         // en dar boşluk (v1.4: 118 → 150; 1000'e ulaşılabilsin diye)
     SPEED_START: 175,     // başlangıç yatay hız
-    SPEED_MAX: 310,       // hız buna asimptotik yaklaşır (hiç tam ulaşmaz)
-    RAMP_SCORE: 32,       // zorluk eğrisinin 'yarı ömrü' gibi: skor/32 üstel yaklaşım
-    SPACING_MIN: 205,     // zorlaştıkça kuleler birbirine yaklaşır (240 → 205)
+    SPEED_MAX: 240,       // hız buna asimptotik yaklaşır (v1.4: 310 → 240)
+    RAMP_SCORE: 50,       // zorluk eğrisi: k = 1 - e^(-skor/50) (v1.4: 32 → 50, daha yavaş artar)
+    SPACING_MIN: 240,     // v1.4: kuleler arası mesafe sabit 240 (eskiden 205'e iniyordu)
     MOVE_FROM: 10,        // bu skordan sonra boşluklar yukarı-aşağı oynamaya başlar
-    MOVE_AMP_MAX: 52,     // hareket genliği tavanı (birim)
+    MOVE_AMP_MAX: 26,     // hareket genliği tavanı (v1.4: 52 → 26)
     MOVE_SPEED: 1.1,      // hareket hızı (radyan/sn), skorla artar
     GAP_Y_MIN: 110,       // boşluk merkezi için güvenli aralık
     GAP_Y_MAX: 450,       // alt kule her zaman saatini taşıyacak kadar uzun kalsın
@@ -43,8 +43,8 @@
 
   function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
 
-  // 0..1 arası zorluk oranı: k = 1 - e^(-skor/32). Hiç tavana vurmaz, hep biraz daha zorlaşır.
-  // skor 10 → 0.27, 32 → 0.63, 64 → 0.86, 100 → 0.96
+  // 0..1 arası zorluk oranı: k = 1 - e^(-skor/50). Hiç tavana vurmaz, hep biraz daha zorlaşır.
+  // skor 10 → 0.18, 50 → 0.63, 100 → 0.86, 200 → 0.98
   function difficulty(score) { return 1 - Math.exp(-score / CFG.RAMP_SCORE); }
 
   function spacing(score) {
