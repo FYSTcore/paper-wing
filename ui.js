@@ -235,7 +235,44 @@
     o.start(t); o.stop(t + 0.6);
   }
 
-  var SFX = { flap: sfxFlap, score: sfxScore, hit: sfxHit, die: sfxDie, milestone: sfxMilestone };
+  // v1.5 bump: ölümcül olmayan çarpma — kağıt buruşması (bant geçiren gürültü) + tok bir "tunk"
+  function sfxBump() {
+    var c = A.ctx, t = c.currentTime;
+    var n = c.createBufferSource(), bp = c.createBiquadFilter(), ng = c.createGain();
+    n.buffer = A.noise;
+    bp.type = 'bandpass'; bp.Q.value = 0.9;
+    bp.frequency.setValueAtTime(2200, t); bp.frequency.exponentialRampToValueAtTime(700, t + 0.18);
+    envelope(ng, t, 0.6, 0.002, 0.18);
+    chain(n, bp, ng, A.master);
+    n.start(t, Math.random() * 0.5); n.stop(t + 0.2);
+    var o = c.createOscillator(), og = c.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(60, t + 0.2);
+    envelope(og, t, 0.8, 0.003, 0.22);
+    chain(o, og, A.master);
+    o.start(t); o.stop(t + 0.26);
+  }
+
+  // v1.5 break: kule çöküşü — alçak geçirenden geçen uzun moloz gürültüsü + çatırtılar
+  function sfxBreak() {
+    var c = A.ctx, t = c.currentTime + 0.03;
+    var n = c.createBufferSource(), lp = c.createBiquadFilter(), g = c.createGain();
+    n.buffer = A.noise; n.loop = true;
+    lp.type = 'lowpass'; lp.frequency.setValueAtTime(1800, t); lp.frequency.exponentialRampToValueAtTime(120, t + 0.6);
+    envelope(g, t, 0.45, 0.01, 0.6);
+    chain(n, lp, g, A.master);
+    n.start(t); n.stop(t + 0.65);
+    for (var i = 0; i < 4; i++) {                                      // taş çatırtıları
+      var tk = t + 0.04 + i * 0.07 + Math.random() * 0.04;
+      var k = c.createBufferSource(), hp = c.createBiquadFilter(), kg = c.createGain();
+      k.buffer = A.noise; hp.type = 'highpass'; hp.frequency.value = 1500;
+      envelope(kg, tk, 0.25 - i * 0.04, 0.001, 0.04);
+      chain(k, hp, kg, A.master);
+      k.start(tk, Math.random() * 0.5); k.stop(tk + 0.05);
+    }
+  }
+
+  var SFX = { flap: sfxFlap, score: sfxScore, hit: sfxHit, die: sfxDie, milestone: sfxMilestone, bump: sfxBump, 'break': sfxBreak };
 
   function setMuted(v) {
     muted = !!v;
@@ -497,8 +534,8 @@
       var play = canPlay();
       for (var i = 0; i < events.length; i++) {
         var ev = events[i];
-        if (ev === 'hit') {
-          try { if (navigator.vibrate) navigator.vibrate(40); } catch (e) { /* yoksay */ }
+        if (ev === 'hit' || ev === 'bump') {
+          try { if (navigator.vibrate) navigator.vibrate(ev === 'bump' ? [30, 40, 30] : 40); } catch (e) { /* yoksay */ }
         }
         if (play && SFX[ev]) {
           try { SFX[ev](); } catch (e) { /* ses hatası oyunu durdurmasın */ }

@@ -14,14 +14,19 @@
     TOWER_INSET: 3,       // kule kutusu her yandan bu kadar küçültülür (affedici)
 
     GATE_W: 64,           // kule genişliği
-    GATE_SPACING: 240,    // iki kule arası yatay mesafe (sol kenardan sol kenara)
+    GATE_SPACING: 290,    // iki kule arası yatay mesafe (v1.5: 240 → 290)
     FIRST_GATE_X: 560,    // ilk kule nereden başlasın (ekranın biraz sağı)
     GAP_START: 165,       // başlangıç boşluk yüksekliği (v1.4: 160 → 165)
     GAP_MIN: 150,         // en dar boşluk (v1.4: 118 → 150; 1000'e ulaşılabilsin diye)
-    SPEED_START: 175,     // başlangıç yatay hız
-    SPEED_MAX: 240,       // hız buna asimptotik yaklaşır (v1.4: 310 → 240)
+    SPEED_START: 165,     // başlangıç yatay hız (katsayı 1.00)
+    SPEED_STEP: 0.02,     // v1.5: her geçilen kulede hız katsayısı +0.02
+    SPEED_MULT_MAX: 1.5,  // katsayı tavanı: 1.50 → 165 · 1.5 ≈ 248 birim/sn (25 kulede dolar)
+    ACCEL: 150,           // çarpmadan sonra 0'dan hızlanma (birim/sn²) → 165'e ~1.1 sn
+    LIVES: 2,             // v1.5: tur başına 2 çarpma hakkı; 3. çarpma oyunu bitirir
+    FIRE_RELIGHT: 150,    // v1.7: çarpınca puan ateşi söner; çarpmadan sonra bu kadar puanla geri yanar
+    INVULN: 1.6,          // çarpmadan sonra dokunulmazlık (sn): bu sürede değdiğin kule yıkılır
     RAMP_SCORE: 50,       // zorluk eğrisi: k = 1 - e^(-skor/50) (v1.4: 32 → 50, daha yavaş artar)
-    SPACING_MIN: 240,     // v1.4: kuleler arası mesafe sabit 240 (eskiden 205'e iniyordu)
+    SPACING_MIN: 290,     // v1.5: kuleler arası mesafe sabit 290
     MOVE_FROM: 10,        // bu skordan sonra boşluklar yukarı-aşağı oynamaya başlar
     MOVE_AMP_MAX: 26,     // hareket genliği tavanı (v1.4: 52 → 26)
     MOVE_SPEED: 1.1,      // hareket hızı (radyan/sn), skorla artar
@@ -67,6 +72,12 @@
     s.nextGateId = 1;
     s.lastGapY = CFG.READY_Y;
     s.grounded = false;      // ölünce yere oturdu mu
+    s.hitsLeft = CFG.LIVES;  // v1.5: kalan çarpma hakkı (HUD gösterir)
+    s.invuln = 0;            // dokunulmazlık süresi (sn); > 0 iken uçak yanıp söner
+    s.streak = 0;            // son çarpmadan beri geçilen kule sayısı
+    s.mult = 1;              // hız katsayısı = 1 + 0.02 · streak (tavan 1.5)
+    s.fireOut = false;       // v1.7: puan ateşi sönük mü (çarpınca söner)
+    s.fireHitScore = 0;      // son çarpmadaki skor (geri yanma sayacı buradan başlar)
     return s;
   }
 
@@ -162,6 +173,28 @@
     if (hitTower) s.plane.vy = Math.min(s.plane.vy, -180);
   }
 
+  // ---- Kule yıkılır: artık çarpışmaz, puan da vermez (render çökme animasyonu oynatır) ----
+  function breakGate(s, g) {
+    g.broken = true;
+    g.passed = true;
+    s.events.push('break');
+  }
+
+  // ---- Ölümcül olmayan çarpma (v1.5) ----
+  // Bir hak gider, hız ve katsayı sıfırlanır, kısa dokunulmazlık başlar.
+  function bump(s, g) {
+    s.hitsLeft--;
+    s.invuln = CFG.INVULN;
+    s.speed = 0;
+    s.streak = 0;
+    s.mult = 1;
+    s.fireOut = true;              // v1.7: ateş söner
+    s.fireHitScore = s.score;
+    if (g) breakGate(s, g);
+    s.plane.vy = Math.min(s.plane.vy, -260);   // küçük bir sekme
+    s.events.push('bump');
+  }
+
   // ---- Her kare ----
   function update(s, dt) {
     dt = clamp(dt || 0, 0, 1 / 30);
@@ -181,10 +214,13 @@
     }
 
     if (s.mode === 'playing') {
-      var k = difficulty(s.score);
-      // Hız hedefe yumuşakça yaklaşır (ani sıçrama olmasın)
-      var targetSpeed = CFG.SPEED_START + (CFG.SPEED_MAX - CFG.SPEED_START) * k;
-      s.speed += (targetSpeed - s.speed) * Math.min(1, dt * 2);
+      // Hız katsayısı: her kule +%2, tavan ×1.5. Hıza doğrusal ivmeyle yaklaşılır:
+      // çarpınca hız 0'a düşer ve 150 birim/sn² ile yavaştan hızlıya geri gelir.
+      s.mult = Math.min(CFG.SPEED_MULT_MAX, 1 + CFG.SPEED_STEP * s.streak);
+      var targetSpeed = CFG.SPEED_START * s.mult;
+      if (s.speed < targetSpeed) s.speed = Math.min(targetSpeed, s.speed + CFG.ACCEL * dt);
+      else s.speed = targetSpeed;
+      if (s.invuln > 0) s.invuln = Math.max(0, s.invuln - dt);
       var dx = s.speed * dt;
       s.scrollX += dx;
 
@@ -212,17 +248,32 @@
         if (!g.passed && p.x > g.x + g.w) {
           g.passed = true;
           s.score++;
+          s.streak++;
           s.events.push('score');
-          // Kilometre taşları: 10, 50 ve 100'ün her katı (ateş tutuşur / büyür / renk değiştirir)
-          if (s.score === 10 || s.score === 50 || s.score % 100 === 0) s.events.push('milestone');
+          // Kilometre taşları: 10, 50 ve 100'ün her katı (ateş tutuşur / büyür)
+          // Ateş sönükken taşlar sayılmaz; çarpmadan sonra FIRE_RELIGHT puan toplanınca geri yanar.
+          if (s.fireOut) {
+            if (s.score - s.fireHitScore >= CFG.FIRE_RELIGHT) { s.fireOut = false; s.events.push('milestone'); }
+          } else if (s.score === 10 || s.score === 50 || s.score % 100 === 0) s.events.push('milestone');
         }
-        if (hitsGate(p, g)) { die(s, true); return s; }
+        if (!g.broken && hitsGate(p, g)) {
+          if (s.invuln > 0) { breakGate(s, g); continue; }       // dokunulmazken: kule yıkılır, ceza yok
+          if (s.hitsLeft > 0) { bump(s, g); continue; }          // hak varsa: hız sıfırlanır, oyun sürer
+          die(s, true); return s;
+        }
       }
 
       // Zemin
       if (p.y + p.r * CFG.HIT_SCALE >= ground) {
-        p.y = ground - p.r;
-        die(s, false);
+        if (s.invuln > 0 || s.hitsLeft > 0) {
+          // Yere çarpma da bir hak yer (dokunulmazken bedava): uçak yukarı sekip devam eder
+          if (s.invuln <= 0) bump(s, null);
+          p.y = ground - p.r * CFG.HIT_SCALE - 1;
+          p.vy = CFG.FLAP_VY * 1.1;
+        } else {
+          p.y = ground - p.r;
+          die(s, false);
+        }
       }
       return s;
     }
