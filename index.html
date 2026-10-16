@@ -73,7 +73,7 @@
 <script>
   window.KK = window.KK || {};
   // Her güncellemede bunu ve sw.js'deki VERSION'ı birlikte artır
-  KK.APP_VERSION = '1.9';
+  KK.APP_VERSION = '2.0';
   KK.W = 360; KK.H = 640; KK.GROUND_Y = 584;
   KK.PALETTE = { skyTop:'#1b1838', skyMid:'#5a3a6e', skyLow:'#e9825a', sun:'#ffcf6b', cityFar:'#3a2f5c', cityNear:'#26203f', tower:'#2e2852', towerEdge:'#4a3f7a', clockFace:'#f3ead8', clockInk:'#1b1838', paper:'#fbf7ef', paperShade:'#d9d0c0', ground:'#171430', groundTop:'#3d335f', glow:'#ffcf6b', text:'#fbf7ef' };
 </script>
@@ -116,9 +116,11 @@
   function frame(now) {
     var dt = Math.min((now - last) / 1000, 1 / 30);
     last = now;
-    KK.Game.update(state, dt);
+    var paused = KK.UI.isPaused && KK.UI.isPaused();   // v2.0: durdurulmuşken oyun donar
+    if (!paused) KK.Game.update(state, dt);
     state.best = KK.UI.getBest();
-    KK.Render3D.draw(state, dt);
+    if (KK.UI.skinFor) KK.Render3D.setSkin(KK.UI.skinFor(state.mode));
+    KK.Render3D.draw(state, paused ? 0 : dt);
     KK.UI.handleEvents(state.events, state);
     KK.UI.update(state);
     state.events.length = 0;

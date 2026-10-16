@@ -180,7 +180,7 @@ window.KK = window.KK || {};
   ].join('\n');
   var bhMat = null;
 
-  // ---- v1.6: Güneş sistemi turu — her 250 puanda (v1.9) yeni bir gök cismi VE ona uygun bir şehir ----
+  // ---- v1.6: Güneş sistemi turu — her 200 puanda yeni bir gök cismi VE ona uygun bir şehir ----
   // Gök cismi ekranın sol kenarına yaslanır (yarısı ekran dışında), hepsi benzer boyutta görünür.
   // Hepsi ekran kartında prosedürel çizilir (doku dosyası yok): küre normali uv'den hesaplanır,
   // yüzey 3B gürültüyle boyanır, ışık sağdan gelir (ekranın ortasına bakan yarı aydınlık).
@@ -238,7 +238,7 @@ window.KK = window.KK || {};
       city: [P.cityFar, P.cityNear, '#1f1a38'], win: P.glow, tower: P.tower, edge: P.towerEdge, base: '#211c3c',
       road: '#b4a6e6', lamp: '#ffd98a', haze: '#ffa874', stars: 0.2, shapes: { box: 1, spire: 0.25 } }
   ];
-  var PLANET_EVERY = 250;                                   // kaç puanda bir gök cismi değişir (v1.9: 200 → 250)
+  var PLANET_EVERY = KK.PLANET_EVERY = 200;                                   // kaç puanda bir gök cismi değişir (v2.0: tekrar 200)
   var PL_HX = 2.6, PL_HY = 1.6;                             // dörtgenin yarı boyu (gezegen yarıçapı biriminde)
   var PL_FRAG = [
     'uniform float uTime; uniform float uFade; uniform float uSpin; uniform float uTilt; uniform float uIncl; uniform float uAtmK;',
@@ -600,12 +600,36 @@ window.KK = window.KK || {};
     });
   }
 
+  // ---- v2.0: Uçak skinleri ----
+  // req = kilidi açan EN İYİ skor (yolculuktaki duraklara denk gelir). 'fyst' gizli: sadece kodla açılır.
+  // paper/shade: kanat ve omurga rengi, line: kontur, glow: kendi ışığı, head/tail: iz renkleri, spark: kıvılcım
+  KK.SKINS = [
+    { id: 'paper',    name: 'PAPER',    req: 0,    paper: '#fbf7ef', shade: '#d9d0c0', line: '#0b0918', glow: 0.35, head: '#ffe2a6', tail: '#9b7bff', spark: '#ffe6b0' },
+    { id: 'midnight', name: 'MIDNIGHT', req: 50,   paper: '#2a3566', shade: '#18204a', line: '#ffcf6b', glow: 0.25, head: '#9fd0ff', tail: '#3a4bff', spark: '#bfe0ff' },
+    { id: 'ember',    name: 'EMBER',    req: 100,  paper: '#ff6a3d', shade: '#b8321a', line: '#2a0a04', glow: 0.45, head: '#ffd27a', tail: '#ff3a1a', spark: '#ffb060' },
+    { id: 'lunar',    name: 'LUNAR',    req: 200,  paper: '#c9d2e0', shade: '#8f9ab0', line: '#0b0918', glow: 0.30, head: '#e6f4ff', tail: '#7fa8ff', spark: '#e6f4ff' },
+    { id: 'solar',    name: 'SOLAR',    req: 800,  paper: '#ffd23a', shade: '#ff9a1a', line: '#5a1a00', glow: 0.75, head: '#fffbe0', tail: '#ff7a1a', spark: '#fff2a8' },
+    { id: 'ringed',   name: 'RINGED',   req: 1400, paper: '#e8d6a8', shade: '#b89a60', line: '#2a1a08', glow: 0.35, head: '#fff0c0', tail: '#c0a060', spark: '#ffe8b0' },
+    { id: 'void',     name: 'VOID',     req: 2200, paper: '#141022', shade: '#07060c', line: '#ff8a5c', glow: 0.10, head: '#ffb070', tail: '#a24bff', spark: '#ff9a6a' },
+    { id: 'fyst',     name: 'FYST · DEV GIFT', secret: true, shape: 'dart', paper: '#ffffff', shade: '#d8d8e8', line: '#ffffff', glow: 0.6, head: '#ffffff', tail: '#ffffff', spark: '#ffffff' }
+  ];
+  function skinById(id) { for (var i = 0; i < KK.SKINS.length; i++) if (KK.SKINS[i].id === id) return KK.SKINS[i]; return KK.SKINS[0]; }
+  var curSkin = null, planeMat = null, outlineMat = null;
+
   // ---- Kağıt uçak: üçgenlerden elle kurulmuş geometri ----
-  function buildPlane() {
-    var u = 1 / S;
-    var N = [18, 0, 0], C = [-12, 1, 0], L = [-12, 3, -12], R = [-12, 3, 12], K = [-12, -6, 0];
+  // Klasik: iki kanat + omurga. 'dart' (dev hediyesi): daha uzun burun, geniş ok kanatlar, kuyruk dikmesi.
+  function buildPlane(skin) {
+    skin = skin || KK.SKINS[0];
+    var u = 1 / S, dart = skin.shape === 'dart';
+    var N = dart ? [24, 0, 0] : [18, 0, 0], C = [-12, 1, 0];
+    var L = dart ? [-15, 3.5, -16] : [-12, 3, -12], R = dart ? [-15, 3.5, 16] : [-12, 3, 12], K = [-12, -6, 0];
     var tris = [[N, C, L], [N, R, C], [N, K, C]];          // sol kanat, sağ kanat, omurga
-    var cols = [P.paper, P.paper, P.paperShade];
+    var cols = [skin.paper, skin.paper, skin.shade];
+    if (dart) {                                             // kuyruk dikmesi + kanat ucu kanatçıkları
+      tris.push([[-6, 1, 0], [-13, 1, 0], [-15, 8, 0]]); cols.push(skin.shade);
+      tris.push([[-11, 3.2, -13], [-15, 3.5, -16], [-14, 7, -15]]); cols.push(skin.paper);
+      tris.push([[-11, 3.2, 13], [-14, 7, 15], [-15, 3.5, 16]]); cols.push(skin.paper);
+    }
     var pos = [], col = [];
     tris.forEach(function (t, i) {
       var cc = color(cols[i]);
@@ -615,23 +639,47 @@ window.KK = window.KK || {};
     geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
     geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
     geo.computeVertexNormals();
-    var mesh = new THREE.Mesh(geo, new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide, emissive: color(P.paper), emissiveIntensity: 0.35 }));
+    planeMat = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide, emissive: color(skin.paper), emissiveIntensity: skin.glow });
+    var mesh = new THREE.Mesh(geo, planeMat);
     mesh.castShadow = true;
     mesh.renderOrder = 2;
-    // Çizgi film (cel/anime) konturu: aynı şeklin biraz büyük, siyah kopyası.
-    // Derinliğe yazmadığı için kağıt her zaman onun üstüne çizilir, sadece kenarlarda siyah taşar.
-    var outline = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0x0b0918, side: THREE.DoubleSide, depthWrite: false }));
+    // Çizgi film (cel/anime) konturu: aynı şeklin biraz büyük kopyası.
+    // Derinliğe yazmadığı için kağıt her zaman onun üstüne çizilir, sadece kenarlarda taşar.
+    outlineMat = new THREE.MeshBasicMaterial({ color: color(skin.line), side: THREE.DoubleSide, depthWrite: false });
+    var outline = new THREE.Mesh(geo, outlineMat);
     outline.renderOrder = 1;
     var g = new THREE.Group();
     var inner = new THREE.Group();            // ölçek ve merkez ayarı için iç grup
     inner.add(outline); inner.add(mesh);
     g.add(inner);
     mesh.scale.setScalar(1.35);               // 3D'de uzaklıktan küçük görünmesin (çarpışma kutusu aynı)
-    // Konturu uçağın kendi merkezi (x≈-2) etrafında büyüt ki her kenardan eşit taşsın
-    var cx = -2 / S * 1.35;
+    var cx = -2 / S * 1.35;                   // konturu uçağın kendi merkezi etrafında büyüt
     outline.scale.setScalar(1.35 * 1.2);
     outline.position.x = cx - cx * 1.2;
     return g;
+  }
+  function applySkin(id) {
+    var skin = skinById(id);
+    if (curSkin === skin) return;
+    curSkin = skin;
+    var pos = planeGroup ? planeGroup.position.clone() : null, rot = planeGroup ? planeGroup.rotation.clone() : null;
+    if (planeGroup) scene.remove(planeGroup);
+    planeGroup = buildPlane(skin);
+    if (pos) { planeGroup.position.copy(pos); planeGroup.rotation.copy(rot); }
+    scene.add(planeGroup);
+    headCol.set(skin.head); tailCol.set(skin.tail); shared.sparkMat.color.set(skin.spark);
+    var wx = skin.shape === 'dart' ? -15 : -12, wz = skin.shape === 'dart' ? 16 : 12, k2 = 1.35 / S;  // iz kanat uçlarından çıksın
+    trailDefs[0].local.set(wx * k2, 3 * k2, -wz * k2); trailDefs[1].local.set(wx * k2, 3 * k2, wz * k2);
+  }
+  // Dev hediyesi: yanardöner (holografik) kağıt — renk tonu zamanla döner, kontur ve iz zıt tonda
+  var devHsl = new THREE.Color();
+  function animateSkin(t) {
+    if (!curSkin || curSkin.id !== 'fyst') return;
+    var h = (t * 0.12) % 1;
+    planeMat.color.setHSL(h, 0.55, 0.78); planeMat.emissive.setHSL(h, 0.9, 0.55);
+    outlineMat.color.setHSL((h + 0.5) % 1, 1, 0.7);
+    headCol.setHSL(h, 1, 0.75); tailCol.setHSL((h + 0.33) % 1, 1, 0.6);
+    shared.sparkMat.color.setHSL((h + 0.15) % 1, 1, 0.8);
   }
 
   // ---- Paralaks şehir (v1.6: temaya göre biçim) — iki kopya yan yana döşenir ----
@@ -922,7 +970,7 @@ window.KK = window.KK || {};
       if (emit) { tmpV.copy(def.local).applyMatrix4(planeGroup.matrixWorld); pts.push(tmpV.clone()); }
       else if (pts.length) pts.shift();                                   // ölünce iz yavaşça söner
       while (pts.length > TRAIL_N) pts.shift();
-      if (emit && k < 2 && state.mode === 'playing' && Math.random() < 0.18) spark(pts[pts.length - 1], 1, 0.6);
+      if (emit && k < 2 && state.mode === 'playing' && Math.random() < (curSkin && curSkin.id === 'fyst' ? 0.55 : 0.18)) spark(pts[pts.length - 1], 1, 0.6);
       var pos = tr.mesh.geometry.attributes.position, col = tr.mesh.geometry.attributes.color;
       for (var j = 0; j < TRAIL_N; j++) {
         var q = pts[Math.max(0, pts.length - TRAIL_N + j)] || pts[0];
@@ -1218,15 +1266,16 @@ window.KK = window.KK || {};
 
       themeT = 0; applyTheme(1); themeT = 1;      // Dünya temasıyla başla
 
-      planeGroup = buildPlane();
-      scene.add(planeGroup);
       buildTrails();
+      applySkin('paper');
 
       hudScore = hud.querySelector('#score');
       hudFlash = hud.querySelector('#flash');
       initFire(hud);
       initStatus(hud);
     },
+
+    setSkin: function (id) { if (renderer) applySkin(id); },
 
     resize: function (w, h, dpr) {
       if (!renderer) return;
@@ -1262,6 +1311,7 @@ window.KK = window.KK || {};
       if (dS < 0 || dS > 2) { dS = 0; clearTrails(); }
       lastScrollX = state.scrollX;
       if (flapBurstPending) { flapBurst(); flapBurstPending = false; }
+      animateSkin(state.t);
       updateTrails(state, dS, dt);
 
       // Paralaks: şehir katmanları farklı hızda kayar, iki kopya döngüyle döşenir
