@@ -24,7 +24,21 @@
     SPACING_PER_SPEED: 0.6, // v1.9: hızdaki her +1 birim/sn için kule mesafesi +0.6 birim
     ACCEL: 150,           // çarpmadan sonra 0'dan hızlanma (birim/sn²) → 165'e ~1.1 sn
     LIVES: 2,             // v1.5: tur başına 2 çarpma hakkı; 3. çarpma oyunu bitirir
-    FIRE_RELIGHT: 150,    // v1.7: çarpınca puan ateşi söner; çarpmadan sonra bu kadar puanla geri yanar
+    // v2.5: ATEŞ = çarpmadan geçilen kule serisi (sadece görsel + müzik). Her çarpmada söner.
+    FIRE_LEVELS: [10, 50, 100],  // seri bu sayılara ulaşınca ateş 1 / 2 / 3. seviyeye çıkar
+    // v2.5: KALKAN — ayrı bir ek. Hazırken çarparsan can gitmez, hız düşmez; kalkan patlar, kule yıkılır.
+    SHIELD: true,
+    SHIELD_FIRST: KK.TEST_BUILD ? 5 : 20,      // turdaki ilk kalkan bu kadar kulede dolar (test sayfasında kısa)
+    SHIELD_RECHARGE: KK.TEST_BUILD ? 20 : 200, // kullanıldıktan sonra bir sonraki kalkan için gereken kule (çarpmalar sayacı sıfırlamaz)
+    SHIELD_INVULN: 0.5,          // kalkan patlayınca kısa dokunulmazlık (sn): aynı kuleye iki kez çarpılmasın
+    // v2.2: Bölüm zorluğu. h = bölüm/(son bölüm) + REBIRTH_HARD·★  (en fazla HARD_CAP)
+    //   en dar boşluk = GAP_MIN − 22·h,  hareket genliği = MOVE_AMP_MAX + 22·h,
+    //   sapma = GAP_SHIFT_MAX + 30·h,  hız tavanı = SPEED_MULT_MAX + 0.3·h
+    CHECKPOINT_EVERY: KK.TEST_BUILD ? 20 : 400,   // her 2 gök cisminde bir checkpoint (test sayfasında gök cisimleri 10'da bir)
+    REBIRTH_HARD: 0.1,      // her ★ bir sonraki turu bu kadar zorlaştırır
+    HARD_CAP: 1.3,
+    HARD_GAP: 12, HARD_AMP: 14, HARD_SHIFT: 20, HARD_SPEED: 0.2,   // h başına artışlar (ayar için)
+    LIFE_REFILL: KK.TEST_BUILD ? 10 : 200,   // v2.2: her yeni gök cisminde kayıp bir çarpma hakkı geri gelir (0 = kapalı)
     INVULN: 1.6,          // çarpmadan sonra dokunulmazlık (sn): bu sürede değdiğin kule yıkılır
     RAMP_SCORE: 50,       // zorluk eğrisi: k = 1 - e^(-skor/50) (v1.4: 32 → 50, daha yavaş artar)
     SPACING_MIN: 290,     // v1.5: kuleler arası mesafe sabit 290
@@ -40,7 +54,8 @@
     DESPAWN_BEHIND: 260,  // kule sol kenardan bu kadar geçince silinir
     READY_SPEED: 60,      // hazır ekranında görsel kayma hızı
     READY_Y: 300,         // hazır ekranında uçağın salındığı merkez
-    SPIN_SPEED: 9         // ölünce dönme hızı (radyan/sn)
+    SPIN_SPEED: 9,        // ölünce dönme hızı (radyan/sn)
+    FINALE_DUR: 3.4       // v2.5: TON 618 finali — uçak kara deliğe çekilir (sn); çizim render3d'de
   };
 
   // Sanal dünya ölçüleri (index.html tanımlar; yoksa varsayılan)
@@ -49,15 +64,25 @@
 
   function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
 
-  // 0..1 arası zorluk oranı: k = 1 - e^(-skor/50). Hiç tavana vurmaz, hep biraz daha zorlaşır.
+  // 0..1 arası zorluk oranı: k = 1 - e^(-skor/50). v2.2: skor = bu denemede alınan puan (checkpoint'ten başlayınca da ısınma olsun). Hiç tavana vurmaz, hep biraz daha zorlaşır.
   // skor 10 → 0.18, 50 → 0.63, 100 → 0.86, 200 → 0.98
   function difficulty(score) { return 1 - Math.exp(-score / CFG.RAMP_SCORE); }
 
   // v1.9: hız katsayısı arttıkça kuleler arası mesafe de açılır → oyun hızlı görünür ama
   // iki kule arasındaki SÜRE çok kısalmaz (adil ritim). mesafe = 290 + SPACING_PER_SPEED · (hedef hız − başlangıç hızı)
+  // v2.2: yolculuğun sonu (render3d gök cismi sayısından hesaplar; yoksa 2400)
+  function journeyEnd() { return KK.JOURNEY_END || 2400; }
+  // Bölüm zorluğu h: her checkpoint'te bir basamak artar, her rebirth (★) +0.25 ekler
+  function hard(s) {
+    var chapters = Math.max(1, Math.ceil(journeyEnd() / CFG.CHECKPOINT_EVERY) - 1);
+    var ch = Math.min(chapters, Math.floor(s.score / CFG.CHECKPOINT_EVERY));
+    return Math.min(CFG.HARD_CAP, ch / chapters + CFG.REBIRTH_HARD * (s.rebirth || 0));
+  }
+  function multMax(s) { return CFG.SPEED_MULT_MAX + CFG.HARD_SPEED * hard(s); }
+
   function spacing(s) {
-    var base = CFG.GATE_SPACING - (CFG.GATE_SPACING - CFG.SPACING_MIN) * difficulty(s.score);
-    var mult = Math.min(CFG.SPEED_MULT_MAX, 1 + CFG.SPEED_STEP * s.streak);
+    var base = CFG.GATE_SPACING - (CFG.GATE_SPACING - CFG.SPACING_MIN) * difficulty(s.score - (s.startScore || 0));
+    var mult = Math.min(multMax(s), 1 + CFG.SPEED_STEP * s.streak);
     return base + CFG.SPACING_PER_SPEED * CFG.SPEED_START * (mult - 1);
   }
 
@@ -81,17 +106,28 @@
     s.invuln = 0;            // dokunulmazlık süresi (sn); > 0 iken uçak yanıp söner
     s.streak = 0;            // son çarpmadan beri geçilen kule sayısı
     s.mult = 1;              // hız katsayısı = 1 + 0.02 · streak (tavan 1.5)
-    s.fireOut = false;       // v1.7: puan ateşi sönük mü (çarpınca söner)
-    s.fireHitScore = 0;      // son çarpmadaki skor (geri yanma sayacı buradan başlar)
+    s.runTime = 0;           // v2.5: bu turun uçuş süresi (sn) — çevrimiçi tablo hile kontrolü için
+    s.completed = false;     // v2.5 düzeltme: rebirth'ten sonra yeni yolculuk da bitebilsin (eskiden true kalıyordu)
+    s.finaleDone = false;
+    s.fireOut = false;       // alev bir kez söndü ve henüz geri yanmadı mı (müzik bunu dinler)
+    s.fireStreak = 0;        // v2.5: alevi besleyen seri (son sönmeden beri geçilen kule)
+    s.fireLvl = 0;           // v2.5: 0 = yok, 1-3 = ateş seviyesi
+    s.shield = false;        // v2.5: kalkan hazır mı
+    s.shieldCharge = 0;      // v2.5: bir sonraki kalkana sayılan kule
+    s.shieldNeed = CFG.SHIELD_FIRST;   // bir sonraki kalkan için gereken kule
     return s;
   }
 
   function create() { return init({}); }
 
-  function reset(s) {
+  // v2.2: opts = { score: checkpoint skoru, rebirth: ★ sayısı } → tur o noktadan başlar
+  function reset(s, opts) {
     var best = s.best;
     init(s);
     s.best = best;
+    s.score = (opts && opts.score) || 0;
+    s.startScore = s.score;
+    s.rebirth = (opts && opts.rebirth) || 0;
     return s;
   }
 
@@ -102,7 +138,7 @@
 
   // ---- Zıplama ----
   function flap(s) {
-    if (s.mode === 'dead') return;
+    if (s.mode === 'dead' || s.mode === 'finale') return;
     if (s.mode === 'ready') {
       setMode(s, 'playing');
       s.speed = CFG.SPEED_START;
@@ -114,11 +150,13 @@
 
   // ---- Yeni kule üret ----
   function spawnGate(s, x) {
-    var k = difficulty(s.score);
-    var maxShift = CFG.GAP_SHIFT_START + (CFG.GAP_SHIFT_MAX - CFG.GAP_SHIFT_START) * k;
+    var k = difficulty(s.score - (s.startScore || 0));
+    var h = hard(s);
+    var maxShift = CFG.GAP_SHIFT_START + (CFG.GAP_SHIFT_MAX + CFG.HARD_SHIFT * h - CFG.GAP_SHIFT_START) * k;
     // Bir önceki boşluk merkezinden en fazla maxShift kadar sapma (adil olsun diye)
     // Hareketli boşluk: MOVE_FROM skorundan sonra genlik skorla büyür
-    var amp = s.score >= CFG.MOVE_FROM ? Math.min(CFG.MOVE_AMP_MAX, (s.score - CFG.MOVE_FROM + 1) * 2.2) : 0;
+    var run = s.score - (s.startScore || 0);   // bu denemede geçilen kule
+    var amp = run >= CFG.MOVE_FROM ? Math.min(CFG.MOVE_AMP_MAX + CFG.HARD_AMP * h, (run - CFG.MOVE_FROM + 1) * 2.2) : 0;
     // Adillik: boşluk zaten hareket ediyorsa, kapılar arası sapmayı o kadar azalt
     // (en kötü durumda dikey fark ≈ maxShift - 1.5·amp + 2·amp = maxShift + 0.5·amp)
     maxShift = Math.max(50, maxShift - amp * 1.5);
@@ -135,7 +173,7 @@
       amp: amp,                  // 0 = sabit kapı
       wv: CFG.MOVE_SPEED + Math.min(1.1, s.score * 0.012),
       ph: KK.Game._rand() * Math.PI * 2,
-      gapH: Math.round(CFG.GAP_START - (CFG.GAP_START - CFG.GAP_MIN) * k),
+      gapH: Math.round(CFG.GAP_START - (CFG.GAP_START - (CFG.GAP_MIN - CFG.HARD_GAP * h)) * k),
       passed: false
     });
   }
@@ -185,6 +223,18 @@
     s.events.push('break');
   }
 
+  // ---- v2.5: alev ----
+  function fireLevelFor(n) { var L = CFG.FIRE_LEVELS, lv = 0; for (var i = 0; i < L.length; i++) if (n >= L[i]) lv = i + 1; return lv; }
+  function putOutFire(s) { s.fireStreak = 0; s.fireLvl = 0; s.fireOut = true; }
+  // Kalkan darbeyi yutar: can gitmez, hız ve hız katsayısı korunur; kule yıkılır. Ateş (seri) yine de söner.
+  function shieldHit(s, g) {
+    putOutFire(s);
+    s.shield = false; s.shieldCharge = 0; s.shieldNeed = CFG.SHIELD_RECHARGE;
+    s.invuln = CFG.SHIELD_INVULN;
+    if (g) breakGate(s, g);
+    s.events.push('shield');
+  }
+
   // ---- Ölümcül olmayan çarpma (v1.5) ----
   // Bir hak gider, hız ve katsayı sıfırlanır, kısa dokunulmazlık başlar.
   function bump(s, g) {
@@ -193,8 +243,7 @@
     s.speed = 0;
     s.streak = 0;
     s.mult = 1;
-    s.fireOut = true;              // v1.7: ateş söner
-    s.fireHitScore = s.score;
+    putOutFire(s);                 // v1.7: ateş söner (v2.5: seri sıfırlanır)
     if (g) breakGate(s, g);
     s.plane.vy = Math.min(s.plane.vy, -260);   // küçük bir sekme
     s.events.push('bump');
@@ -219,9 +268,10 @@
     }
 
     if (s.mode === 'playing') {
+      s.runTime += dt;
       // Hız katsayısı: her kule +%2, tavan ×1.5. Hıza doğrusal ivmeyle yaklaşılır:
       // çarpınca hız 0'a düşer ve 150 birim/sn² ile yavaştan hızlıya geri gelir.
-      s.mult = Math.min(CFG.SPEED_MULT_MAX, 1 + CFG.SPEED_STEP * s.streak);
+      s.mult = Math.min(multMax(s), 1 + CFG.SPEED_STEP * s.streak);
       var targetSpeed = CFG.SPEED_START * s.mult;
       if (s.speed < targetSpeed) s.speed = Math.min(targetSpeed, s.speed + CFG.ACCEL * dt);
       else s.speed = targetSpeed;
@@ -255,14 +305,27 @@
           s.score++;
           s.streak++;
           s.events.push('score');
-          // Kilometre taşları: 10, 50 ve 100'ün her katı (ateş tutuşur / büyür)
-          // Ateş sönükken taşlar sayılmaz; çarpmadan sonra FIRE_RELIGHT puan toplanınca geri yanar.
-          if (s.fireOut) {
-            if (s.score - s.fireHitScore >= CFG.FIRE_RELIGHT) { s.fireOut = false; s.events.push('milestone'); }
-          } else if (s.score === 10 || s.score === 50 || s.score % 100 === 0) s.events.push('milestone');
+          // v2.5: alev seriyle büyür; her seviye atlayışında 'milestone' (tutuşma efekti + ses)
+          s.fireStreak++;
+          var lv = fireLevelFor(s.fireStreak);
+          if (lv > s.fireLvl) { s.fireLvl = lv; s.fireOut = false; s.events.push('milestone'); }
+          // v2.5: kalkan dolumu (çarpmalar sayacı sıfırlamaz; sadece kalkanı kullanmak sıfırlar)
+          if (CFG.SHIELD && !s.shield && ++s.shieldCharge >= s.shieldNeed) { s.shield = true; s.events.push('shieldReady'); }
+          // v2.2: yeni gök cismi → kayıp bir çarpma hakkı geri gelir
+          if (CFG.LIFE_REFILL && s.score % CFG.LIFE_REFILL === 0 && s.hitsLeft < CFG.LIVES) { s.hitsLeft++; s.events.push('life'); }
+          // v2.2: checkpoint (her 400) ve yolculuğun sonu (rebirth)
+          if (s.score >= journeyEnd() && !s.completed) {
+            // v2.5: yolculuk bitti → final: dünya yavaşlar, uçak kara deliğe çekilir (çarpışma yok)
+            s.completed = true; s.events.push('complete');
+            s.finaleFrom = { x: p.x, y: p.y };
+            setMode(s, 'finale');
+            return s;
+          }
+          else if (s.score % CFG.CHECKPOINT_EVERY === 0 && s.score > (s.startScore || 0)) s.events.push('checkpoint');
         }
         if (!g.broken && hitsGate(p, g)) {
           if (s.invuln > 0) { breakGate(s, g); continue; }       // dokunulmazken: kule yıkılır, ceza yok
+          if (s.shield) { shieldHit(s, g); continue; }   // v2.5: kalkan darbeyi yutar
           if (s.hitsLeft > 0) { bump(s, g); continue; }          // hak varsa: hız sıfırlanır, oyun sürer
           die(s, true); return s;
         }
@@ -270,9 +333,9 @@
 
       // Zemin
       if (p.y + p.r * CFG.HIT_SCALE >= ground) {
-        if (s.invuln > 0 || s.hitsLeft > 0) {
-          // Yere çarpma da bir hak yer (dokunulmazken bedava): uçak yukarı sekip devam eder
-          if (s.invuln <= 0) bump(s, null);
+        if (s.invuln > 0 || s.hitsLeft > 0 || s.shield) {
+          // Yere çarpma da bir hak yer (dokunulmazken bedava, kalkan varsa kalkan yutar): uçak yukarı sekip devam eder
+          if (s.invuln <= 0) { if (s.shield) shieldHit(s, null); else bump(s, null); }
           p.y = ground - p.r * CFG.HIT_SCALE - 1;
           p.vy = CFG.FLAP_VY * 1.1;
         } else {
@@ -280,6 +343,15 @@
           die(s, false);
         }
       }
+      return s;
+    }
+
+    if (s.mode === 'finale') {
+      s.speed = Math.max(0, s.speed - 400 * dt);         // dünya ~0.9 sn'de durur
+      var fdx = s.speed * dt;
+      s.scrollX += fdx;
+      for (var fi = 0; fi < s.gates.length; fi++) s.gates[fi].x -= fdx;
+      if (s.modeTime >= CFG.FINALE_DUR && !s.finaleDone) { s.finaleDone = true; s.events.push('finaleEnd'); }
       return s;
     }
 
@@ -309,7 +381,9 @@
     flap: flap,
     update: update,
     reset: reset,
-    config: CFG,          // ayarları dışarıdan okumak/denemek için
+    config: CFG,
+    hard: hard,           // v2.2: bölüm zorluğu (HUD/test için)
+    fireLevelFor: fireLevelFor,
     _rand: Math.random    // testlerde sabit tohumlu bir fonksiyonla değiştirilebilir
   };
 })();

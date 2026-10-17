@@ -8,8 +8,8 @@
 <meta name="description" content="Guide a paper plane between frozen clock towers under a giant black hole.">
 <meta name="theme-color" content="#1b1838">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-v2-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon-v2.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -44,8 +44,8 @@
   #game { display: block; touch-action: none; }
   #hud { position: absolute; inset: 0; pointer-events: none; }
   #score {
-    position: absolute; top: 9%; left: 0; right: 0; text-align: center;
-    font-family: var(--font-display); font-size: clamp(40px, 12vmin, 72px); color: var(--paper);
+    position: absolute; top: max(1.6%, env(safe-area-inset-top, 0px)); left: 0; right: 0; text-align: center;   /* v2.1: yukarı (görüşü kapatmasın) */
+    font-family: var(--font-display); font-size: clamp(36px, 10.5vmin, 62px); color: var(--paper);
     text-shadow: 0 3px 0 var(--ink), 0 0 18px rgba(255, 207, 107, 0.35);
     font-variant-numeric: tabular-nums;
     transform-origin: 50% 60%;
@@ -56,9 +56,13 @@
   #fallback { position: fixed; inset: 0; display: grid; place-items: center; padding-inline: 24px; text-align: center; background: var(--ink); }
   #fallback[hidden] { display: none; }
 </style>
+<link rel="preload" href="fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="ui.css">
 </head>
 <body>
+<!-- v2.5: FYST açılış logosu (intro.js) — yükleme biter bitmez oynar, dokununca atlanır -->
+<div id="intro" style="position:fixed;inset:0;background:#000;z-index:1000"><div id="introFlash"></div><div id="introLogo"><canvas id="introCv"></canvas><div class="introStar s1"></div><div class="introStar s2"></div><div class="introStar s3"></div></div></div>
+<script src="intro.js"></script>
 
 <div id="stage">
   <div id="wrap">
@@ -73,21 +77,26 @@
 <script>
   window.KK = window.KK || {};
   // Her güncellemede bunu ve sw.js'deki VERSION'ı birlikte artır
-  KK.APP_VERSION = '2.0';
+  KK.APP_VERSION = '2.5';
   KK.W = 360; KK.H = 640; KK.GROUND_Y = 584;
   KK.PALETTE = { skyTop:'#1b1838', skyMid:'#5a3a6e', skyLow:'#e9825a', sun:'#ffcf6b', cityFar:'#3a2f5c', cityNear:'#26203f', tower:'#2e2852', towerEdge:'#4a3f7a', clockFace:'#f3ead8', clockInk:'#1b1838', paper:'#fbf7ef', paperShade:'#d9d0c0', ground:'#171430', groundTop:'#3d335f', glow:'#ffcf6b', text:'#fbf7ef' };
 </script>
 <!-- game.js ve ui.js 2D sürümden geldi; çizim modülü 3D ile değiştirildi -->
 <script src="game.js"></script>
 <script src="render3d.js"></script>
+<script src="music.js"></script>
+<script src="online.js"></script>
 <script src="ui.js"></script>
 <script>
 (function () {
   var canvas = document.getElementById('game');
   if (!window.THREE) { document.getElementById('fallback').hidden = false; return; }
 
+  // v2.5: daha keskin gezegenler için çözünürlük sınırı 1.75 → 2.0 (piksel yükü 2.0²/1.75² = +%31).
+  // Koruma: oynarken ilk 180 karenin ortalaması 50 fps altındaysa sınır 1.5'e iner (1.5²/1.75² = −%26).
+  var dprCap = 2.0, perfN = 0, perfMs = 0, perfDone = false;
   function resize() {
-    var dpr = Math.min(window.devicePixelRatio || 1, 1.75); // 3D'de piksel yükünü sınırla
+    var dpr = Math.min(window.devicePixelRatio || 1, dprCap); // 3D'de piksel yükünü sınırla (v2.5: 2.0, yavaş cihazda 1.5)
     var scale = Math.min(window.innerWidth / KK.W, window.innerHeight / KK.H);
     var cssW = Math.floor(KK.W * scale), cssH = Math.floor(KK.H * scale);
     canvas.style.width = cssW + 'px'; canvas.style.height = cssH + 'px';
@@ -107,20 +116,32 @@
     canvas: canvas,
     getState: function () { return state; },
     onFlap: function () { KK.Game.flap(state); },
-    onRestart: function () { KK.Game.reset(state); }
+    onRestart: function () { KK.Game.reset(state, KK.UI.startOpts ? KK.UI.startOpts() : null); }   // v2.2: son checkpoint'ten
   });
+  if (KK.UI.startOpts) KK.Game.reset(state, KK.UI.startOpts());   // açılışta da kayıtlı checkpoint'ten başla
 
   var verEl = document.getElementById('ver');
   verEl.textContent = 'v' + KK.APP_VERSION;
-  var last = performance.now();
+  var last = performance.now(), hitStop = 0;
   function frame(now) {
-    var dt = Math.min((now - last) / 1000, 1 / 30);
+    var rawMs = now - last;
+    var dt = Math.min(rawMs / 1000, 1 / 30);
     last = now;
     var paused = KK.UI.isPaused && KK.UI.isPaused();   // v2.0: durdurulmuşken oyun donar
-    if (!paused) KK.Game.update(state, dt);
+    // v2.1: çarpma anında 80 ms "hit-stop" — darbe hissedilsin diye oyun bir an donar
+    if (hitStop > 0) { hitStop -= dt; paused = true; }
+    if (!paused) {
+      KK.Game.update(state, dt);
+      if (state.events.indexOf('bump') >= 0 || state.events.indexOf('hit') >= 0) hitStop = 0.08;
+      else if (state.events.indexOf('shield') >= 0) hitStop = 0.05;   // v2.5: kalkan patlayınca daha kısa bir duraklama
+    }
+    if (!perfDone && state.mode === 'playing' && !paused && rawMs < 250) {
+      perfN++; perfMs += rawMs;
+      if (perfN >= 180) { perfDone = true; if (1000 * perfN / perfMs < 50 && dprCap > 1.5) { dprCap = 1.5; resize(); } }
+    }
     state.best = KK.UI.getBest();
     if (KK.UI.skinFor) KK.Render3D.setSkin(KK.UI.skinFor(state.mode));
-    KK.Render3D.draw(state, paused ? 0 : dt);
+    KK.Render3D.draw(state, paused ? 0 : dt, dt);
     KK.UI.handleEvents(state.events, state);
     KK.UI.update(state);
     state.events.length = 0;

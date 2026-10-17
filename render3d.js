@@ -16,7 +16,7 @@ window.KK = window.KK || {};
   var bits = [];                                // kağıt kırpıntısı havuzu
   var far, near, low, roadTex, lamps, sunGlow;
   var hudScore, hudFlash, lastScore = -1;
-  var shakeT = 0, flashT = 0, lastMode = null, flapBurstPending = false;
+  var shakeT = 0, flashT = 0, lastMode = null, flapBurstPending = false, finE = 0, finFlash = false;
   var reduced = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var shared = {};                              // paylaşılan geometri ve malzemeler
 
@@ -233,13 +233,35 @@ window.KK = window.KK || {};
       sky: ['#030305', '#14100e', '#4a3a30'], fog: '#1a1512', fogFar: 85, hemi: ['#c0b0a0', '#141010', 0.5], key: ['#fff0e0', 0.75], rim: '#8a7a6a',
       city: ['#4a4038', '#3a322b', '#2a241f'], win: '#ffcf8a', tower: '#3c342c', edge: '#7a6a5a', base: '#221d18',
       road: '#a89888', lamp: '#ffd0a0', haze: '#c0a080', stars: 1, shapes: { dome: 0.8, bunker: 0.6, antenna: 0.5 } },
-    { name: 'TON 618', kind: 'bh', R: 8.0, fire: '#ff4fb4', glow: '#ff8a5c',
+    { name: 'OORT CLOUD', kind: 11, R: 12.5, spin: 1.0, tilt: 0, incl: 0, atm: '#9fe8ff', atmK: 1.0, fire: '#bff4ff', glow: '#7fd8ff',
+      sky: ['#01030a', '#081428', '#1c3550'], fog: '#0c1626', fogFar: 90, hemi: ['#9ec4ff', '#0a1018', 0.6], key: ['#dff0ff', 0.8], rim: '#7fd8ff',
+      city: ['#3a5a78', '#28425a', '#1c3044'], win: '#aef4ff', tower: '#2e4a66', edge: '#8fd8ff', base: '#14202e',
+      road: '#9cc0e0', lamp: '#aef4ff', haze: '#6fb8ff', stars: 1, shapes: { spire: 1, dome: 0.5 } },
+    { name: 'ALPHA CENTAURI', kind: 12, R: 12.0, spin: 1.0, tilt: 0, incl: 0, atm: '#ffd27a', atmK: 1.2, fire: '#ffcc4a', glow: '#ffc060',
+      sky: ['#2a1a08', '#a0602a', '#ffd08a'], fog: '#a06a30', hemi: ['#ffe0a0', '#2a1808', 0.9], key: ['#fff0c8', 1.2], rim: '#ff9a50',
+      city: ['#5a4030', '#43301f', '#302214'], win: '#ffe8b0', tower: '#4c3624', edge: '#e0a060', base: '#2a1c10',
+      road: '#d8b890', lamp: '#fff0c0', haze: '#ffc080', stars: 0.1, shapes: { cyl: 1, box: 0.7, antenna: 0.4 } },
+    { name: 'ORION NEBULA', kind: 13, R: 15.5, spin: 1.0, tilt: 0, incl: 0, atm: '#ff80d0', atmK: 1.0, fire: '#ff5ad0', glow: '#e060c0',
+      sky: ['#0a0418', '#3a1450', '#b04a8a'], fog: '#3a1a4a', hemi: ['#e0a0ff', '#100818', 0.8], key: ['#ffc0f0', 0.8], rim: '#60e0e0',
+      city: ['#40285a', '#2e1c44', '#201430'], win: '#7ff0e0', tower: '#36224e', edge: '#e07ad0', base: '#180e24',
+      road: '#c090d0', lamp: '#80fff0', haze: '#ff80d0', stars: 0.6, shapes: { spire: 1, box: 0.6 } },
+    { name: 'PULSAR', kind: 14, R: 12.5, spin: 1.0, tilt: 0, incl: 0, atm: '#7ab8ff', atmK: 1.0, fire: '#8ad8ff', glow: '#5aa8ff',
+      sky: ['#000208', '#04102a', '#103060'], fog: '#061230', hemi: ['#80b0ff', '#04060c', 0.6], key: ['#d0e4ff', 0.9], rim: '#4a9aff',
+      city: ['#1a2440', '#121a30', '#0c1222'], win: '#9ad0ff', tower: '#16203a', edge: '#5ab0ff', edgeGlow: '#103a80', base: '#080c18',
+      road: '#7090c0', lamp: '#b0e0ff', haze: '#3a7aff', stars: 0.9, shapes: { antenna: 1, bunker: 0.6, box: 0.5 } },
+    { name: 'ANDROMEDA', kind: 15, R: 16.0, spin: 1.0, tilt: 0, incl: 0, atm: '#c0b0ff', atmK: 1.0, fire: '#ffd27a', glow: '#b090ff',
+      sky: ['#04020c', '#160c30', '#3a2458'], fog: '#1a1030', fogFar: 85, hemi: ['#c0b0ff', '#08060e', 0.7], key: ['#fff0e0', 0.85], rim: '#ffc080',
+      city: ['#2a2448', '#1e1a36', '#141026'], win: '#ffd8a0', tower: '#242040', edge: '#b09ae0', base: '#0e0a1a',
+      road: '#a898d0', lamp: '#ffe0b0', haze: '#a080ff', stars: 1, shapes: { spire: 0.8, cyl: 0.6, dome: 0.5 } },
+    { name: 'TON 618', kind: 'bh', R: 11.0, fire: '#6a1fd0', glow: '#ff8a5c',
       sky: [P.skyTop, P.skyMid, P.skyLow], fog: '#4a3466', hemi: ['#8d79c9', P.ground, 0.75], key: ['#ffb27a', 0.95], rim: P.skyLow,
       city: [P.cityFar, P.cityNear, '#1f1a38'], win: P.glow, tower: P.tower, edge: P.towerEdge, base: '#211c3c',
       road: '#b4a6e6', lamp: '#ffd98a', haze: '#ffa874', stars: 0.2, shapes: { box: 1, spire: 0.25 } }
   ];
-  var PLANET_EVERY = KK.PLANET_EVERY = 200;                                   // kaç puanda bir gök cismi değişir (v2.0: tekrar 200)
-  var PL_HX = 2.6, PL_HY = 1.6;                             // dörtgenin yarı boyu (gezegen yarıçapı biriminde)
+  var PLANET_EVERY = KK.PLANET_EVERY = KK.TEST_BUILD ? 10 : 200;   // v2.5: test sayfasında hızlı geçiş
+  KK.JOURNEY_END = BODIES.length * PLANET_EVERY;           // v2.2: son gök cisminde de 200 puan uçunca yolculuk biter
+  KK.BODY_NAMES = BODIES.map(function (b) { return b.name; });                                   // kaç puanda bir gök cismi değişir (v2.0: tekrar 200)
+  var PL_HX = 2.6, PL_HY = 1.6, PL_DEEP = 3.4;   // dörtgenin yarı boyu (yarıçap biriminde); v2.5: derin uzay cisimleri kare (3.4R)
   var PL_FRAG = [
     'uniform float uTime; uniform float uFade; uniform float uSpin; uniform float uTilt; uniform float uIncl; uniform float uAtmK;',
     'uniform vec3 uAtm; varying vec2 vUv;',
@@ -272,7 +294,7 @@ window.KK = window.KK || {};
     '  vec3 ocean = mix(vec3(0.01,0.06,0.22), vec3(0.04,0.25,0.52), smoothstep(0.25, 0.52, c));',
     '  vec3 grd = mix(vec3(0.15,0.36,0.12), vec3(0.58,0.48,0.30), smoothstep(0.45, 0.66, m));',
     '  vec3 col = mix(ocean, grd, land);',
-    '  col = mix(col, vec3(0.93,0.96,1.0), smoothstep(0.80, 0.86, abs(lat) + (m - 0.5)*0.2));',
+    '  col = mix(col, vec3(0.90,0.94,1.0), smoothstep(0.89, 0.93, abs(lat) + (m - 0.5)*0.12));',   // v2.1: buzullar küçüldü
     '  vec3 lit = col * (0.03 + 1.05*lam);',
     '  vec3 R = reflect(-L, n); lit += vec3(1.0,0.9,0.75) * pow(max(R.z, 0.0), 28.0) * 0.5 * (1.0 - land) * step(0.001, lam);',
     '  vec3 qc = toPlanet(n, uTime*uSpin*1.7 + 1.3);',
@@ -295,14 +317,23 @@ window.KK = window.KK || {};
     '  col = mix(col, vec3(0.96,0.94,0.90), smoothstep(0.86, 0.91, abs(lat) + (m - 0.5)*0.12));',
     '  return col * (0.025 + 1.05*lam);',
     '#elif KIND == 3',                                        // JÜPİTER
-    '  float tl = lat + (fbm(q*4.0) - 0.5)*0.10;',
+    // v2.5: bantlar ters yönlerde akar (jet akımları), kenarlarında girdaplar; Büyük Kırmızı Leke dönen bir sarmal
+    '  float jet = sin(lat*22.0);',
+    '  vec3 qf = q + vec3(0.0, 0.0, uTime*0.03*sign(jet));',
+    '  float tl = lat + (fbm(qf*4.0) - 0.5)*0.10 + (fbm(qf*11.0 + 3.0) - 0.5)*0.035;',
     '  float b = sin(tl*22.0), b2 = sin(tl*8.5 + 1.0);',
     '  vec3 col = mix(vec3(0.93,0.88,0.77), vec3(0.78,0.58,0.40), smoothstep(-0.3, 0.6, b));',
     '  col = mix(col, vec3(0.52,0.34,0.22), smoothstep(0.5, 0.95, b2)*0.55);',
-    '  col *= 0.88 + 0.22*fbm(vec3(q.x*3.0, q.y*26.0, q.z*3.0));',
+    '  col *= 0.86 + 0.26*fbm(vec3(qf.x*3.0, qf.y*26.0, qf.z*3.0));',
+    '  float eddy = smoothstep(0.62, 0.8, fbm(qf*9.0 + 11.0)) * (1.0 - abs(b));',      // bant kenarlarında beyaz girdaplar
+    '  col = mix(col, vec3(0.97,0.94,0.88), eddy*0.45);',
     '  vec2 ll = lonlat(q); vec2 d = (ll - vec2(0.7, -0.38)) * vec2(1.0, 2.2); float sp = length(d);',
-    '  col = mix(col, vec3(0.95,0.85,0.72), smoothstep(0.24, 0.19, sp)*0.6);',
-    '  col = mix(col, vec3(0.78,0.32,0.18), smoothstep(0.19, 0.12, sp));',
+    '  float sw = atan(d.y, d.x) + (0.24 - sp)*16.0 - uTime*0.35;',                    // içe doğru dönen sarmal
+    '  float swn = fbm(vec3(cos(sw)*sp*10.0, sin(sw)*sp*10.0, 3.0));',
+    '  col = mix(col, vec3(0.96,0.88,0.76), smoothstep(0.27, 0.21, sp)*smoothstep(0.16, 0.2, sp)*0.75);',   // açık renkli yaka
+    '  vec3 grs = mix(vec3(0.60,0.20,0.11), vec3(0.90,0.48,0.27), smoothstep(0.3, 0.75, swn));',
+    '  grs = mix(grs, vec3(0.96,0.66,0.44), smoothstep(0.09, 0.0, sp)*0.55);',          // daha açık merkez
+    '  col = mix(col, grs, smoothstep(0.195, 0.13, sp + (swn - 0.5)*0.05));',
     '  return col * (0.025 + 1.05*lam);',
     '#elif KIND == 4',                                        // SATÜRN
     '  float tl = lat + (fbm(q*3.0) - 0.5)*0.05;',
@@ -363,17 +394,109 @@ window.KK = window.KK || {};
     '  return 0.75*smoothstep(0.012, 0.0, abs(rr - 1.56)) + 0.4*smoothstep(0.008, 0.0, abs(rr - 1.47)) + 0.35*smoothstep(0.008, 0.0, abs(rr - 1.41));',
     '#endif',
     '}',
+    // ---- v2.3: Derin uzay (KIND 11..15) — küre yerine kendi biçimleri ----
+    'vec3 glowStar(vec2 p, vec2 c, float r, vec3 col, float k){ float d = length(p - c); return col * (exp(-max(d - r, 0.0)*k) * 0.9 + exp(-d*d/(r*r)) ); }',
+    'vec4 deep(vec2 p, float quad){',
+    '  vec3 C = vec3(0.0); float A = 0.0; float t = uTime;',
+    '#if KIND == 11',                                     // OORT: kuyruklu yıldız — çekirdek, koma, iyon ve toz kuyruğu + buz kırıntıları
+    '  vec2 dir = normalize(vec2(1.0, 0.55)); vec2 nrm = vec2(-dir.y, dir.x);',   // v2.5: ~29° yukarı (uçuş hattını yatay kesmesin)
+    '  float al = dot(p, dir), pe = dot(p, nrm);',
+    '  pe += 0.035*sin(al*2.2 - t*1.3)*max(al, 0.0);',                              // v2.5: kuyruk yavaşça dalgalanır
+    '  float ion = exp(-pow(pe / (0.04 + 0.05*max(al, 0.0)), 2.0)) * exp(-max(al, 0.0)*0.45) * step(0.0, al);',
+    '  ion *= 0.6 + 0.6*n3(vec3(al*3.0 - t*0.8, pe*12.0, 1.0));',
+    '  float pd = pe + 0.10*al*al;',                      // toz kuyruğu yörüngede kıvrılır
+    '  float dust = exp(-pow(pd / (0.08 + 0.22*max(al, 0.0)), 2.0)) * exp(-max(al, 0.0)*0.6) * step(0.0, al);',
+    '  float r = length(p);',
+    '  float breath = 0.88 + 0.12*sin(t*1.7);',                                      // çekirdek nefes alır
+    '  C += vec3(0.45, 0.75, 1.0) * ion * 0.55 + vec3(1.0, 0.86, 0.6) * dust * 0.4 * (0.85 + 0.3*n3(vec3(al*2.0 - t*0.4, pe*6.0, 2.0)));',   // v2.5: ~yarı parlaklık
+    '  C += vec3(0.75, 0.95, 1.0) * exp(-r*3.2) * 0.8 * breath + vec3(1.0) * exp(-r*r*90.0) * 1.2 * breath;',
+    '  vec2 g = floor(p*14.0); float sp = step(0.985, h3(vec3(g, 3.0)));',   // Oort bulutunun buz kırıntıları
+    '  C += vec3(0.7, 0.9, 1.0) * sp * smoothstep(0.08, 0.0, length(fract(p*14.0) - 0.5)) * (0.5 + 0.5*sin(t*2.0 + g.x*3.0));',
+    '  A = clamp(exp(-r*r*60.0), 0.0, 1.0);',
+    '#elif KIND == 12',                                   // ALPHA CENTAURI: A (sarı) + B (turuncu) + Proxima (kırmızı cüce)
+    // v2.5: A ve B ortak kütle merkezinin etrafında döner (bir tur ~52 sn, eğik yörünge); B arkaya geçince A'nın arkasında kalır
+    '  float w = t*0.12; vec2 bary = vec2(0.52, -0.09), ov = rot(vec2(cos(w), 0.35*sin(w)) * 1.27, -0.4);',
+    '  vec2 ca = bary - 0.45*ov, cb = bary + 0.55*ov; float bFront = step(0.0, -sin(w));',
+    '  float da = length(p - ca), db = length(p - cb);',
+    '  float ga = fbm(vec3((p - ca)*9.0, t*0.22)), gb = fbm(vec3((p - cb)*11.0, t*0.26 + 4.0));',
+    '  float ra = 0.55, rb = 0.40;',
+    '  vec3 sa = mix(vec3(1.0, 0.78, 0.40), vec3(1.0, 0.97, 0.85), ga) * (0.6 + 0.4*sqrt(max(0.0, 1.0 - da*da/(ra*ra))));',
+    '  vec3 sb = mix(vec3(1.0, 0.45, 0.12), vec3(1.0, 0.75, 0.45), gb) * (0.6 + 0.4*sqrt(max(0.0, 1.0 - db*db/(rb*rb))));',
+    '  float ea = smoothstep(ra, ra - 0.015, da), eb = smoothstep(rb, rb - 0.015, db);',
+    '  if (bFront > 0.5) { C = sa*ea; A = ea; C = sb*eb + C*(1.0 - eb); A = eb + A*(1.0 - eb); }',
+    '  else { C = sb*eb; A = eb; C = sa*ea + C*(1.0 - ea); A = ea + A*(1.0 - ea); }',
+    '  C += vec3(1.0, 0.8, 0.45) * exp(-max(da - ra, 0.0)*3.5) * 0.55 * (1.0 - ea) * quad;',
+    '  C += vec3(1.0, 0.55, 0.25) * exp(-max(db - rb, 0.0)*4.0) * 0.45 * (1.0 - eb) * quad;',
+    '  vec2 cp = vec2(2.05, 0.85); float dp = length(p - cp);',
+    '  C += vec3(1.0, 0.25, 0.15) * (exp(-dp*dp*900.0)*1.4 + exp(-dp*14.0)*0.35) * (0.85 + 0.15*sin(t*3.0));',
+    '#elif KIND == 13',                                   // ORION: bükülen gaz, toz şeritleri, Trapez yıldızları
+    // v2.5: gaz yavaşça akar ve kıvrılır; parlak merkez ve Trapez yıldızları uçuş hattından yukarı alındı (y ≈ +0.95R)
+    '  vec2 q = p*0.9 + vec2(t*0.012, 0.0); vec3 w = vec3(q, t*0.05);',
+    '  vec3 wq = w + 0.6*vec3(fbm(w*1.3 + 1.0 + t*0.02), fbm(w*1.3 + 7.0 - t*0.015), 0.0);',
+    '  float d1 = fbm(wq*1.6), d2 = fbm(wq*3.1 + 5.0);',
+    '  vec2 oc = vec2(0.6, 0.95);',
+    '  float r = length(p - oc);',
+    '  float mask = exp(-r*0.75) * smoothstep(0.25, 0.75, d1);',
+    '  vec3 gas = mix(vec3(0.95, 0.25, 0.55), vec3(0.20, 0.75, 0.85), smoothstep(0.35, 0.7, d2));',
+    '  gas = mix(gas, vec3(1.0, 0.75, 0.45), exp(-r*2.2));',
+    '  float lanes = smoothstep(0.55, 0.75, fbm(wq*2.2 + 11.0));',
+    '  C = gas * mask * 1.3 * (1.0 - 0.75*lanes) * quad;',
+    '  A = clamp(mask*0.35 + lanes*mask*0.4, 0.0, 0.7) * quad;',
+    '  vec2 tz[4]; tz[0] = vec2(0.55, 0.97); tz[1] = vec2(0.67, 0.90); tz[2] = vec2(0.61, 0.83); tz[3] = vec2(0.72, 1.00);',
+    '  for (int i = 0; i < 4; i++) { float ds = length(p - tz[i]); float tw = 0.8 + 0.2*sin(t*2.3 + float(i)*1.7); C += vec3(0.75, 0.88, 1.0) * (exp(-ds*ds*3000.0)*1.6 + exp(-ds*30.0)*0.25) * tw; }',
+    '#elif KIND == 14',                                   // PULSAR: dönen iki hüzme, her bize bakışta çakan çekirdek, enkaz halkası
+    '  float th = t*2.2;',
+    '  vec2 dir = normalize(vec2(cos(th), sin(th)*0.45 + 0.12));',
+    '  vec2 nrm = vec2(-dir.y, dir.x);',
+    '  float al = dot(p, dir), pe = dot(p, nrm);',
+    '  float beam = exp(-pow(pe / (0.025 + 0.09*abs(al)), 2.0)) * exp(-abs(al)*0.35);',
+    '  float face = pow(max(0.0, abs(cos(th))), 24.0);',  // hüzme bize dönünce çakar
+    '  float r = length(p);',
+    '  C += vec3(0.55, 0.8, 1.0) * beam * 1.8;',
+    '  C += vec3(0.85, 0.93, 1.0) * (exp(-r*r*400.0)*2.0 + exp(-r*9.0)*(0.5 + 1.6*face));',
+    '  float ang = atan(p.y, p.x);',
+    '  float ring = exp(-pow((length(vec2(p.x, p.y*1.8)) - 1.35) / 0.28, 2.0)) * fbm(vec3(cos(ang)*3.0, sin(ang)*3.0, t*0.05 + r));',
+    '  C += vec3(0.85, 0.35, 0.75) * ring * 0.85 * quad;',
+    '  A = clamp(exp(-r*r*400.0), 0.0, 1.0);',
+    '#else',                                              // ANDROMEDA: eğik sarmal galaksi
+    '  vec2 q = rot(p - vec2(0.95, 0.05), -0.45); q.y /= 0.32;',   // merkez ekrana kaydırıldı
+    '  float r = length(q), ang = atan(q.y, q.x);',
+    '  float arm = cos(2.0*(ang - log(r + 0.08)*2.3) - t*0.12);',   // v2.5: kollar görünür hızda döner
+    '  float n = fbm(vec3(q*2.2, 3.0));',
+    '  float disk = exp(-r*0.85) * (0.35 + 0.65*smoothstep(-0.1, 1.0, arm)*(0.6 + 0.6*n));',
+    '  float dust = smoothstep(0.55, 0.95, cos(2.0*(ang - log(r + 0.08)*2.3) - 0.9 - t*0.12)) * smoothstep(0.15, 0.6, r) * exp(-r*0.6);',
+    '  float core = (exp(-r*6.0)*1.6 + exp(-r*r*40.0)*1.2) * (0.92 + 0.08*sin(t*1.3));',
+    '  vec3 col = mix(vec3(0.70, 0.78, 1.0), vec3(1.0, 0.86, 0.62), exp(-r*1.4));',
+    '  float hii = step(0.82, fbm(vec3(q*7.0, 9.0))) * smoothstep(0.2, 0.5, arm) * exp(-r*0.8);',
+    '  C = (col*disk*(1.0 - 0.7*dust) + vec3(1.0, 0.85, 0.65)*core + vec3(1.0, 0.45, 0.7)*hii*0.6) * 2.1 * quad;',
+    '  vec2 m32 = p - vec2(1.5, 0.42); C += vec3(1.0, 0.9, 0.75) * exp(-dot(m32, m32)*120.0) * 0.6;',
+    '  vec2 m110 = rot(p - vec2(0.7, -0.75), 0.4); m110.y *= 2.0; C += vec3(1.0, 0.9, 0.8) * exp(-dot(m110, m110)*25.0) * 0.3;',
+    '  A = clamp(disk*0.5 + core*0.3, 0.0, 0.85) * quad;',
+    '#endif',
+    '  return vec4(C, A);',
+    '}',
     'void main(){',
-    '  vec2 p = (vUv*2.0 - 1.0) * vec2(' + PL_HX.toFixed(2) + ', ' + PL_HY.toFixed(2) + ');',
+    '  vec2 p = (vUv*2.0 - 1.0) * vec2(HX, HY);',
     '  float r = length(p);',
     '  float quad = smoothstep(1.0, 0.8, abs(vUv.x*2.0 - 1.0)) * smoothstep(1.0, 0.75, abs(vUv.y*2.0 - 1.0));', // dörtgen kenarı görünmesin
+    '#if KIND >= 11',
+    // v2.5: derin uzayda dörtgen kare; HER katman merkezden kenara yuvarlak bir geçişle söner (ışınlar/kuyruklar kesilmesin)
+    '  float circ = smoothstep(1.0, 0.55, length(vUv*2.0 - 1.0));',
+    '  gl_FragColor = deep(p, quad) * circ * uFade; return;',
+    '#endif',
     '  vec3 L = normalize(vec3(0.75, 0.30, 0.60));',
     '  vec3 C = vec3(0.0); float A = 0.0;',
     '#if RING',
     '  vec3 ax = vec3(0.0, 1.0, 0.0); ax.yz = rot(ax.yz, -uIncl); ax.xy = rot(ax.xy, -uTilt);',
     '  float rz = -(ax.x*p.x + ax.y*p.y) / ax.z;',
     '  vec3 hp = vec3(p, rz);',
-    '  float ra = min(1.0, ringDensity(length(hp)) * 1.2);',
+    '  float rr = length(hp);',
+    // v2.5: halka parçacıkları Kepler hızıyla döner (ω ∝ r^-1.5: iç kenar dıştan ~2.4 kat hızlı) → kümeler ve koyu "spoke"lar akar
+    '  vec3 e1 = normalize(vec3(ax.y, -ax.x, 0.0)), e2 = cross(ax, e1);',
+    '  float rph = atan(dot(hp, e2), dot(hp, e1)) - uTime*0.35*pow(rr, -1.5);',
+    '  float clump = n3(vec3(cos(rph)*4.0, sin(rph)*4.0, rr*22.0));',
+    '  float spoke = smoothstep(0.75, 1.0, sin(rph*7.0)) * smoothstep(1.5, 1.6, rr) * smoothstep(2.0, 1.9, rr);',
+    '  float ra = min(1.0, ringDensity(rr) * 1.2 * (0.72 + 0.45*clump) * (1.0 - 0.25*spoke));',
     '  float tt = -dot(hp, L);',
     '  float shade = (tt > 0.0 && length(hp + tt*L) < 1.0) ? 0.18 : 1.0;',
     '#if KIND == 4',
@@ -409,6 +532,25 @@ window.KK = window.KK || {};
 
   // ---- Tema motoru: gökyüzü, sis, ışık ve malzeme renkleri iki tema arasında yumuşakça karışır ----
   var COLOR_KEYS = ['sky0', 'sky1', 'sky2', 'fog', 'hemiSky', 'hemiGround', 'key', 'rim', 'win', 'tower', 'edge', 'edgeGlow', 'base', 'road', 'lamp', 'haze', 'cityNear'];
+  // v2.5: Kule kontrastı (Güneş'teki gibi): gövde koyulaşır, kenar kendi tonunda açılır ve kendi ışığını yayar.
+  // Kontrast oranı = (L_açık + 0.05) / (L_koyu + 0.05)  (WCAG göreli parlaklık). Hedef: en az 4.5.
+  function hexRgb(h) { h = String(h).replace('#', ''); return [0, 2, 4].map(function (i) { return parseInt(h.substr(i, 2), 16) / 255; }); }
+  function rgbHex(c) { return '#' + c.map(function (v) { return ('0' + Math.round(Math.max(0, Math.min(1, v)) * 255).toString(16)).slice(-2); }).join(''); }
+  function relLum(c) { var l = c.map(function (v) { return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2]; }
+  function contrast(a, b) { var x = relLum(a), y = relLum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); }
+  function rgbHsl(c) { var r = c[0], g = c[1], b = c[2], mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, h = 0, s = 0, d = mx - mn;
+    if (d) { s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn); h = mx === r ? (g - b) / d + (g < b ? 6 : 0) : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h /= 6; } return [h, s, l]; }
+  function hslRgb(h, s, l) { function f(n) { var k = (n + h * 12) % 12, a = s * Math.min(l, 1 - l); return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)); } return [f(0), f(8), f(4)]; }
+  KK.__towerContrast = [];
+  function towerContrast(T) {
+    var tw = hexRgb(T.tower), ed = hexRgb(T.edge), before = contrast(tw, ed);
+    var tw2 = tw.map(function (v) { return v * 0.65; });
+    var hsl = rgbHsl(ed), s2 = Math.max(hsl[1], 0.55), l2 = hsl[2], ed2 = hslRgb(hsl[0], s2, l2);
+    while (contrast(ed2, tw2) < 4.5 && l2 < 0.78) { l2 += 0.02; ed2 = hslRgb(hsl[0], s2, l2); }
+    T.tower = rgbHex(tw2); T.edge = rgbHex(ed2);
+    if (!T.edgeGlow) T.edgeGlow = rgbHex(ed2.map(function (v) { return v * 0.45; }));
+    KK.__towerContrast.push({ name: T.name, before: +before.toFixed(2), after: +contrast(ed2, tw2).toFixed(2), tower: T.tower, edge: T.edge });
+  }
   function themeColors(T) {
     return {
       sky0: color(T.sky[0]), sky1: color(T.sky[1]), sky2: color(T.sky[2]), fog: color(T.fog),
@@ -459,13 +601,14 @@ window.KK = window.KK || {};
         mesh = bhMesh; mat = bhMat;
         mesh.scale.setScalar(def.R / 7.5);                   // gölge yarıçapı ≈ 7.5 → diğerleriyle aynı boy
       } else {
+        var deepK = def.kind >= 11, hx = deepK ? PL_DEEP : PL_HX, hy = deepK ? PL_DEEP : PL_HY;   // v2.5
         mat = new THREE.ShaderMaterial(Object.assign({
           uniforms: { uTime: { value: 0 }, uFade: { value: 0 }, uSpin: { value: def.spin }, uTilt: { value: def.tilt },
                       uIncl: { value: def.incl }, uAtmK: { value: def.atmK }, uAtm: { value: color(def.atm) } },
-          defines: { KIND: def.kind, RING: (def.kind === 4 || def.kind === 5) ? 1 : 0 },
+          defines: { KIND: def.kind, RING: (def.kind === 4 || def.kind === 5) ? 1 : 0, HX: hx.toFixed(2), HY: hy.toFixed(2) },
           vertexShader: BH_VERT, fragmentShader: PL_FRAG
         }, blend));
-        mesh = new THREE.Mesh(new THREE.PlaneGeometry(2 * PL_HX * def.R, 2 * PL_HY * def.R), mat);
+        mesh = new THREE.Mesh(new THREE.PlaneGeometry(2 * hx * def.R, 2 * hy * def.R), mat);
         scene.add(mesh);
       }
       mesh.position.copy(anchor);
@@ -475,7 +618,7 @@ window.KK = window.KK || {};
       planets.push({ def: def, mesh: mesh, mat: mat, vis: vis, baseS: mesh.scale.x });
     });
     glowCol = color(BODIES[0].glow);
-    BODIES.forEach(function (T) { T.c = themeColors(T); });
+    BODIES.forEach(function (T) { towerContrast(T); T.c = themeColors(T); });
     themeFrom = BODIES[0].c; themeTo = BODIES[0].c; curTheme = cloneTheme(BODIES[0].c);
   }
 
@@ -521,11 +664,16 @@ window.KK = window.KK || {};
     }
   }
 
+  var warpT = 0;
   function updatePlanets(state, dt) {
-    var want = state.mode === 'ready' ? 0 : Math.min(BODIES.length - 1, Math.floor(state.score / PLANET_EVERY));
+    var want = Math.min(BODIES.length - 1, Math.floor((state.score || 0) / PLANET_EVERY));   // v2.2: ana ekranda checkpoint'in gök cismi
     if (want !== planetIdx) {
-      if (state.mode === 'playing' && want > planetIdx) { banner.firstChild.textContent = want * PLANET_EVERY; banner.lastChild.textContent = BODIES[want].name; bannerT = 2.6; }
+      if (state.mode === 'playing' && want > planetIdx) {
+        var cpTxt = '';   // v2.5: checkpoint artık ayrı bir rozetle gösteriliyor
+        banner.firstChild.textContent = cpTxt + want * PLANET_EVERY; banner.lastChild.textContent = BODIES[want].name; bannerT = 2.6;
+      }
       switchCity(planetIdx, want);
+      if (state.mode === 'playing' && want > planetIdx) { warpT = 1; shakeT = Math.max(shakeT, reduced ? 0 : 0.35); }   // v2.1: yeni gök cismi = warp
       themeFrom = cloneTheme(curTheme); themeTo = BODIES[want].c; themeT = 0;
       planetIdx = want;
     }
@@ -558,34 +706,60 @@ window.KK = window.KK || {};
   }
 
   // ---- v1.5: can (çarpma hakkı) ve hız katsayısı göstergesi ----
-  var livesEl = null, multEl = null, lastLives = -1, lastMult = '', livesWrap = null;
+  var livesEl = null, lastLives = -1, livesWrap = null, livesPulse = 0;
+  var shieldEl = null, cpEl = null, shieldPop = null, cpToast = null, popT = 0, cpT = 0, lastCP = -1, cpScore = 0;
+  function SHIELD_SVG(px) { return '<svg viewBox="0 0 24 24" width="' + px + '" height="' + px + '" aria-hidden="true"><path d="M12 2 L20 5 V11 C20 16.5 16.5 20.5 12 22 C7.5 20.5 4 16.5 4 11 V5 Z" fill="currentColor"/><path d="M12 5.2 L17.4 7.2 V11 C17.4 14.8 15.1 17.7 12 18.9 Z" fill="#ffffff" opacity=".35"/></svg>'; }
+  var FLAG_SVG = '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M5 21 V3" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M6 4 H18 L15.5 8 L18 12 H6 Z" fill="#6fe3a0"/></svg>';
   var PLANE_SVG = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M2 12 L22 4 L15 21 L11 14 Z" fill="currentColor"/><path d="M11 14 L22 4" stroke="#1b1838" stroke-width="1.4"/></svg>';
   function initStatus(hud) {
     livesWrap = document.createElement('div');
-    livesWrap.style.cssText = 'position:absolute;top:max(10px,env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));pointer-events:none;display:none;font:700 13px/1 var(--font-body);color:var(--paper);text-shadow:0 2px 0 #1b1838';
+    livesWrap.style.cssText = 'position:absolute;top:max(10px,env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));pointer-events:none;display:none;align-items:center;gap:10px;font:700 13px/1 var(--font-body);color:var(--paper);text-shadow:0 2px 0 #1b1838';
     livesEl = document.createElement('div'); livesEl.style.cssText = 'display:flex;gap:4px;color:var(--paper)';
-    multEl = document.createElement('div'); multEl.style.cssText = 'margin-top:6px;letter-spacing:.06em;opacity:.85;font-variant-numeric:tabular-nums';
-    livesWrap.appendChild(livesEl); livesWrap.appendChild(multEl);
+    // v2.5: hız/alev yazısı kaldırıldı. Sırada: canlar · kalkan (hazırsa) · son checkpoint bayrağı
+    shieldEl = document.createElement('div'); shieldEl.innerHTML = SHIELD_SVG(22); shieldEl.style.cssText = 'display:none;color:#8fd8ff;filter:drop-shadow(0 0 6px rgba(143,216,255,.8))';
+    cpEl = document.createElement('div'); cpEl.style.cssText = 'display:none;align-items:center;gap:3px;opacity:.8;font-variant-numeric:tabular-nums;color:var(--paper)';
+    livesWrap.appendChild(livesEl); livesWrap.appendChild(shieldEl); livesWrap.appendChild(cpEl);
+    // Kalkan dolunca ekranın üstünde kısa beliren simge
+    shieldPop = document.createElement('div');
+    shieldPop.style.cssText = 'position:absolute;left:0;right:0;top:calc(max(1.6%,env(safe-area-inset-top,0px)) + clamp(44px,12vmin,70px));display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:none;opacity:0;color:#8fd8ff';
+    shieldPop.innerHTML = SHIELD_SVG(34) + '<div style="font:800 11px/1 var(--font-body);letter-spacing:.32em;color:#d8f2ff;text-shadow:0 2px 0 #1b1838">SHIELD READY</div>';
+    hud.appendChild(shieldPop);
+    // Checkpoint alınınca gök cismi adının altında belirgin bir rozet
+    cpToast = document.createElement('div');
+    cpToast.style.cssText = 'position:absolute;left:50%;top:calc(24% + clamp(66px,17vmin,96px));transform:translateX(-50%);pointer-events:none;opacity:0;white-space:nowrap;padding:7px 14px;border-radius:999px;background:rgba(18,40,30,.78);border:1.5px solid #6fe3a0;color:#bff5d4;font:800 12px/1 var(--font-body);letter-spacing:.22em';
+    hud.appendChild(cpToast);
     hud.appendChild(livesWrap);
     banner = document.createElement('div');
     banner.style.cssText = 'position:absolute;left:0;right:0;top:24%;text-align:center;pointer-events:none;opacity:0;color:var(--paper)';
     banner.innerHTML = '<div style="font:800 13px/1 var(--font-body);letter-spacing:.3em;color:var(--glow);margin-bottom:6px"></div><div style="font-family:var(--font-display);font-size:clamp(24px,8vmin,42px);letter-spacing:.06em;text-shadow:0 3px 0 #1b1838,0 0 22px rgba(160,190,255,.55)"></div>';
     hud.appendChild(banner);
   }
-  function updateStatus(state) {
+  function updateStatus(state, rdt) {
+    // kısa beliren simgeler (oyun durmuşken de sönsün diye gerçek zamanla)
+    if (popT > 0) {
+      popT = Math.max(0, popT - rdt);
+      var pu = 1.6 - popT;                                       // 0 → 1.6 sn
+      var po = Math.min(1, pu / 0.18, popT / 0.45);
+      shieldPop.style.opacity = po.toFixed(3);
+      shieldPop.style.transform = 'scale(' + (pu < 0.25 ? 0.6 + 0.4 * (1 - Math.pow(1 - pu / 0.25, 3)) * 1.08 : 1).toFixed(3) + ')';
+    } else shieldPop.style.opacity = 0;
+    if (cpT > 0) { cpT = Math.max(0, cpT - rdt); cpToast.style.opacity = Math.min(1, (2.8 - cpT) / 0.25, cpT / 0.6).toFixed(3); }
+    else cpToast.style.opacity = 0;
     var on = state.mode === 'playing';
-    livesWrap.style.display = on ? '' : 'none';
-    if (!on) { lastLives = -1; return; }
+    livesWrap.style.display = on ? 'flex' : 'none';
+    if (!on) { lastLives = -1; lastCP = -1; return; }
+    shieldEl.style.display = state.shield ? '' : 'none';
+    var cp = Math.max(state.startScore || 0, cpScore);
+    if (cp !== lastCP) { cpEl.innerHTML = FLAG_SVG + '<span>' + cp + '</span>'; cpEl.style.display = cp > 0 ? 'flex' : 'none'; lastCP = cp; }
     var max = (KK.Game.config && KK.Game.config.LIVES) || 2;
     if (state.hitsLeft !== lastLives) {
       var html = '';
       for (var i = 0; i < max; i++) html += '<span style="display:inline-block;transition:opacity .3s,transform .3s;' + (i < state.hitsLeft ? '' : 'opacity:.22;transform:scale(.8)') + '">' + PLANE_SVG + '</span>';
       livesEl.innerHTML = html; lastLives = state.hitsLeft;
     }
-    var m = '×' + (state.mult || 1).toFixed(2);
-    if (state.fireOut) m += '  \u00b7  FIRE ' + Math.max(0, state.score - state.fireHitScore) + '/' + ((KK.Game.config && KK.Game.config.FIRE_RELIGHT) || 150);
-    if (m !== lastMult) { multEl.textContent = 'SPEED ' + m; lastMult = m; }
-    multEl.style.color = (state.mult || 1) >= ((KK.Game.config && KK.Game.config.SPEED_MULT_MAX) || 2) - 0.001 ? 'var(--glow)' : '';
+    livesPulse = Math.max(0, livesPulse - 0.02);
+    livesEl.style.transform = livesPulse > 0 ? 'scale(' + (1 + livesPulse * 0.4).toFixed(3) + ')' : '';
+    livesEl.style.filter = livesPulse > 0 ? 'drop-shadow(0 0 ' + Math.round(livesPulse * 10) + 'px #ffcf6b)' : '';
   }
 
   // Aydınlık pencere: içeriden yanan cam, ortada kayıt (pencere kasası)
@@ -604,25 +778,40 @@ window.KK = window.KK || {};
   // req = kilidi açan EN İYİ skor (yolculuktaki duraklara denk gelir). 'fyst' gizli: sadece kodla açılır.
   // paper/shade: kanat ve omurga rengi, line: kontur, glow: kendi ışığı, head/tail: iz renkleri, spark: kıvılcım
   KK.SKINS = [
-    { id: 'paper',    name: 'PAPER',    req: 0,    paper: '#fbf7ef', shade: '#d9d0c0', line: '#0b0918', glow: 0.35, head: '#ffe2a6', tail: '#9b7bff', spark: '#ffe6b0' },
-    { id: 'midnight', name: 'MIDNIGHT', req: 50,   paper: '#2a3566', shade: '#18204a', line: '#ffcf6b', glow: 0.25, head: '#9fd0ff', tail: '#3a4bff', spark: '#bfe0ff' },
-    { id: 'ember',    name: 'EMBER',    req: 100,  paper: '#ff6a3d', shade: '#b8321a', line: '#2a0a04', glow: 0.45, head: '#ffd27a', tail: '#ff3a1a', spark: '#ffb060' },
-    { id: 'lunar',    name: 'LUNAR',    req: 200,  paper: '#c9d2e0', shade: '#8f9ab0', line: '#0b0918', glow: 0.30, head: '#e6f4ff', tail: '#7fa8ff', spark: '#e6f4ff' },
-    { id: 'solar',    name: 'SOLAR',    req: 800,  paper: '#ffd23a', shade: '#ff9a1a', line: '#5a1a00', glow: 0.75, head: '#fffbe0', tail: '#ff7a1a', spark: '#fff2a8' },
-    { id: 'ringed',   name: 'RINGED',   req: 1400, paper: '#e8d6a8', shade: '#b89a60', line: '#2a1a08', glow: 0.35, head: '#fff0c0', tail: '#c0a060', spark: '#ffe8b0' },
-    { id: 'void',     name: 'VOID',     req: 2200, paper: '#141022', shade: '#07060c', line: '#ff8a5c', glow: 0.10, head: '#ffb070', tail: '#a24bff', spark: '#ff9a6a' },
-    { id: 'fyst',     name: 'FYST · DEV GIFT', secret: true, shape: 'dart', paper: '#ffffff', shade: '#d8d8e8', line: '#ffffff', glow: 0.6, head: '#ffffff', tail: '#ffffff', spark: '#ffffff' }
+    { id: 'paper',    name: 'PAPER',    req: 0,    paper: '#fbf7ef', shade: '#d9d0c0', line: '#0b0918', glow: 0.35, head: '#ffe2a6', tail: '#9b7bff', spark: '#ffe6b0', trail: 'ribbon' },
+    { id: 'midnight', name: 'MIDNIGHT', req: 50,   paper: '#2a3566', shade: '#18204a', line: '#ffcf6b', glow: 0.25, head: '#9fd0ff', tail: '#3a4bff', spark: '#bfe0ff', trail: 'dash' },
+    { id: 'ember',    name: 'EMBER',    req: 100,  paper: '#ff7a45', shade: '#c43a1e', line: '#000000', glow: 0.45, head: '#ffd27a', tail: '#ff3a1a', spark: '#ffb060', trail: 'spark' },
+    { id: 'lunar',    name: 'LUNAR',    req: 200,  paper: '#c9d2e0', shade: '#8f9ab0', line: '#0b0918', glow: 0.30, head: '#e6f4ff', tail: '#7fa8ff', spark: '#e6f4ff', trail: 'comet' },
+    { id: 'sulfur',   name: 'SULFUR',   req: 400,  paper: '#f3d58a', shade: '#c9963a', line: '#3a2200', glow: 0.40, head: '#fff0b0', tail: '#e0a030', spark: '#ffe8a0', trail: 'smoke' },   // v2.5: Venüs
+    { id: 'solar',    name: 'SOLAR',    req: 800,  paper: '#ffd23a', shade: '#ff9a1a', line: '#5a1a00', glow: 0.75, head: '#fffbe0', tail: '#ff7a1a', spark: '#fff2a8', trail: 'comet' },
+    { id: 'rust',     name: 'RUST',     req: 1000, paper: '#d2552e', shade: '#8c2a14', line: '#1a0500', glow: 0.35, head: '#ffb08a', tail: '#c0381a', spark: '#ff9a70', trail: 'smoke' },   // v2.5: Mars
+    { id: 'storm',    name: 'STORM',    req: 1200, paper: '#e8c6a0', shade: '#b2683a', line: '#2a1406', glow: 0.35, head: '#ffe0c0', tail: '#c86a3a', spark: '#ffd0a0', trail: 'wave' },   // v2.5: Jüpiter
+    { id: 'ringed',   name: 'RINGED',   req: 1400, paper: '#e8d6a8', shade: '#b89a60', line: '#2a1a08', glow: 0.35, head: '#fff0c0', tail: '#c0a060', spark: '#ffe8b0', trail: 'dash' },
+    { id: 'tide',     name: 'TIDE',     req: 1800, paper: '#3a6cff', shade: '#1a2f9a', line: '#d8ecff', glow: 0.50, head: '#a8d8ff', tail: '#2a4bff', spark: '#c8e4ff', trail: 'wave' },   // v2.5: Neptün
+    { id: 'void',     name: 'VOID',     req: 2200, paper: '#141022', shade: '#07060c', line: '#ffc9a8', glow: 0.10, head: '#ffb070', tail: '#a24bff', spark: '#ff9a6a', trail: 'twin' },
+    { id: 'aurora',   name: 'AURORA',   req: 2600, paper: '#7affc8', shade: '#2ab08a', line: '#04201a', glow: 0.60, head: '#d0fff0', tail: '#ff7ad8', spark: '#b0ffe8', trail: 'rainbow' },   // v2.5: Orion
+    { id: 'beacon',   name: 'BEACON',   req: 2800, paper: '#ffffff', shade: '#9ad8ff', line: '#00b8e8', glow: 0.80, head: '#ffffff', tail: '#00b8ff', spark: '#c8f6ff', trail: 'pulse' },   // v2.5: Pulsar
+    { id: 'horizon',  name: 'HORIZON',  req: 3200, paper: '#0a0a12', shade: '#000000', line: '#ffb050', glow: 0.15, head: '#ffd090', tail: '#ff6a20', spark: '#ffc070', trail: 'wave' },   // v2.5: TON 618
+    // v2.5: yıldız (rebirth) skinleri EPIC: canlı efektler (anim). FYST hepsinin üstünde: holografik gövde + özel iz + yörünge parıltıları
+    { id: 'nova',     name: 'NOVA ★',      stars: 1, paper: '#fff4d6', shade: '#ffcf6b', line: '#5a1a00', glow: 0.85, head: '#ffffff', tail: '#ffb030', spark: '#fff2a8', trail: 'spark', anim: 'pulse' },
+    { id: 'nebula',   name: 'NEBULA ★★',  stars: 2, paper: '#c58bff', shade: '#7a3ad0', line: '#0e0520', glow: 0.55, head: '#ff9ae0', tail: '#6a5bff', spark: '#ffc0f0', trail: 'smoke', anim: 'drift' },
+    { id: 'quasar',   name: 'QUASAR ★★★', stars: 3, paper: '#9ff6ff', shade: '#3ad0e0', line: '#001a20', glow: 0.75, head: '#ffffff', tail: '#2f8bff', spark: '#bff8ff', trail: 'pulse', anim: 'jet' },
+    { id: 'singularity', name: 'SINGULARITY ★4', stars: 4, shape: 'delta', paper: '#0a0812', shade: '#000000', line: '#b06bff', glow: 0.15, head: '#d6b0ff', tail: '#6a2cff', spark: '#c89cff', halo: '#6a2cff', trail: 'twin', anim: 'void' },
+    { id: 'supernova', name: 'SUPERNOVA ★5', stars: 5, shape: 'delta', paper: '#ffb347', shade: '#ff5a1a', line: '#3a0800', glow: 0.9, head: '#ffffff', tail: '#ff4a10', spark: '#ffd27a', trail: 'comet', anim: 'fire' },
+    { id: 'fyst',     name: 'FYST · DEV GIFT', secret: true, shape: 'dart', paper: '#ffffff', shade: '#e6dcff', line: '#ffffff', glow: 0.6, head: '#ffffff', tail: '#ff9ad5', spark: '#ffffff', halo: '#ffb0e0', trail: 'holo', anim: 'holo' }
   ];
+  // Test sayfasında gök cisimleri 4 kat sık geldiği için kilit puanları da 4'e bölünür
+  if (KK.TEST_BUILD) KK.SKINS.forEach(function (k) { if (k.req) k.req = Math.round(k.req * PLANET_EVERY / 200); });
   function skinById(id) { for (var i = 0; i < KK.SKINS.length; i++) if (KK.SKINS[i].id === id) return KK.SKINS[i]; return KK.SKINS[0]; }
-  var curSkin = null, planeMat = null, outlineMat = null;
+  var curSkin = null, planeMat = null, outlineMat = null, haloMat = null;
 
   // ---- Kağıt uçak: üçgenlerden elle kurulmuş geometri ----
   // Klasik: iki kanat + omurga. 'dart' (dev hediyesi): daha uzun burun, geniş ok kanatlar, kuyruk dikmesi.
   function buildPlane(skin) {
     skin = skin || KK.SKINS[0];
-    var u = 1 / S, dart = skin.shape === 'dart';
-    var N = dart ? [24, 0, 0] : [18, 0, 0], C = [-12, 1, 0];
-    var L = dart ? [-15, 3.5, -16] : [-12, 3, -12], R = dart ? [-15, 3.5, 16] : [-12, 3, 12], K = [-12, -6, 0];
+    var u = 1 / S, dart = skin.shape === 'dart', delta = skin.shape === 'delta';   // v2.5: delta = geniş üçgen kanat
+    var N = dart ? [24, 0, 0] : delta ? [21, 0, 0] : [18, 0, 0], C = delta ? [-9, 1, 0] : [-12, 1, 0];
+    var L = dart ? [-15, 3.5, -16] : delta ? [-13, 2, -19] : [-12, 3, -12], R = dart ? [-15, 3.5, 16] : delta ? [-13, 2, 19] : [-12, 3, 12], K = delta ? [-11, -5, 0] : [-12, -6, 0];
     var tris = [[N, C, L], [N, R, C], [N, K, C]];          // sol kanat, sağ kanat, omurga
     var cols = [skin.paper, skin.paper, skin.shade];
     if (dart) {                                             // kuyruk dikmesi + kanat ucu kanatçıkları
@@ -654,8 +843,18 @@ window.KK = window.KK || {};
     g.add(inner);
     mesh.scale.setScalar(1.35);               // 3D'de uzaklıktan küçük görünmesin (çarpışma kutusu aynı)
     var cx = -2 / S * 1.35;                   // konturu uçağın kendi merkezi etrafında büyüt
-    outline.scale.setScalar(1.35 * 1.2);
-    outline.position.x = cx - cx * 1.2;
+    outline.scale.setScalar(1.35 * 1.32);      // v2.1: daha kalın kontur (1.2 → 1.32)
+    outline.position.x = cx - cx * 1.32;
+    // v2.1: uçağın arkasında skin renginde yumuşak hale → her gökyüzünde arka plandan ayrılır
+    haloMat = new THREE.SpriteMaterial({ map: shared.glowMat.map, color: color(skin.halo || skin.head), transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+    var halo = new THREE.Sprite(haloMat); halo.scale.set(2.1, 1.5, 1); halo.position.set(-0.1, 0, -0.3); halo.renderOrder = 0;
+    g.add(halo); g.userData.halo = halo;
+    if (skin.anim === 'holo') {                // v2.5: FYST — uçağın etrafında dönen iki parıltı (pembe + mavi)
+      g.userData.glints = ['#ff9ad5', '#9fd6ff'].map(function (c) {
+        var sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: shared.glowMat.map, color: color(c), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+        sp.scale.setScalar(0.32); sp.renderOrder = 3; g.add(sp); return sp;
+      });
+    }
     return g;
   }
   function applySkin(id) {
@@ -668,18 +867,51 @@ window.KK = window.KK || {};
     if (pos) { planeGroup.position.copy(pos); planeGroup.rotation.copy(rot); }
     scene.add(planeGroup);
     headCol.set(skin.head); tailCol.set(skin.tail); shared.sparkMat.color.set(skin.spark);
-    var wx = skin.shape === 'dart' ? -15 : -12, wz = skin.shape === 'dart' ? 16 : 12, k2 = 1.35 / S;  // iz kanat uçlarından çıksın
+    var wx = skin.shape === 'dart' ? -15 : skin.shape === 'delta' ? -13 : -12, wz = skin.shape === 'dart' ? 16 : skin.shape === 'delta' ? 19 : 12, k2 = 1.35 / S;  // iz kanat uçlarından çıksın
     trailDefs[0].local.set(wx * k2, 3 * k2, -wz * k2); trailDefs[1].local.set(wx * k2, 3 * k2, wz * k2);
   }
   // Dev hediyesi: yanardöner (holografik) kağıt — renk tonu zamanla döner, kontur ve iz zıt tonda
   var devHsl = new THREE.Color();
+  // v2.5: canlı skinler. beat = müzik nabzı (0..1)
+  var skA = new THREE.Color(), skB = new THREE.Color(), skW = new THREE.Color('#ffffff');
   function animateSkin(t) {
-    if (!curSkin || curSkin.id !== 'fyst') return;
-    var h = (t * 0.12) % 1;
-    planeMat.color.setHSL(h, 0.55, 0.78); planeMat.emissive.setHSL(h, 0.9, 0.55);
-    outlineMat.color.setHSL((h + 0.5) % 1, 1, 0.7);
-    headCol.setHSL(h, 1, 0.75); tailCol.setHSL((h + 0.33) % 1, 1, 0.6);
-    shared.sparkMat.color.setHSL((h + 0.15) % 1, 1, 0.8);
+    if (!curSkin || !curSkin.anim || !planeMat) return;
+    var a = curSkin.anim, beat = KK.musicPulse ? KK.musicPulse() : 0, halo = planeGroup.userData.halo;
+    if (a === 'holo') {                        // FYST: sedef pembe ↔ buz mavisi, beyaz parıltı, yörüngede iki yıldız
+      var w = 0.5 + 0.5 * Math.sin(t * 1.6), w2 = 0.5 + 0.5 * Math.sin(t * 2.3 + 1.0);
+      skA.set('#ffc6e6').lerp(skB.set('#bfe0ff'), w);
+      planeMat.color.copy(skA).lerp(skW, 0.35 * w2); planeMat.emissive.copy(skA); planeMat.emissiveIntensity = 0.55 + 0.25 * w2 + 0.45 * beat;
+      outlineMat.color.copy(skW).lerp(skB.set('#ff8fd0'), 0.5 + 0.5 * Math.sin(t * 3.0));
+      haloMat.color.copy(skA); haloMat.opacity = 0.6 + 0.2 * w2 + 0.2 * beat;
+      if (halo) halo.scale.set(2.5 + 0.3 * beat, 1.8 + 0.2 * beat, 1);
+      headCol.copy(skW); tailCol.copy(skA);
+      shared.sparkMat.color.set(Math.sin(t * 9) > 0 ? '#ff9ad5' : '#9fd6ff');
+      (planeGroup.userData.glints || []).forEach(function (g, i) {
+        var ang = t * 3.2 + i * Math.PI;
+        g.position.set(-0.15 + Math.cos(ang) * 0.85, Math.sin(ang) * 0.42, Math.sin(ang) * 0.3);
+        g.material.opacity = 0.75 + 0.25 * Math.sin(t * 7 + i);
+      });
+    } else if (a === 'pulse') {                // NOVA: patlayan yıldız gibi nabız
+      var pp = Math.pow(Math.abs(Math.sin(t * 2.6)), 3);
+      planeMat.emissiveIntensity = curSkin.glow * (0.7 + 0.7 * pp) + 0.3 * beat;
+      haloMat.opacity = 0.45 + 0.4 * pp; if (halo) halo.scale.set(2.1 + 0.6 * pp, 1.5 + 0.4 * pp, 1);
+    } else if (a === 'drift') {                // NEBULA: pembe → mor → camgöbeği akışı
+      var hh = 0.83 + 0.17 * Math.sin(t * 0.7);   // 0.66 (mor-mavi) .. 1.0 (pembe)
+      planeMat.color.setHSL(hh % 1, 0.75, 0.78); planeMat.emissive.setHSL(hh % 1, 0.8, 0.45);
+      haloMat.color.setHSL((hh + 0.1) % 1, 1, 0.65); tailCol.setHSL((hh + 0.85) % 1, 1, 0.6);
+    } else if (a === 'jet') {                  // QUASAR: müzikle çakar
+      planeMat.emissiveIntensity = curSkin.glow * (0.7 + 1.6 * beat);
+      haloMat.opacity = 0.45 + 0.5 * beat; if (halo) halo.scale.set(2.1 + 0.9 * beat, 1.5 + 0.5 * beat, 1);
+    } else if (a === 'void') {                 // SINGULARITY: mor olay ufku konturu nabız atar
+      var vv = 0.5 + 0.5 * Math.sin(t * 2.0);
+      outlineMat.color.set('#6a2cff').lerp(skB.set('#ff5ad8'), vv * 0.6 + 0.4 * beat);
+      haloMat.opacity = 0.35 + 0.3 * vv;
+    } else if (a === 'fire') {                 // SUPERNOVA: turuncu → beyaz ateş
+      var ff = 0.5 + 0.5 * Math.sin(t * 5.0);
+      planeMat.color.set('#ffb347').lerp(skW, 0.55 * ff); planeMat.emissive.set('#ff6a1a').lerp(skB.set('#ffe0a0'), ff);
+      planeMat.emissiveIntensity = 0.8 + 0.4 * ff + 0.3 * beat;
+      shared.sparkMat.color.set(ff > 0.5 ? '#fff2c0' : '#ff8a30');
+    }
   }
 
   // ---- Paralaks şehir (v1.6: temaya göre biçim) — iki kopya yan yana döşenir ----
@@ -707,6 +939,7 @@ window.KK = window.KK || {};
       }
     }
     for (var copy = 0; copy < 2; copy++) {
+      rnd = mulberry(seed);   // v2.5: ikinci kopya ilkinin AYNISI olmalı; yoksa katman başa sarınca evler bir anda değişir
       for (var i = 0; i < count; i++) {
         var shape = pickShape(rnd, T.shapes);
         var w = 1.2 + rnd() * 2.2, h = minH + rnd() * (maxH - minH), d = 1.5 + rnd() * 2;
@@ -778,6 +1011,7 @@ window.KK = window.KK || {};
     }
     group.userData.span = span;
     group.userData.par = par;
+    winMat.userData.base = winMat.opacity; group.userData.winMat = winMat;   // v2.5: müzik nabzı için
     scene.add(group);
     return group;
   }
@@ -815,7 +1049,7 @@ window.KK = window.KK || {};
         var gx = face === 0 ? 0 : (face === 1 ? -0.05 : 0.05);
         var gz = face === 0 ? 0.05 : 0;
         glow.position.set(win.position.x + gx, yy, win.position.z + gz);
-        glow.scale.set(0.75, 0.9, 1);
+        glow.scale.set(0.62, 0.8, 1);
         parent.add(glow);
       }
     }
@@ -846,12 +1080,18 @@ window.KK = window.KK || {};
       // Pencereler: kornişin ötesinden başlayıp kulenin görünen kısmı boyunca, rastgele yüz ve konum
       var yy = capEdge + dir * (0.4 + 2 * Math.max(r, 0) + 0.7);
       var limitLo = capAtBottom ? y0 : GROUND + 0.5, limitHi = capAtBottom ? TOP_VISIBLE : y1 - 0.2;
+      // v2.5: pencereler her yüzde 2 sabit yuvaya oturur (merkezler ±0.32 → aralarında 0.30 boşluk),
+      // aynı kattaki pencereler aynı yükseklikte; böylece pencereler asla üst üste binmez.
       while (yy > limitLo && yy < limitHi) {
         var n = 1 + (rnd() < 0.35 ? 1 : 0);    // bazen aynı katta iki pencere
+        var used = {}, fy = yy + (rnd() - 0.5) * 0.12;
         for (var k = 0; k < n; k++) {
           var face = rnd() < 0.5 ? 0 : (rnd() < 0.5 ? 1 : 2);
-          var along = (rnd() - 0.5) * (w - 0.6);
-          addWindow(parent, face, along, yy + (rnd() - 0.5) * 0.3);
+          var slot = rnd() < 0.5 ? 0 : 1;
+          if (used[face + '_' + slot]) slot = 1 - slot;
+          if (used[face + '_' + slot]) continue;
+          used[face + '_' + slot] = true;
+          addWindow(parent, face, (slot ? 0.32 : -0.32) + (rnd() - 0.5) * 0.08, fy);
         }
         yy += dir * (0.9 + rnd() * 0.7);
       }
@@ -925,7 +1165,21 @@ window.KK = window.KK || {};
 
   // ---- Rüzgar izi: kanat uçlarından iki ince şerit + kuyruktan geniş, parlak bir ana şerit ----
   // Zıplayınca şeritler bir anlığına kalınlaşır ("boost"), kanat uçlarından kıvılcımlar saçılır.
-  var TRAIL_N = 34, trails = [], lastScrollX = null, boost = 0;
+  // v2.5: her skinin kendi iz stili var (TRAIL_STYLES). İz her karede bir nokta bırakır; hız arttıkça hem noktalar
+  // seyrekleşir hem de tutulan nokta sayısı artar: n = 34 · len · (1 + 0.6·(katsayı − 1))  → ×2.0'da iz 3.2 kat uzun.
+  var TRAIL_N = 34, TRAIL_MAX = 80, trails = [], lastScrollX = null, boost = 0, emitN = 0;
+  var TRAIL_STYLES = {
+    ribbon:  { w: 1,    tail: 1,   tailA: 1,   len: 1,   spark: 0.18 },
+    comet:   { w: 0.8,  tail: 1.9, tailA: 1.5, len: 1.5, spark: 0.12 },           // uzun, geniş, parlak kuyruk
+    spark:   { w: 0.65, tail: 0.7, tailA: 0.8, len: 0.9, spark: 0.75 },           // ince şerit, bol kıvılcım
+    dash:    { w: 1.15, tail: 1,   tailA: 1,   len: 1.1, spark: 0.1, dash: 7 },   // kesik kesik (pist ışıkları)
+    wave:    { w: 1,    tail: 1.1, tailA: 1,   len: 1.1, spark: 0.15, wave: 0.3 },   // dalgalanan iz
+    twin:    { w: 1.6,  tail: 0,   tailA: 0,   len: 1.25, spark: 0.3 },           // kuyruk şeridi yok, iki keskin çizgi
+    smoke:   { w: 0.7,  tail: 2.6, tailA: 0.6, len: 1.3, spark: 0.05, grow: 1 },  // arkada genişleyen duman
+    rainbow: { w: 1.1,  tail: 1.2, tailA: 1.1, len: 1.15, spark: 0.2, hue: 1 },   // boyunca akan gökkuşağı
+    pulse:   { w: 1,    tail: 1.1, tailA: 1.1, len: 1.2, spark: 0.15, pulse: 1 },  // geriye akan ışık atımları
+    holo:    { w: 1.25, tail: 1.5, tailA: 1.35, len: 1.45, spark: 0.6, holo: 1 }  // FYST'e özel: pembe/mavi holografik dalgalar, beyaz çekirdek
+  };
   var trailDefs = [
     { local: new THREE.Vector3(-12, 3, -12), width: 0.05, alpha: 0.75 },   // sol kanat ucu
     { local: new THREE.Vector3(-12, 3, 12), width: 0.05, alpha: 0.75 },    // sağ kanat ucu
@@ -937,10 +1191,10 @@ window.KK = window.KK || {};
     trailDefs.forEach(function (def) {
       def.local.multiplyScalar(1.35 / S);
       var geo = new THREE.BufferGeometry();
-      geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(TRAIL_N * 2 * 3), 3).setUsage(THREE.DynamicDrawUsage));
-      geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(TRAIL_N * 2 * 3), 3).setUsage(THREE.DynamicDrawUsage));
+      geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(TRAIL_MAX * 2 * 3), 3).setUsage(THREE.DynamicDrawUsage));
+      geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(TRAIL_MAX * 2 * 3), 3).setUsage(THREE.DynamicDrawUsage));
       var idx = [];
-      for (var i = 0; i < TRAIL_N - 1; i++) { var a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+      for (var i = 0; i < TRAIL_MAX - 1; i++) { var a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
       geo.setIndex(idx);
       var mesh = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false }));
       mesh.frustumCulled = false;
@@ -953,7 +1207,7 @@ window.KK = window.KK || {};
     for (var i = 0; i < n; i++) {
       var sp = null;
       for (var k = 0; k < sparks.length; k++) if (sparks[k].life <= 0) { sp = sparks[k]; break; }
-      if (!sp) { if (sparks.length >= 48) return; sp = { s: new THREE.Sprite(shared.sparkMat), life: 0 }; scene.add(sp.s); sparks.push(sp); }
+      if (!sp) { if (sparks.length >= 64) return; sp = { s: new THREE.Sprite(shared.sparkMat), life: 0 }; scene.add(sp.s); sparks.push(sp); }
       sp.life = sp.max = 0.35 + Math.random() * 0.3;
       sp.s.visible = true;
       sp.s.position.copy(pos);
@@ -962,25 +1216,41 @@ window.KK = window.KK || {};
   }
   function updateTrails(state, dScroll, dt) {
     planeGroup.updateMatrixWorld();
-    var emit = state.mode !== 'dead';
+    var emit = state.mode !== 'dead', T = state.t;
+    var st = TRAIL_STYLES[(curSkin && curSkin.trail) || 'ribbon'] || TRAIL_STYLES.ribbon;
+    var kSpeed = state.mode === 'playing' ? Math.max(0, (state.mult || 1) - 1) : 0;
+    var n = Math.max(4, Math.min(TRAIL_MAX, Math.round(TRAIL_N * st.len * (1 + 0.6 * kSpeed))));
+    var sparkP = st.spark * (curSkin && curSkin.stars ? 1.6 : 1);   // v2.5: yıldız skinleri daha çok kıvılcım saçar
     boost = Math.max(0, boost - dt * 3.5);
+    if (emit) emitN++;
     trails.forEach(function (tr, k) {
-      var pts = tr.pts, def = tr.def;
+      var pts = tr.pts, def = tr.def, isTail = k === 2;
+      var wMul = isTail ? st.tail : st.w, aMul = isTail ? st.tailA : 1;
       for (var i = 0; i < pts.length; i++) pts[i].x -= dScroll;           // dünya sola kayar, iz de kayar
-      if (emit) { tmpV.copy(def.local).applyMatrix4(planeGroup.matrixWorld); pts.push(tmpV.clone()); }
+      if (emit) { tmpV.copy(def.local).applyMatrix4(planeGroup.matrixWorld); var np = tmpV.clone(); np.n = emitN; pts.push(np); }
       else if (pts.length) pts.shift();                                   // ölünce iz yavaşça söner
-      while (pts.length > TRAIL_N) pts.shift();
-      if (emit && k < 2 && state.mode === 'playing' && Math.random() < (curSkin && curSkin.id === 'fyst' ? 0.55 : 0.18)) spark(pts[pts.length - 1], 1, 0.6);
+      while (pts.length > TRAIL_MAX) pts.shift();
+      if (emit && !isTail && state.mode === 'playing' && Math.random() < sparkP) spark(pts[pts.length - 1], 1, 0.6);
       var pos = tr.mesh.geometry.attributes.position, col = tr.mesh.geometry.attributes.color;
-      for (var j = 0; j < TRAIL_N; j++) {
-        var q = pts[Math.max(0, pts.length - TRAIL_N + j)] || pts[0];
+      tr.mesh.visible = wMul > 0;
+      tr.mesh.geometry.setDrawRange(0, (n - 1) * 6);
+      var have = Math.min(pts.length, n);
+      for (var j = 0; j < n; j++) {
+        var q = pts[Math.max(0, pts.length - n + j)] || pts[0];
         if (!q) { pos.setXYZ(j * 2, 0, -99, 0); pos.setXYZ(j * 2 + 1, 0, -99, 0); continue; }
-        var f = pts.length < 2 ? 0 : Math.max(0, (j - (TRAIL_N - pts.length)) / (TRAIL_N - 1)); // 0 kuyruk → 1 uçak
-        var half = def.width * (0.35 + 0.65 * f) * (1 + boost * 1.4) * f;
-        pos.setXYZ(j * 2, q.x, q.y + half, q.z);
-        pos.setXYZ(j * 2 + 1, q.x, q.y - half, q.z);
-        tmpC.copy(tailCol).lerp(headCol, Math.pow(f, 0.7));              // uca yakın sıcak, kuyrukta mor
-        var a = Math.pow(f, 1.25) * def.alpha * (1 + boost * 0.6);
+        var f = have < 2 ? 0 : Math.max(0, (j - (n - have)) / (n - 1));   // 0 kuyruk → 1 uçak
+        var half = st.grow
+          ? def.width * wMul * (0.25 + 0.75 * (1 - f)) * Math.min(1, f * 4) * (1 + boost * 0.8)      // duman: arkada genişler
+          : def.width * wMul * (0.35 + 0.65 * f) * (1 + boost * 1.4) * f;
+        var yo = st.wave ? st.wave * Math.sin((q.n || 0) * 0.45 - T * 7) * (1 - f) : 0;          // dalga: uzaklaştıkça büyür
+        pos.setXYZ(j * 2, q.x, q.y + yo + half, q.z);
+        pos.setXYZ(j * 2 + 1, q.x, q.y + yo - half, q.z);
+        if (st.holo) { var hw = 0.5 + 0.5 * Math.sin((q.n || 0) * 0.16 - T * 3.0); tmpC.setHSL(0.58 + 0.34 * hw, 0.9, 0.72 + 0.2 * f * (isTail ? 1 : 0.5)); }
+        else if (st.hue) tmpC.setHSL(((q.n || 0) * 0.012 + T * 0.15) % 1, 1, 0.62 + 0.15 * f);   // gökkuşağı noktaya bağlı akar
+        else tmpC.copy(tailCol).lerp(headCol, Math.pow(f, 0.7));            // uca yakın sıcak, kuyrukta skinin rengi
+        var a = Math.pow(f, st.grow ? 0.7 : 1.25) * def.alpha * aMul * (1 + boost * 0.6);
+        if (st.dash) a *= ((q.n || 0) % st.dash) < st.dash * 0.55 ? 1.15 : 0.04;
+        if (st.pulse) a *= 0.22 + 2.0 * Math.pow(0.5 + 0.5 * Math.sin((q.n || 0) * 0.55 + T * 16), 10);
         col.setXYZ(j * 2, tmpC.r * a, tmpC.g * a, tmpC.b * a);
         col.setXYZ(j * 2 + 1, tmpC.r * a, tmpC.g * a, tmpC.b * a);
       }
@@ -1010,10 +1280,9 @@ window.KK = window.KK || {};
 
 
   // ---- Puan sayacı ateşi ----
-  // Seviye: 10'da küçük, 50'de orta, 100'de büyük.
+  // v2.5: seviye game.js'den gelir (state.fireLvl) = çarpmadan geçilen kule serisi: 10 küçük, 50 orta, 100 büyük.
+  // Her çarpmada (kalkanlı olsa da) duman çıkararak söner.
   // v1.7: renk o anki gök cisminden gelir (Dünya turuncu, Ay buz mavisi, Mars kızıl...).
-  // Çarpınca ateş söner (duman), çarpmadan sonra 150 puan toplayınca büyük alevle geri yanar.
-  function fireLevel(score) { return score < 10 ? 0 : score < 50 ? 1 : score < 100 ? 2 : 3; }
   function fireColor(score) {
     return BODIES[Math.min(BODIES.length - 1, Math.floor(score / PLANET_EVERY))].fire;
   }
@@ -1065,7 +1334,7 @@ window.KK = window.KK || {};
     fire.cv.style.width = fire.w + 'px'; fire.cv.style.height = fire.h + 'px';
   }
   function updateFire(state, dt) {
-    var lvl = state.mode === 'playing' && !state.fireOut ? fireLevel(state.score) : 0;
+    var lvl = state.mode === 'playing' ? (state.fireLvl || 0) : 0;
     if (state.mode !== 'playing') fire.smoke.length = 0;
     if (!lvl && !fire.parts.length && !fire.smoke.length) { fire.cv.style.display = 'none'; hudScore.style.textShadow = ''; return; }
     fire.cv.style.display = '';
@@ -1128,9 +1397,75 @@ window.KK = window.KK || {};
     c.globalAlpha = 1;
     // Rakamlar alev rengiyle parlasın; tutuşma anında sayaç bir an büyüsün
     hudScore.style.textShadow = lvl ? '0 3px 0 #1b1838, 0 0 ' + Math.round(14 + 18 * sc) + 'px ' + col : '';
-    hudScore.style.transform = fire.burst > 0 ? 'scale(' + (1 + fire.burst * 0.35).toFixed(3) + ')' : '';
   }
   function igniteFire() { fire.burst = 1; }
+  // v2.5: kalkan patlaması — uçağın etrafında alev renginde büyüyüp sönen ateş topu
+  var shieldFx = null, shieldT = 0, SHIELD_DUR = 0.5, bubble = null;
+  // v2.5: kalkan hazırken uçağın etrafında soluk, nabız atan bir kabarcık
+  function ringTexture() {
+    return canvasTex(128, 128, function (g, w) {
+      var gr = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2);
+      gr.addColorStop(0, 'rgba(255,255,255,0.05)'); gr.addColorStop(0.62, 'rgba(255,255,255,0.12)');
+      gr.addColorStop(0.82, 'rgba(255,255,255,0.95)'); gr.addColorStop(0.9, 'rgba(255,255,255,0.35)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, w, w);
+    });
+  }
+  function updateBubble(state, x, y) {
+    if (!bubble) {
+      bubble = new THREE.Sprite(new THREE.SpriteMaterial({ map: ringTexture(), color: color('#8fd8ff'), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+      bubble.renderOrder = 3; scene.add(bubble);
+    }
+    var on = state.mode === 'playing' && state.shield;
+    bubble.visible = on;
+    if (!on) return;
+    bubble.position.set(x - 0.05, y, 0.2);
+    bubble.scale.setScalar(1.75 + Math.sin(state.t * 4) * 0.06);
+    bubble.material.opacity = 0.3 + Math.sin(state.t * 4) * 0.08;
+  }
+  function popShield(x, y, col) {
+    if (!shieldFx) {
+      shieldFx = new THREE.Sprite(new THREE.SpriteMaterial({ map: shared.glowMat.map, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false }));
+      shieldFx.renderOrder = 10; scene.add(shieldFx);
+    }
+    shieldFx.material.color.set(col); shieldFx.position.set(x, y, 0.3); shieldT = SHIELD_DUR;
+  }
+  function updateShield(rdt, x, y) {
+    if (!shieldFx) return;
+    shieldT = Math.max(0, shieldT - rdt);
+    var u = 1 - shieldT / SHIELD_DUR;                         // 0 → 1
+    shieldFx.visible = shieldT > 0;
+    shieldFx.position.set(x, y, 0.3);
+    shieldFx.scale.setScalar(0.8 + 4.2 * (1 - Math.pow(1 - u, 3)));   // hızlı açılır, yavaşlar
+    shieldFx.material.opacity = Math.pow(1 - u, 1.5) * 0.95;
+  }
+
+  // ---- v2.1: Hız çizgileri — ×1.3 üstünde belirir, tam hızda yoğunlaşır ----
+  // Oyun düzlemi (z=0) ile kamera arasında ince, eklemeli çizgiler; dünyadan 2.2 kat hızlı akar.
+  var lines = [], scorePop = 0, camK = 0;
+  function updateSpeedLines(state, dt, k) {
+    if (!lines.length) {
+      var geo = new THREE.PlaneGeometry(1, 0.025);
+      for (var i = 0; i < 26; i++) {
+        var m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+        m.userData.seed = Math.random(); m.visible = false; reset(m, true); scene.add(m); lines.push(m);
+      }
+    }
+    function reset(m, anywhere) {
+      m.position.set(anywhere ? -12 + Math.random() * 26 : 14 + Math.random() * 6, -5 + Math.random() * 13, 2 + Math.random() * 9);
+      m.scale.x = 1.5 + Math.random() * 3.5;
+    }
+    var on = reduced ? 0 : Math.max(0, Math.min(1, (k - 0.3) / 0.5));   // ×1.3 → 0, ×1.8 → 1
+    var v = (state.speed || 0) / S * 2.2;
+    for (var j = 0; j < lines.length; j++) {
+      var L = lines[j];
+      var want = j < Math.round(lines.length * on);
+      L.visible = want || L.material.opacity > 0.01;
+      if (!L.visible) continue;
+      L.material.opacity += ((want ? 0.10 + 0.12 * L.userData.seed : 0) - L.material.opacity) * Math.min(1, dt * 4);
+      L.position.x -= v * dt * (0.7 + L.userData.seed * 0.6);
+      if (L.position.x < -16) reset(L, false);
+    }
+  }
 
   KK.Render3D = {
     init: function (canvas, hud) {
@@ -1214,6 +1549,9 @@ window.KK = window.KK || {};
       for (var si = 0; si < 420; si++) sp.push(-75 + srnd() * 150, GROUND + 3 + Math.pow(srnd(), 0.7) * 45, -60 - srnd() * 12);
       var sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.Float32BufferAttribute(sp, 3));
       stars = new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xffffff, size: 0.28, sizeAttenuation: true, transparent: true, opacity: 0, fog: false, depthWrite: false }));
+      // v2.5: yıldızlar EN ÖNCE çizilsin. Saydam nesneler merkez noktasına göre sıralanır; bulutun merkezi (0,0,0)
+      // kameraya gök cisminden (z=-46) yakın sayıldığı için yıldızlar Ay'ın ÜSTÜNE basılıyordu.
+      stars.renderOrder = -10;
       scene.add(stars);
 
       // İlk şehir: Dünya
@@ -1226,6 +1564,7 @@ window.KK = window.KK || {};
       });
       [[-38, 7, 0.55], [-18.5, 4, 0.45], [-9.5, 2.2, 0.35]].forEach(function (hz) {
         var hm = new THREE.MeshBasicMaterial({ map: hazeTex, transparent: true, opacity: hz[2], blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+        hm.userData.base = hz[2];
         hazeMats.push(hm);
         var haze = new THREE.Mesh(new THREE.PlaneGeometry(140, hz[1]), hm);
         haze.position.set(0, GROUND + hz[1] / 2, hz[0]);
@@ -1283,20 +1622,27 @@ window.KK = window.KK || {};
       renderer.setSize(w, h, false);
     },
 
-    draw: function (state, dt) {
+    draw: function (state, dt, realDt) {
+      var rdt = realDt == null ? dt : realDt;   // v2.2: durmuşken de parlama/sarsıntı sönsün
       if (!renderer) return;
       // Yeniden başlayınca efektleri temizle
-      if (state.mode === 'ready' && lastMode !== 'ready') { shakeT = 0; flashT = 0; for (var i = 0; i < bits.length; i++) { bits[i].life = 0; bits[i].mesh.visible = false; } clearTrails(); }
+      if (state.mode === 'ready' && lastMode !== 'ready') { shakeT = 0; flashT = 0; cpScore = 0; popT = 0; cpT = 0; for (var i = 0; i < bits.length; i++) { bits[i].life = 0; bits[i].mesh.visible = false; } clearTrails(); }
       lastMode = state.mode;
 
       var pl = state.plane, px = X(pl.x), py = Y(pl.y);
       for (var e = 0; e < state.events.length; e++) {
         var ev = state.events[e];
         if (ev === 'flap') { spawnBits(px, py, 4, 2.5); flapBurstPending = true; }
+        if (ev === 'score') scorePop = 1;
         if (ev === 'milestone') igniteFire();
         if (ev === 'hit') { shakeT = reduced ? 0 : 0.3; flashT = 0.25; spawnBits(px, py, 12, 4); }
         if (ev === 'bump') { shakeT = reduced ? 0 : 0.22; flashT = 0.14; spawnBits(px, py, 10, 3.5); extinguishFire(); }
         if (ev === 'break') spawnBits(px + 0.6, py, 8, 3);
+        if (ev === 'shield') { shakeT = reduced ? 0 : 0.16; popShield(px, py, '#bfe8ff'); spawnBits(px, py, 10, 3.5); extinguishFire(); }
+        if (ev === 'shieldReady') popT = 1.6;
+        if (ev === 'checkpoint') { cpScore = state.score; cpToast.textContent = '\u2713 CHECKPOINT SAVED \u00b7 ' + state.score; cpT = 2.8; }
+        if (ev === 'complete') { warpT = 1; flashT = 0.35; shakeT = reduced ? 0 : 0.5; }
+        if (ev === 'life') livesPulse = 1;
       }
 
       // Uçak: konum + burun açısı + hıza göre hafif yatış (3D'ye özel)
@@ -1304,6 +1650,22 @@ window.KK = window.KK || {};
       planeGroup.rotation.set(Math.max(-0.5, Math.min(0.5, pl.vy / 900)), 0, -pl.angle);
       // Dokunulmazken uçak yanıp söner (saniyede ~4.5 kez)
       planeGroup.visible = !(state.mode === 'playing' && state.invuln > 0 && Math.sin(state.t * 28) < 0);
+      // v2.5 FİNAL: uçak kara deliğe 2 tur spiral çizerek çekilir. İlerleme e = u² (başta yavaş, sonda hızlı);
+      // derinliğe (z → kara deliğin düzlemi) gider ve spagettileşir: boy ×(1 + 2e²), en ×(1 − 0.7e).
+      finE = 0;
+      if (state.mode === 'finale' && state.finaleFrom) {
+        var bhp = planets[planets.length - 1].mesh.position;
+        var fu = Math.min(1, state.modeTime / ((KK.Game.config && KK.Game.config.FINALE_DUR) || 3.4)), fe = fu * fu;
+        var fx0 = X(state.finaleFrom.x) - bhp.x, fy0 = Y(state.finaleFrom.y) - bhp.y;
+        var fr = Math.sqrt(fx0 * fx0 + fy0 * fy0) * (1 - fe), fa = Math.atan2(fy0, fx0) + fe * Math.PI * 4;
+        planeGroup.position.set(bhp.x + fr * Math.cos(fa), bhp.y + fr * Math.sin(fa) * 0.55, bhp.z * Math.pow(fe, 1.3));
+        planeGroup.rotation.set(0, 0, fa + Math.PI / 2);
+        planeGroup.scale.set(1 + 2 * fe * fe, 1 - 0.7 * fe, 1 - 0.7 * fe);
+        planeGroup.visible = fu < 1;
+        shakeT = Math.max(shakeT, reduced ? 0 : 0.04 + 0.22 * fe);
+        if (fu >= 0.97 && !finFlash) { finFlash = true; flashT = 0.7; }
+        finE = fe;
+      } else { planeGroup.scale.set(1, 1, 1); finFlash = false; }
 
       syncGates(state, dt);
       updateBits(dt);
@@ -1321,22 +1683,41 @@ window.KK = window.KK || {};
       roadTex.offset.x = (worldScroll / 8) % 1;
       lamps.position.x = -(worldScroll % 6);
       // Pencere ışıkları hafifçe nefes alır
-      shared.glowMat.opacity = 0.5 + Math.sin(state.t * 2.3) * 0.06;
-      shared.winGlowMat.opacity = 0.33 + Math.sin(state.t * 1.7) * 0.04;
+      // v2.5: müzik nabzı (ui.js): pencereler, hareler ve sokak pusu vuruşla birlikte parlar
+      var beat = KK.musicPulse ? KK.musicPulse() : 0;
+      shared.glowMat.opacity = 0.5 + Math.sin(state.t * 2.3) * 0.06 + 0.18 * beat;
+      shared.winGlowMat.opacity = 0.33 + Math.sin(state.t * 1.7) * 0.04 + 0.4 * beat;
       sunGlow.material.opacity = 0.33 + Math.sin(state.t * 0.8) * 0.05;  // kara delik hafifçe nabız atar
       bhMat.uniforms.uTime.value = state.t;          // disk ve halkalar akar
       updatePlanets(state, dt);
-
+      shared.winLit.color.copy(curTheme.win).multiplyScalar(0.82 + 0.5 * beat);
+      for (var hz = 0; hz < hazeMats.length; hz++) hazeMats[hz].opacity = hazeMats[hz].userData.base * (0.8 + 0.75 * beat);
+      for (var ci = 0; ci < activeCities.length; ci++) activeCities[ci].layers.forEach(function (L) { var wm = L.userData.winMat; if (wm) wm.opacity = wm.userData.base * (0.8 + 0.6 * beat); });
       // Kamera: hazırda yavaş salınım, çarpınca sarsıntı
+      // v2.1: hız katsayısıyla kamera geri çekilir ve görüş açısı genişler (hız hissi):
+      //   geri çekilme = 2.6·(k−1) birim, FOV = 46° + 7°·(k−1)  → ×2.0'da +2.6 birim, 53°
       var base = camera.userData.base;
       var sway = state.mode === 'ready' && !reduced ? Math.sin(state.t * 0.6) * 0.6 : 0;
-      camera.position.set(base.x + sway, base.y, base.z);
+      var k = state.mode === 'playing' ? Math.max(0, (state.mult || 1) - 1) : 0;
+      camK += (k - camK) * Math.min(1, dt * 1.5);
+      warpT = Math.max(0, warpT - rdt * 1.4);
+      var fov = 46 + 7 * camK + 9 * Math.sin(Math.min(1, warpT) * Math.PI) * (reduced ? 0 : 1) - 8 * finE;   // v2.5: finalde yakınlaşır
+      if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
+      camera.position.set(base.x + sway, base.y, base.z + 2.6 * camK);
+      if (!reduced && camK > 0.6 && state.mode === 'playing') {           // tam hıza yakın: hafif motor titreşimi
+        var rum = (camK - 0.6) * 0.05;
+        camera.position.x += (Math.random() - 0.5) * rum; camera.position.y += (Math.random() - 0.5) * rum;
+      }
+      updateSpeedLines(state, dt, camK);
       if (shakeT > 0) {
-        shakeT -= dt;
+        shakeT -= rdt;
         var a = 0.35 * Math.max(shakeT, 0) / 0.3;
         camera.position.x += (Math.random() - 0.5) * a; camera.position.y += (Math.random() - 0.5) * a;
       }
-      camera.lookAt(0.5, -0.4, 0);
+      if (finE > 0) {                                   // v2.5: finalde kamera kara deliğe döner
+        var bhq = planets[planets.length - 1].mesh.position, lk = 0.3 * finE;
+        camera.lookAt(0.5 + (bhq.x - 0.5) * lk, -0.4 + (bhq.y + 0.4) * lk, bhq.z * lk);
+      } else camera.lookAt(0.5, -0.4, 0);
 
       renderer.render(scene, camera);
 
@@ -1346,8 +1727,13 @@ window.KK = window.KK || {};
         hudScore.hidden = false;
       } else { hudScore.hidden = true; lastScore = -1; }
       updateFire(state, dt);
-      updateStatus(state);
-      if (flashT > 0) { flashT -= dt; hudFlash.style.opacity = Math.max(flashT, 0) / 0.25 * 0.7; }
+      updateShield(rdt, px, py);
+      updateBubble(state, px, py);
+      updateStatus(state, rdt);
+      scorePop = Math.max(0, scorePop - dt * 5);
+      var sc2 = 1 + fire.burst * 0.35 + scorePop * 0.12;
+      hudScore.style.transform = sc2 > 1.001 ? 'scale(' + sc2.toFixed(3) + ')' : '';
+      if (flashT > 0) { flashT -= rdt; hudFlash.style.opacity = Math.max(flashT, 0) / 0.25 * 0.7; }
       else hudFlash.style.opacity = 0;
     }
   };

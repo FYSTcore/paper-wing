@@ -9,6 +9,13 @@
   var BEST_KEY = 'kk.best';
   var MUTE_KEY = 'kk.muted';
   var MASTER_VOL = 1.0;        // toplam ses seviyesi (limiter sayesinde bozulmadan yüksek)
+  // v2.5: ayrı müzik / efekt seviyesi (0..100). Kazanç = (v/100)² → %50 ≈ −12 dB, kulağa "yarı ses" gelir
+  var VOL_MUS_KEY = 'kk.vol.mus', VOL_SFX_KEY = 'kk.vol.sfx';
+  function readVol(k) { var v = parseInt(readStoreEarly(k), 10); return v >= 0 && v <= 100 ? v : 100; }
+  function readStoreEarly(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  var volMus = readVol(VOL_MUS_KEY), volSfx = readVol(VOL_SFX_KEY);
+  if (readStoreEarly(VOL_MUS_KEY) == null && readStoreEarly('kk.music') === '0') volMus = 0;   // eski 'Music: Off' ayarı korunur
+  function volGain(v) { return Math.pow(v / 100, 2); }
   var PANEL_DELAY = 0.4;       // ölüm panelinin görünme gecikmesi (sn)
   var RESTART_DELAY = 0.6;     // ekrana dokununca yeniden başlama gecikmesi (sn)
 
@@ -50,6 +57,9 @@
       var out = A.ctx.createGain(); out.gain.value = 1.0;
       A.master.connect(pre); pre.connect(drive); drive.connect(lim); lim.connect(out); out.connect(A.ctx.destination);
       A.out = out;                                   // test kancası (kayıt için)
+      // v2.5: ayrı kanallar — efektler ve müzik kendi ses seviyeleriyle ana sese (sessiz düğmesi) bağlanır
+      A.sfx = A.ctx.createGain(); A.sfx.gain.value = volGain(volSfx); A.sfx.connect(A.master);
+      A.mus = A.ctx.createGain(); A.mus.gain.value = volGain(volMus); A.mus.connect(A.master);
       A.noise = makeNoiseBuffer(A.ctx, 1);
     }
     if (A.ctx.state !== 'running') { // 'suspended' ya da iOS'taki 'interrupted'
@@ -96,7 +106,7 @@
     bp.frequency.exponentialRampToValueAtTime(320, t + 0.09);
     var g = c.createGain();
     envelope(g, t, 0.45, 0.006, 0.085);
-    chain(src, bp, g, A.master);
+    chain(src, bp, g, A.sfx);
     src.start(t, Math.random() * 0.8);
     src.stop(t + 0.11);
     // gövde: 120 Hz'den 70 Hz'e inen kısa sinüs ("tok" hissi buradan)
@@ -105,7 +115,7 @@
     o.frequency.setValueAtTime(120, t);
     o.frequency.exponentialRampToValueAtTime(70, t + 0.08);
     envelope(og, t, 0.5, 0.004, 0.08);
-    chain(o, og, A.master);
+    chain(o, og, A.sfx);
     o.start(t); o.stop(t + 0.1);
   }
 
@@ -118,8 +128,8 @@
     o2.type = 'sine'; o2.frequency.value = freq / 2;
     envelope(g1, t, peak, 0.004, 0.24);
     envelope(g2, t, peak * 0.8, 0.004, 0.3);
-    chain(o1, g1, A.master);
-    chain(o2, g2, A.master);
+    chain(o1, g1, A.sfx);
+    chain(o2, g2, A.sfx);
     o1.start(t); o2.start(t);
     o1.stop(t + 0.3); o2.stop(t + 0.36);
   }
@@ -131,18 +141,18 @@
     n.buffer = A.noise;
     bp.type = 'bandpass'; bp.frequency.value = 1400; bp.Q.value = 6;     // tahta "tık"
     envelope(ng, t, 0.55, 0.001, 0.025);
-    chain(n, bp, ng, A.master);
+    chain(n, bp, ng, A.sfx);
     n.start(t, Math.random() * 0.5); n.stop(t + 0.04);
     var o = c.createOscillator(), og = c.createGain();                   // gövde: 165 Hz (E3)
     o.type = 'sine';
     o.frequency.setValueAtTime(175, t); o.frequency.exponentialRampToValueAtTime(160, t + 0.2);
     envelope(og, t, 0.4, 0.003, 0.22);
-    chain(o, og, A.master);
+    chain(o, og, A.sfx);
     o.start(t); o.stop(t + 0.26);
     var s2 = c.createOscillator(), sg = c.createGain();                  // bir oktav altında yumuşak taban
     s2.type = 'triangle'; s2.frequency.value = 82.4;
     envelope(sg, t, 0.22, 0.01, 0.3);
-    chain(s2, sg, A.master);
+    chain(s2, sg, A.sfx);
     s2.start(t); s2.stop(t + 0.34);
   }
 
@@ -154,20 +164,22 @@
     o.frequency.setValueAtTime(110, t);
     o.frequency.exponentialRampToValueAtTime(32, t + 0.25);
     envelope(og, t, 1.0, 0.004, 0.3);
-    chain(o, og, A.master);
+    chain(o, og, A.sfx);
     o.start(t); o.stop(t + 0.34);
 
     var n = c.createBufferSource(), lp = c.createBiquadFilter(), ng = c.createGain();
     n.buffer = A.noise;
     lp.type = 'lowpass'; lp.frequency.value = 280;
     envelope(ng, t, 0.7, 0.003, 0.12);
-    chain(n, lp, ng, A.master);
+    chain(n, lp, ng, A.sfx);
     n.start(t, Math.random() * 0.5); n.stop(t + 0.12);
   }
 
   // Sentetik yankı: üstel sönen gürültüden üretilmiş 3 sn'lik "salon" yankısı (dosya gerekmez)
-  function getReverb() {
-    if (A.reverb) return A.reverb;
+  function getReverb(dest) {
+    dest = dest || A.sfx;
+    var key = dest === A.mus ? 'reverbM' : 'reverb';
+    if (A[key]) return A[key];
     var c = A.ctx, len = Math.floor(c.sampleRate * 3), ir = c.createBuffer(2, len, c.sampleRate);
     for (var ch = 0; ch < 2; ch++) {
       var d = ir.getChannelData(ch);
@@ -175,8 +187,8 @@
     }
     var conv = c.createConvolver(); conv.buffer = ir;
     var wet = c.createGain(); wet.gain.value = 0.55;
-    chain(conv, wet, A.master);
-    A.reverb = conv;
+    chain(conv, wet, dest);
+    A[key] = conv;
     return conv;
   }
 
@@ -189,7 +201,7 @@
     f1.type = 'bandpass'; f1.Q.value = 2;
     f1.frequency.setValueAtTime(300, t); f1.frequency.exponentialRampToValueAtTime(2400, t + 0.35);
     g1.gain.setValueAtTime(0.0001, t); g1.gain.exponentialRampToValueAtTime(0.35, t + 0.33); g1.gain.exponentialRampToValueAtTime(0.0001, t + 0.38);
-    chain(n1, f1, g1); g1.connect(A.master); g1.connect(rv);
+    chain(n1, f1, g1); g1.connect(A.sfx); g1.connect(rv);
     n1.start(t); n1.stop(t + 0.4);
     var t2 = t + 0.36;
     // 2) Çöküş: 70 Hz'den 22 Hz'e inen derin sinüs (göğüste hissedilen kısım)
@@ -197,7 +209,7 @@
     sub.type = 'sine';
     sub.frequency.setValueAtTime(70, t2); sub.frequency.exponentialRampToValueAtTime(22, t2 + 1.6);
     envelope(sg, t2, 0.9, 0.01, 1.6);
-    chain(sub, sg, A.master); sg.connect(rv);
+    chain(sub, sg, A.sfx); sg.connect(rv);
     sub.start(t2); sub.stop(t2 + 1.7);
     // 3) Karanlık akor: hafif akortsuz iki testere dalga, alçak geçirenle kapanarak söner
     [110, 110 * 1.006, 73.4].forEach(function (fr, i) {
@@ -206,7 +218,7 @@
       o.frequency.setValueAtTime(fr, t2); o.frequency.exponentialRampToValueAtTime(fr * 0.5, t2 + 1.8);
       lp.type = 'lowpass'; lp.frequency.setValueAtTime(1400, t2); lp.frequency.exponentialRampToValueAtTime(90, t2 + 1.8);
       envelope(g, t2, 0.13, 0.02, 1.8);
-      chain(o, lp, g); g.connect(A.master); g.connect(rv);
+      chain(o, lp, g); g.connect(A.sfx); g.connect(rv);
       o.start(t2); o.stop(t2 + 1.9);
     });
     // 4) Gürleme: alçak geçirenden geçen uzun gürültü
@@ -214,7 +226,7 @@
     n2.buffer = A.noise; n2.loop = true;
     f2.type = 'lowpass'; f2.frequency.setValueAtTime(600, t2); f2.frequency.exponentialRampToValueAtTime(50, t2 + 1.5);
     envelope(g2, t2, 0.5, 0.005, 1.5);
-    chain(n2, f2, g2); g2.connect(A.master); g2.connect(rv);
+    chain(n2, f2, g2); g2.connect(A.sfx); g2.connect(rv);
     n2.start(t2); n2.stop(t2 + 1.6);
   }
 
@@ -226,14 +238,45 @@
     bp.type = 'bandpass'; bp.Q.value = 1.2;
     bp.frequency.setValueAtTime(350, t); bp.frequency.exponentialRampToValueAtTime(2600, t + 0.45);
     envelope(g, t, 0.55, 0.12, 0.5);
-    chain(n, bp, g, A.master);
+    chain(n, bp, g, A.sfx);
     n.start(t); n.stop(t + 0.7);
     var o = c.createOscillator(), og = c.createGain();
     o.type = 'triangle';
     o.frequency.setValueAtTime(90, t); o.frequency.exponentialRampToValueAtTime(140, t + 0.4);
     envelope(og, t, 0.45, 0.05, 0.5);
-    chain(o, og, A.master);
+    chain(o, og, A.sfx);
     o.start(t); o.stop(t + 0.6);
+  }
+
+  // v2.5 shieldReady: kalkan doldu — iki parlak nota (C6 → G6, beşli aralık), yumuşak
+  function sfxShieldReady() {
+    var t = A.ctx.currentTime;
+    bell(t, 1046.5, 0.32); bell(t + 0.09, 1568, 0.28);
+  }
+
+  // v2.5 shield: kalkan darbeyi yuttu — dışa patlayan alev "puuf"u (3 kHz → 250 Hz), tok bir gümleme
+  // ve sönen alevin cızırtısı (4 kHz üstü, 0.5 sn)
+  function sfxShield() {
+    var c = A.ctx, t = c.currentTime;
+    var n = c.createBufferSource(), bp = c.createBiquadFilter(), g = c.createGain();
+    n.buffer = A.noise; n.loop = true;
+    bp.type = 'bandpass'; bp.Q.value = 1.1;
+    bp.frequency.setValueAtTime(3000, t); bp.frequency.exponentialRampToValueAtTime(250, t + 0.4);
+    envelope(g, t, 0.7, 0.006, 0.42);
+    chain(n, bp, g, A.sfx);
+    n.start(t); n.stop(t + 0.5);
+    var o = c.createOscillator(), og = c.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(130, t); o.frequency.exponentialRampToValueAtTime(45, t + 0.3);
+    envelope(og, t, 0.85, 0.004, 0.32);
+    chain(o, og, A.sfx);
+    o.start(t); o.stop(t + 0.36);
+    var h = c.createBufferSource(), hp = c.createBiquadFilter(), hg = c.createGain();
+    h.buffer = A.noise; h.loop = true;
+    hp.type = 'highpass'; hp.frequency.value = 4000;
+    envelope(hg, t + 0.08, 0.16, 0.02, 0.5);
+    chain(h, hp, hg, A.sfx);
+    h.start(t + 0.08); h.stop(t + 0.65);
   }
 
   // v1.5 bump: ölümcül olmayan çarpma — kağıt buruşması (bant geçiren gürültü) + tok bir "tunk"
@@ -244,13 +287,13 @@
     bp.type = 'bandpass'; bp.Q.value = 0.9;
     bp.frequency.setValueAtTime(2200, t); bp.frequency.exponentialRampToValueAtTime(700, t + 0.18);
     envelope(ng, t, 0.6, 0.002, 0.18);
-    chain(n, bp, ng, A.master);
+    chain(n, bp, ng, A.sfx);
     n.start(t, Math.random() * 0.5); n.stop(t + 0.2);
     var o = c.createOscillator(), og = c.createGain();
     o.type = 'triangle';
     o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(60, t + 0.2);
     envelope(og, t, 0.8, 0.003, 0.22);
-    chain(o, og, A.master);
+    chain(o, og, A.sfx);
     o.start(t); o.stop(t + 0.26);
   }
 
@@ -261,203 +304,95 @@
     n.buffer = A.noise; n.loop = true;
     lp.type = 'lowpass'; lp.frequency.setValueAtTime(1800, t); lp.frequency.exponentialRampToValueAtTime(120, t + 0.6);
     envelope(g, t, 0.45, 0.01, 0.6);
-    chain(n, lp, g, A.master);
+    chain(n, lp, g, A.sfx);
     n.start(t); n.stop(t + 0.65);
     for (var i = 0; i < 4; i++) {                                      // taş çatırtıları
       var tk = t + 0.04 + i * 0.07 + Math.random() * 0.04;
       var k = c.createBufferSource(), hp = c.createBiquadFilter(), kg = c.createGain();
       k.buffer = A.noise; hp.type = 'highpass'; hp.frequency.value = 1500;
       envelope(kg, tk, 0.25 - i * 0.04, 0.001, 0.04);
-      chain(k, hp, kg, A.master);
+      chain(k, hp, kg, A.sfx);
       k.start(tk, Math.random() * 0.5); k.stop(tk + 0.05);
     }
   }
 
-  var SFX = { flap: sfxFlap, score: sfxScore, hit: sfxHit, die: sfxDie, milestone: sfxMilestone, bump: sfxBump, 'break': sfxBreak };
-
-  // =====================================================================
-  // ---------- Müzik (v2.0): oyuna tepki veren, kodla üretilen müzik ----------
-  // Dosya yok; her nota WebAudio osilatörüyle anında sentezlenir.
-  //  • Her gök cisminin kendi gamı, akor yürüyüşü, tınısı ve yankısı var (12 tema).
-  //  • Tempo hıza bağlı: BPM = 72 + 38·(katsayı − 1) → ×1.0'da 72, ×2.0'da 110.
-  //    (Tam hızda kule başına 1.1 sn → kule başına ~2 vuruş: ritim uçuşla aynı nabızda.)
-  //  • Katmanlar katsayıyla açılır: pad + arp her zaman, bas ×1.2, davul ×1.45, trampet+16'lık ×1.75.
-  //  • Çarpınca ateşle birlikte müzik boğuklaşır (alçak geçiren 16 kHz → 650 Hz), geri yanınca açılır.
-  //  • Ölünce müzik kısılır; ana ekranda sadece yumuşak pad çalar.
-  // Zamanlama: 16'lık adımlar, 0.25 sn ileriyi planlayan "bakış" zamanlayıcısı (takılmasız çalım).
-  // =====================================================================
-  var MUSIC_VOL = 0.24;
-  var SCALES = {
-    dorian: [0, 2, 3, 5, 7, 9, 10], aeolian: [0, 2, 3, 5, 7, 8, 10], lydian: [0, 2, 4, 6, 7, 9, 11],
-    mixolydian: [0, 2, 4, 5, 7, 9, 10], phrygian: [0, 1, 3, 5, 7, 8, 10], phrygDom: [0, 1, 4, 5, 7, 8, 10],
-    harmMinor: [0, 2, 3, 5, 7, 8, 11], major: [0, 2, 4, 5, 7, 9, 11], minPent: [0, 3, 5, 7, 10, 12, 15]
-  };
-  // root: MIDI kök nota, prog: akor dereceleri (gam içinde), pad/arp: dalga tipi, cut: pad filtresi (Hz),
-  // arp: akor tonları dizisi (0..5 = iki oktav), kick/snare: 16 adımlık desen, rev: yankı payı, oct: arp oktavı
-  var THEMES = [
-    { name: 'Earth',   root: 50, scale: 'dorian',     prog: [0, 5, 3, 4], pad: 'sawtooth', cut: 1400, arpW: 'triangle', arp: [0, 2, 4, 2, 1, 3, 5, 3], kick: [0, 8], snare: [4, 12], rev: 0.30, oct: 12 },
-    { name: 'Moon',    root: 45, scale: 'aeolian',    prog: [0, 3, 5, 4], pad: 'sine',     cut: 900,  arpW: 'sine',     arp: [4, -1, 2, -1, 5, -1, 1, -1], kick: [0], snare: [12], rev: 0.60, oct: 24 },
-    { name: 'Venus',   root: 52, scale: 'phrygDom',   prog: [0, 1, 0, 6], pad: 'sawtooth', cut: 1100, arpW: 'sawtooth', arp: [0, 1, 2, 1, 3, 2, 1, 0], kick: [0, 6, 8], snare: [4, 12], rev: 0.40, oct: 12 },
-    { name: 'Mercury', root: 54, scale: 'phrygian',   prog: [0, 1, 5, 6], pad: 'square',   cut: 900,  arpW: 'square',   arp: [0, 3, 1, 4, 2, 5, 3, 1], kick: [0, 3, 8, 11], snare: [4, 12], rev: 0.25, oct: 12 },
-    { name: 'Sun',     root: 48, scale: 'lydian',     prog: [0, 1, 4, 3], pad: 'sawtooth', cut: 2400, arpW: 'sawtooth', arp: [0, 2, 4, 5, 4, 2, 3, 1], kick: [0, 4, 8, 12], snare: [4, 12], rev: 0.35, oct: 12 },
-    { name: 'Mars',    root: 43, scale: 'aeolian',    prog: [0, 5, 6, 4], pad: 'sawtooth', cut: 1000, arpW: 'square',   arp: [0, 0, 2, 0, 3, 0, 2, 4], kick: [0, 2, 8, 10], snare: [4, 12, 14], rev: 0.30, oct: 12 },
-    { name: 'Jupiter', root: 46, scale: 'mixolydian', prog: [0, 6, 3, 0], pad: 'sawtooth', cut: 1600, arpW: 'triangle', arp: [0, 2, 4, 5, 2, 4, 5, 3], kick: [0, 8, 10], snare: [4, 12], rev: 0.45, oct: 12 },
-    { name: 'Saturn',  root: 51, scale: 'lydian',     prog: [0, 4, 5, 1], pad: 'triangle', cut: 2000, arpW: 'sine',     arp: [0, 4, 2, 5, 1, 4, 3, 5], kick: [0, 8], snare: [4, 12], rev: 0.55, oct: 24 },
-    { name: 'Uranus',  root: 47, scale: 'major',      prog: [0, 3, 1, 4], pad: 'triangle', cut: 1500, arpW: 'triangle', arp: [5, 3, 4, 2, 3, 1, 2, 0], kick: [0, 10], snare: [4, 12], rev: 0.55, oct: 24 },
-    { name: 'Neptune', root: 49, scale: 'dorian',     prog: [0, 2, 5, 3], pad: 'sine',     cut: 1100, arpW: 'triangle', arp: [0, 2, 1, 3, 2, 4, 3, 5], kick: [0, 7, 8], snare: [4, 12], rev: 0.60, oct: 12 },
-    { name: 'Pluto',   root: 53, scale: 'minPent',    prog: [0, 3, 2, 0], pad: 'sine',     cut: 800,  arpW: 'sine',     arp: [0, -1, -1, 2, -1, -1, 4, -1], kick: [0], snare: [8], rev: 0.70, oct: 24 },
-    { name: 'TON 618', root: 33, scale: 'harmMinor',  prog: [0, 1, 0, 5], pad: 'sawtooth', cut: 420,  arpW: 'sine',     arp: [4, -1, -1, -1, 5, -1, -1, -1], kick: [0, 3], snare: [], rev: 0.75, oct: 36 }
-  ];
-  var M = { started: false, timer: 0, nextTime: 0, step: 0, theme: 0, want: 0, chord: 0,
-            mult: 1, mode: 'ready', fireOut: false, bpm: 66, layers: null, bus: null, lp: null, send: null };
-
-  function midiHz(m) { return 440 * Math.pow(2, (m - 69) / 12); }
-  // Gam içinde i'inci derece (oktav taşmasıyla): 0..6 = ilk oktav, 7.. = sonraki
-  function deg(T, i) { var sc = SCALES[T.scale], n = sc.length, o = Math.floor(i / n); return sc[((i % n) + n) % n] + 12 * o; }
-  // d derecesinin üçlü akoru: d, d+2, d+4 (gamın kendi notalarıyla) — iki oktav için 6 ton
-  function chordTones(T, d) { return [deg(T, d), deg(T, d + 2), deg(T, d + 4), deg(T, d + 7), deg(T, d + 9), deg(T, d + 11)]; }
-
-  function musicInit() {
-    var c = A.ctx;
-    M.bus = c.createGain(); M.bus.gain.value = 0;
-    M.lp = c.createBiquadFilter(); M.lp.type = 'lowpass'; M.lp.frequency.value = 16000; M.lp.Q.value = 0.7;
-    M.bus.connect(M.lp); M.lp.connect(A.master);
-    M.send = c.createGain(); M.send.gain.value = THEMES[0].rev;
-    M.send.connect(getReverb());
-    M.layers = {};
-    ['pad', 'arp', 'bass', 'drums', 'perc'].forEach(function (k) {
-      var g = c.createGain(); g.gain.value = 0; g.connect(M.bus); g.connect(M.send); M.layers[k] = g;
-    });
-    M.bus.gain.setTargetAtTime(musicOn ? MUSIC_VOL : 0, c.currentTime, 1.0);    // açılışta yumuşakça gir
-    M.nextTime = c.currentTime + 0.1;
-    M.started = true; M.dirty = true;
-    M.timer = setInterval(musicTick, 40);
+  // v2.2 checkpoint: iki notalı parlak çan (beşli aralık: 784 → 1175 Hz)
+  function sfxCheckpoint() {
+    var t = A.ctx.currentTime;
+    bell(t, 784, 0.5); bell(t + 0.12, 1175, 0.45);
   }
-
-  function setLayer(k, v) { var g = M.layers[k]; g.gain.setTargetAtTime(v, A.ctx.currentTime, 0.6); }
-
-  // Oyun durumundan hedefleri güncelle (her kare)
-  function musicUpdate(s) {
-    if (!A.ctx) return;
-    if (!M.started) { if (A.ctx.state === 'running') musicInit(); else return; }
-    var every = KK.PLANET_EVERY || 250;
-    M.want = s.mode === 'ready' ? 0 : Math.min(THEMES.length - 1, Math.floor(s.score / every));
-    if (s.mode === 'ready' && M.mode !== 'ready') { M.theme = 0; M.step = 0; }   // yeni tur Dünya'dan başlar
-    var mult = s.mode === 'playing' ? (s.mult || 1) : 1;
-    var play = s.mode === 'playing';
-    M.bpm = play ? 72 + 38 * (mult - 1) : 66;
-    var hush = s.mode === 'dead' || paused;                       // ölünce ve durdurunca kısık/boğuk
-    if (M.dirty || s.mode !== M.mode || mult !== M.mult || !!s.fireOut !== M.fireOut || paused !== M.paused || musicOn !== M.on) {
-      M.dirty = false;
-      setLayer('pad', s.mode === 'dead' ? 0.55 : 1);
-      setLayer('arp', play ? 1 : (s.mode === 'ready' ? 0.35 : 0));
-      setLayer('bass', play && mult >= 1.2 ? 1 : 0);
-      setLayer('drums', play && mult >= 1.45 ? 1 : 0);
-      setLayer('perc', play && mult >= 1.75 ? 1 : 0);
-      var t = A.ctx.currentTime;
-      M.lp.frequency.setTargetAtTime(hush ? 900 : (play && s.fireOut ? 900 : 16000), t, 0.25);
-      M.bus.gain.setTargetAtTime(!musicOn ? 0 : hush ? MUSIC_VOL * 0.45 : MUSIC_VOL, t, 0.5);
-    }
-    M.mode = s.mode; M.mult = mult; M.fireOut = !!s.fireOut; M.paused = paused; M.on = musicOn;
+  // v2.2 can geri geldi: yükselen kısa blip
+  function sfxLife() {
+    var c = A.ctx, t = c.currentTime, o = c.createOscillator(), g = c.createGain();
+    o.type = 'triangle'; o.frequency.setValueAtTime(520, t); o.frequency.exponentialRampToValueAtTime(1040, t + 0.12);
+    envelope(g, t, 0.35, 0.005, 0.2); chain(o, g, A.sfx); o.start(t); o.stop(t + 0.25);
   }
-
-  function musicTick() {
-    var c = A.ctx;
-    if (!c || c.state !== 'running') return;
-    if (M.nextTime < c.currentTime - 0.3) M.nextTime = c.currentTime + 0.05;  // askıdan dönünce yetiş
-    while (M.nextTime < c.currentTime + 0.25) {
-      musicStep(M.step, M.nextTime);
-      M.nextTime += 60 / M.bpm / 4;                                         // 16'lık nota süresi
-      M.step++;
-    }
-  }
-
-  function musicStep(step, t) {
-    var bar16 = step % 16, chordLen = 32;                                   // akor başına 2 ölçü
-    if (step % chordLen === 0) {
-      if (M.want !== M.theme) { M.theme = M.want; M.send.gain.setTargetAtTime(THEMES[M.theme].rev, t, 0.8); }
-      M.chord = (step / chordLen) % 4;
-      playPad(t, chordLen * 60 / M.bpm / 4);
-    }
-    var T = THEMES[M.theme], tones = chordTones(T, T.prog[M.chord]);
-    var root = T.root;
-    var fast = M.mult >= 1.75 && M.mode === 'playing';
-    // Arp: 8'likler (hızlıyken 16'lık)
-    if (fast || step % 2 === 0) {
-      var ai = fast ? step % 8 : (step / 2) % 8;
-      var a = T.arp[ai];
-      if (a >= 0 && tones[a] != null) pluck(t, midiHz(root + T.oct + tones[a]), T.arpW, M.mode === 'playing' ? 0.075 : 0.05);
-    }
-    // Bas: 1. ve 3. vuruş, ×1.6 üstünde 8'lik oktav zıplaması
-    if (M.mult >= 1.2) {
-      if (bar16 === 0 || bar16 === 8) bassNote(t, midiHz(root - 12 + tones[0]), 0.34);
-      else if (M.mult >= 1.6 && bar16 % 4 === 2) bassNote(t, midiHz(root + tones[0]), 0.16);
-    }
-    if (M.mult >= 1.45) {
-      if (T.kick.indexOf(bar16) >= 0) kick(t);
-      if (bar16 % 2 === 0) hat(t, bar16 % 4 === 2 ? 0.11 : 0.06);
-    }
-    if (M.mult >= 1.75) {
-      if (T.snare.indexOf(bar16) >= 0) snare(t);
-      if (bar16 % 2 === 1) hat(t, 0.035, true);
-    }
-  }
-
-  // ---- Enstrümanlar ----
-  function playPad(t, dur) {
-    var c = A.ctx, T = THEMES[M.want !== M.theme ? M.theme : M.theme];
-    var tones = chordTones(T, T.prog[M.chord]);
-    [0, 1, 2].forEach(function (k) {
-      var f = midiHz(T.root + tones[k] + (k === 0 ? 0 : 12 * 0));
-      var g = c.createGain(), lp = c.createBiquadFilter();
-      lp.type = 'lowpass'; lp.frequency.value = T.cut; lp.Q.value = 0.5;
-      g.gain.setValueAtTime(0.0001, t);
-      g.gain.exponentialRampToValueAtTime(0.07, t + Math.min(1.2, dur * 0.3));
-      g.gain.setValueAtTime(0.07, t + dur);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 1.4);
-      [-7, 7].forEach(function (cents) {                                     // iki hafif akortsuz ses = genişlik
-        var o = c.createOscillator(); o.type = T.pad; o.frequency.value = f; o.detune.value = cents;
-        o.connect(lp); o.start(t); o.stop(t + dur + 1.5);
-      });
-      lp.connect(g); g.connect(M.layers.pad);
+  // v2.2 yolculuk sonu: majör akor arpeji + uzun yankı
+  function sfxComplete() {
+    var t = A.ctx.currentTime, rv = getReverb();
+    [523, 659, 784, 1047, 1319].forEach(function (f, i) {
+      var c = A.ctx, o = c.createOscillator(), g = c.createGain();
+      o.type = 'triangle'; o.frequency.value = f;
+      envelope(g, t + i * 0.09, 0.3, 0.01, 1.6); o.connect(g); g.connect(A.sfx); g.connect(rv);
+      o.start(t + i * 0.09); o.stop(t + i * 0.09 + 1.8);
     });
   }
-  function pluck(t, f, type, peak) {
-    var c = A.ctx, o = c.createOscillator(), lp = c.createBiquadFilter(), g = c.createGain();
-    o.type = type; o.frequency.value = f;
-    lp.type = 'lowpass'; lp.frequency.setValueAtTime(Math.min(9000, f * 6), t); lp.frequency.exponentialRampToValueAtTime(Math.max(300, f * 1.2), t + 0.25);
-    envelope(g, t, peak, 0.005, 0.32);
-    chain(o, lp, g, M.layers.arp); o.start(t); o.stop(t + 0.4);
-  }
-  function bassNote(t, f, peak) {
-    var c = A.ctx, o = c.createOscillator(), s = c.createOscillator(), g = c.createGain(), lp = c.createBiquadFilter();
-    o.type = 'triangle'; o.frequency.value = f; s.type = 'sine'; s.frequency.value = f / 2;
-    lp.type = 'lowpass'; lp.frequency.value = 700;
-    envelope(g, t, peak, 0.008, 0.45);
-    o.connect(lp); s.connect(lp); chain(lp, g, M.layers.bass);
-    o.start(t); s.start(t); o.stop(t + 0.5); s.stop(t + 0.5);
-  }
-  function kick(t) {
-    var c = A.ctx, o = c.createOscillator(), g = c.createGain();
-    o.type = 'sine'; o.frequency.setValueAtTime(130, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.14);
-    envelope(g, t, 0.55, 0.002, 0.28);
-    chain(o, g, M.layers.drums); o.start(t); o.stop(t + 0.32);
-  }
-  function hat(t, peak, perc) {
-    var c = A.ctx, n = c.createBufferSource(), hp = c.createBiquadFilter(), g = c.createGain();
-    n.buffer = A.noise; hp.type = 'highpass'; hp.frequency.value = 7500;
-    envelope(g, t, peak, 0.001, 0.045);
-    chain(n, hp, g, perc ? M.layers.perc : M.layers.drums); n.start(t, Math.random() * 0.8); n.stop(t + 0.06);
-  }
-  function snare(t) {
-    var c = A.ctx, n = c.createBufferSource(), bp = c.createBiquadFilter(), g = c.createGain();
-    n.buffer = A.noise; bp.type = 'bandpass'; bp.frequency.value = 1900; bp.Q.value = 0.8;
-    envelope(g, t, 0.28, 0.001, 0.16);
-    chain(n, bp, g, M.layers.perc); n.start(t, Math.random() * 0.8); n.stop(t + 0.2);
+
+  // v2.5 finale: kara deliğe çekilme — 3.4 sn boyunca inen ve yükselen emiş (3 kHz → 60 Hz), sonunda derin çöküş
+  function sfxFinale() {
+    var c = A.ctx, t = c.currentTime, rv = getReverb();
+    var n = c.createBufferSource(), bp = c.createBiquadFilter(), g = c.createGain();
+    n.buffer = A.noise; n.loop = true; bp.type = 'bandpass'; bp.Q.value = 2.2;
+    bp.frequency.setValueAtTime(3000, t); bp.frequency.exponentialRampToValueAtTime(60, t + 3.3);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.7, t + 3.1); g.gain.exponentialRampToValueAtTime(0.0001, t + 3.45);
+    chain(n, bp, g, A.sfx); g.connect(rv); n.start(t); n.stop(t + 3.5);
     var o = c.createOscillator(), og = c.createGain();
-    o.type = 'triangle'; o.frequency.setValueAtTime(210, t); o.frequency.exponentialRampToValueAtTime(140, t + 0.08);
-    envelope(og, t, 0.18, 0.001, 0.09);
-    chain(o, og, M.layers.perc); o.start(t); o.stop(t + 0.12);
+    o.type = 'sawtooth'; o.frequency.setValueAtTime(220, t); o.frequency.exponentialRampToValueAtTime(30, t + 3.3);
+    var lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 500;
+    og.gain.setValueAtTime(0.0001, t); og.gain.exponentialRampToValueAtTime(0.35, t + 3.0); og.gain.exponentialRampToValueAtTime(0.0001, t + 3.45);
+    chain(o, lp, og, A.sfx); o.start(t); o.stop(t + 3.5);
+  }
+  function sfxFinaleEnd() {
+    var c = A.ctx, t = c.currentTime, rv = getReverb();
+    var o = c.createOscillator(), g = c.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(70, t); o.frequency.exponentialRampToValueAtTime(24, t + 2.2);
+    envelope(g, t, 1.0, 0.005, 2.4); chain(o, g, A.sfx); g.connect(rv); o.start(t); o.stop(t + 2.5);
+    var n = c.createBufferSource(), lp = c.createBiquadFilter(), ng = c.createGain();
+    n.buffer = A.noise; lp.type = 'lowpass'; lp.frequency.setValueAtTime(4000, t); lp.frequency.exponentialRampToValueAtTime(100, t + 0.8);
+    envelope(ng, t, 0.8, 0.003, 0.9); chain(n, lp, ng, A.sfx); ng.connect(rv); n.start(t); n.stop(t + 1);
+    setTimeout(sfxComplete, 900);                    // çöküşün ardından yolculuk tamam arpeji
+  }
+
+  var SFX = { flap: sfxFlap, score: sfxScore, hit: sfxHit, die: sfxDie, milestone: sfxMilestone, bump: sfxBump, shield: sfxShield, shieldReady: sfxShieldReady, 'break': sfxBreak, checkpoint: sfxCheckpoint, life: sfxLife, complete: sfxFinale, finaleEnd: sfxFinaleEnd };
+
+  // ---------- Müzik (v2.4): motor music.js'te (KK.Music) — oyun ve müzik editörü AYNI motoru kullanır ----------
+  // Temalar: varsayılan ← yayınlanmış music.json ← bu cihazda editörle kaydedilen (editor.html)
+  var MUSIC_VOL = 0.24, music = null, musicThemes = null, musicLastMode = null;
+  var M = { dirty: false };   // eski API uyumu (müzik düğmesi)
+  if (KK.Music) KK.Music.load().then(function (list) { musicThemes = list; if (music) music.setThemes(list); });
+
+  // v2.5: ışıkların müziğe göre yanıp sönmesi için zarf: max(a · e^(−7·(şimdi − vuruş)))  → 0.1 sn'de yarıya iner
+  var beats = [];
+  KK.musicPulse = function () {
+    if (!A.ctx || !music || muted || volMus <= 0 || paused) { beats.length = 0; return 0; }
+    var now = A.ctx.currentTime, v = 0;
+    while (beats.length && now - beats[0].t > 1) beats.shift();
+    for (var i = 0; i < beats.length; i++) { var d = now - beats[i].t; if (d >= 0) v = Math.max(v, beats[i].a * Math.exp(-7 * d)); }
+    return v;
+  };
+  function musicUpdate(s) {
+    if (!A.ctx || !KK.Music) return;
+    var want = Math.floor((s.score || 0) / (KK.PLANET_EVERY || 200));
+    if (!music) {
+      if (A.ctx.state !== 'running') return;
+      music = KK.Music.create({ ctx: A.ctx, out: A.mus, noise: A.noise, reverb: getReverb(A.mus), vol: MUSIC_VOL, themes: musicThemes });
+      music.jump(want); music.start();
+      // v2.5: müzik nabzı — her dörtlükte bir vuruş (ölçü başı tam, diğerleri %65); ışıklar bunu okur
+      music.onStep = function (b, chord, t) { if (b % 4 === 0) beats.push({ t: t, a: b === 0 ? 1 : 0.65 }); };
+    }
+    if (s.mode === 'ready' && musicLastMode !== 'ready') music.jump(want);   // yeni tur checkpoint temasından başlar
+    musicLastMode = s.mode;
+    music.update({ mode: s.mode, mult: s.mult || 1, fireOut: !!s.fireOut, hush: s.mode === 'dead' || s.mode === 'finale' || paused, on: volMus > 0, want: want });
   }
 
   function setMuted(v) {
@@ -465,6 +400,11 @@
     writeStore(MUTE_KEY, muted ? '1' : '0');
     if (A.master && A.ctx) {
       A.master.gain.setTargetAtTime(muted ? 0 : MASTER_VOL, A.ctx.currentTime, 0.02);
+      if (!muted) {                                     // v2.5: müzik kanalını ve motoru yeniden ayarla
+        if (A.mus) A.mus.gain.setTargetAtTime(volGain(volMus), A.ctx.currentTime, 0.02);
+        if (music) music.state.last = null;
+        if (A.ctx.state !== 'running') { try { A.ctx.resume(); } catch (e) { /* yoksay */ } }
+      }
     }
     renderMute();
   }
@@ -479,6 +419,117 @@
   var browse = skinSel;                            // ana ekranda göz atılan (kilitli de olabilir)
   var musicOn = readStore(MUSIC_KEY) !== '0';
   var paused = false, resumeAt = 0, devTaps = [];
+  // v2.2: ilerleme — son checkpoint (skor) ve bitiş yıldızları (rebirth sayısı)
+  var CP_KEY = 'kk.cp', STAR_KEY = 'kk.stars';
+  // ---- v2.5: Skor tablosu (bu cihazdaki en iyi 10 tur) ----
+  var SCORES_KEY = 'kk.scores', BOARD_N = 10;
+  function readScores() {
+    try { var a = JSON.parse(readStore(SCORES_KEY) || '[]'); return Array.isArray(a) ? a.filter(function (x) { return x && x.s > 0; }) : []; } catch (e) { return []; }
+  }
+  // Turu tabloya ekler; tabloya girdiyse sırasını (0..9), girmediyse -1 döndürür
+  function addScore(score) {
+    if (!(score > 0)) return -1;
+    var every = KK.PLANET_EVERY || 200, names = KK.BODY_NAMES || [];
+    var e = { s: score, d: Date.now(), p: Math.min(Math.max(0, names.length - 1), Math.floor(score / every)), r: stars };
+    var list = readScores(); list.push(e);
+    list.sort(function (a, b) { return b.s - a.s || a.d - b.d; });   // eşit puanda önce yapan üstte
+    list = list.slice(0, BOARD_N);
+    writeStore(SCORES_KEY, JSON.stringify(list));
+    return list.indexOf(e);
+  }
+  var boardTab = null, boardReq = 0;
+  function online() { return !!(KK.Online && KK.Online.enabled()); }
+  function renderBoard() {
+    if (!boardTab) boardTab = online() ? 'week' : 'local';
+    var on = online();
+    el.tabs.hidden = !on;
+    Object.keys(el.tabBtns).forEach(function (k) { var b = el.tabBtns[k]; b.classList.toggle('is-on', k === boardTab); b.setAttribute('aria-selected', k === boardTab ? 'true' : 'false'); });
+    el.nameForm.hidden = true; el.boardMe.hidden = true;
+    if (boardTab !== 'local' && on) return renderOnline(boardTab);
+    renderLocal();
+  }
+  function renderOnline(which) {
+    var ol = el.boardList, req = ++boardReq;
+    ol.innerHTML = '';
+    if (!KK.Online.name()) {                         // ilk kez: isim seç
+      el.nameForm.hidden = false; el.nameInput.value = '';
+      ol.appendChild(h('li', 'kk-board-empty', 'Pick a name to join the scoreboard. Your best run goes up automatically.'));
+      return;
+    }
+    el.boardMe.hidden = false; el.boardMe.textContent = 'You: ' + KK.Online.name() + ' \u00b7 change';
+    ol.appendChild(h('li', 'kk-board-empty', 'Loading\u2026'));
+    KK.Online.top(which === 'week' ? 'week' : 'alltime', 20).then(function (rows) {
+      if (req !== boardReq) return;
+      ol.innerHTML = '';
+      if (!rows.length) { ol.appendChild(h('li', 'kk-board-empty', which === 'week' ? 'No scores this week yet. Be the first!' : 'No scores yet. Be the first!')); return; }
+      rows.forEach(function (x, i) {
+        var li = h('li', 'kk-board-row' + (x.me ? ' is-new' : ''));
+        li.appendChild(h('span', 'kk-board-rank', String(i + 1)));
+        li.appendChild(h('span', 'kk-board-score', String(x.score)));
+        li.appendChild(h('span', 'kk-board-where', x.name + (x.stars ? ' ' + new Array(Math.min(x.stars, 3) + 1).join('\u2605') : '')));
+        li.appendChild(h('span', 'kk-board-date', ''));
+        ol.appendChild(li);
+      });
+    }, function () {
+      if (req !== boardReq) return;
+      ol.innerHTML = ''; ol.appendChild(h('li', 'kk-board-empty', 'Can\u2019t reach the scoreboard right now. Check your connection.'));
+    });
+  }
+  function renderLocal() {
+    var list = readScores(), names = KK.BODY_NAMES || [], ol = el.boardList;
+    ol.innerHTML = '';
+    if (!list.length) { var em = h('li', 'kk-board-empty', 'No flights yet. Your best runs will land here.'); ol.appendChild(em); return; }
+    var newest = list.reduce(function (m, x) { return x.d > m ? x.d : m; }, 0);
+    list.forEach(function (x, i) {
+      var li = h('li', 'kk-board-row' + (x.d === newest ? ' is-new' : ''));
+      var dt = new Date(x.d);
+      li.appendChild(h('span', 'kk-board-rank', String(i + 1)));
+      li.appendChild(h('span', 'kk-board-score', String(x.s)));
+      li.appendChild(h('span', 'kk-board-where', (names[x.p] || '') + (x.r ? ' ' + new Array(Math.min(x.r, 3) + 1).join('★') : '')));
+      li.appendChild(h('span', 'kk-board-date', dt.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })));
+      ol.appendChild(li);
+    });
+  }
+  function submitOnline(s) {
+    if (!KK.Online || !s) return;
+    var run = (s.score | 0) - (s.startScore | 0);
+    if (run <= 0) return;
+    try { KK.Online.submit({ score: s.score | 0, run: run, secs: s.runTime || 0, stars: stars, skin: skinSel }); } catch (e) { /* yoksay */ }
+  }
+  function openBoard() { renderBoard(); toggle(el.board, 'board', true); }
+  function closeBoard() { toggle(el.board, 'board', false); }
+  var checkpoint = parseInt(readStore(CP_KEY), 10) || 0;
+  var stars = parseInt(readStore(STAR_KEY), 10) || 0;
+  var finishing = false;
+  function bodyName(score) {
+    var n = KK.BODY_NAMES || [], every = KK.PLANET_EVERY || 200;
+    return n[Math.min(n.length - 1, Math.floor(score / every))] || '';
+  }
+  function renderProgress() {
+    if (!el.progress) return;
+    el.progress.textContent = checkpoint ? 'Checkpoint ' + checkpoint + ' \u00b7 ' + bodyName(checkpoint) : '';
+    if (el.starBadge) { el.starBadge.textContent = stars ? '\u2605 ' + stars : ''; el.starBadge.title = stars ? stars + ' journey' + (stars > 1 ? 's' : '') + ' completed' : ''; }
+  }
+  function finishJourney() {
+    finishing = true; paused = true; resumeAt = 0;
+    var st = cfg.getState();
+    if (st && st.score > best) { best = st.score; writeStore(BEST_KEY, best); }
+    if (st) { addScore(st.score); submitOnline(st); }   // v2.5: tamamlanan yolculuk da tabloya girer
+    var next = stars + 1, gift = (KK.SKINS || []).filter(function (k) { return k.stars === next; })[0];
+    el.finStars.textContent = new Array(Math.min(next, 5) + 1).join('★') + (next > 5 ? ' ' + next : '');
+    el.finGift.textContent = (gift ? 'New skin: ' + gift.name + ' · ' : '') + 'Next journey: a bit harder';
+    toggle(el.finish, 'finish', true);
+  }
+  function rebirth() {
+    stars++; writeStore(STAR_KEY, stars);
+    checkpoint = 0; writeStore(CP_KEY, 0);
+    var gift = (KK.SKINS || []).filter(function (k) { return k.stars === stars; })[0];
+    if (gift) { skinSel = browse = gift.id; writeStore(SKIN_KEY, skinSel); }
+    finishing = false; paused = false;
+    toggle(el.finish, 'finish', false);
+    renderSkin(); renderProgress();
+    cfg.onRestart();
+  }
 
   function normCode(c) { return String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); }
   function sha256(text) {
@@ -490,7 +541,7 @@
   function checkDev(code) { return sha256('paperwing:' + normCode(code)).then(function (h) { return h === DEV_HASH; }); }
 
   function skinList() { return (KK.SKINS || []).filter(function (k) { return !k.secret || devOn; }); }
-  function skinUnlocked(k) { return k.secret ? devOn : best >= (k.req || 0); }
+  function skinUnlocked(k) { return k.secret ? devOn : k.stars ? stars >= k.stars : best >= (k.req || 0); }
   function findSkin(id) { var l = skinList(); for (var i = 0; i < l.length; i++) if (l[i].id === id) return l[i]; return null; }
   function stepSkin(d) {
     var l = skinList(); if (!l.length) return;
@@ -505,7 +556,7 @@
     var l = skinList(), k = findSkin(browse) || l[0], i = l.indexOf(k);
     if (!findSkin(skinSel) || !skinUnlocked(findSkin(skinSel))) skinSel = 'paper';
     el.skinName.textContent = k ? k.name : '';
-    el.skinLock.textContent = !k ? '' : skinUnlocked(k) ? (i + 1) + ' / ' + l.length : 'LOCKED · reach ' + k.req;
+    el.skinLock.textContent = !k ? '' : skinUnlocked(k) ? (i + 1) + ' / ' + l.length : (k.stars ? 'LOCKED · finish the journey' + (k.stars > 1 ? ' ' + k.stars + '×' : '') : 'LOCKED · reach ' + k.req);
     el.skins.classList.toggle('is-locked', !!k && !skinUnlocked(k));
     el.skins.classList.toggle('is-dev', !!k && !!k.secret);
   }
@@ -518,7 +569,7 @@
     renderMusicBtn();
   }
   function resume() {
-    if (!paused || resumeAt) return;
+    if (!paused || resumeAt || finishing) return;
     toggle(el.paused, 'paused', false);
     resumeAt = performance.now() + 1500;           // 3-2-1 geri sayım (0.5 sn'de bir), sonra devam
   }
@@ -527,7 +578,19 @@
     toggle(el.paused, 'paused', false); el.count.textContent = '';
     cfg.onRestart();
   }
-  function renderMusicBtn() { if (el.musicBtn) el.musicBtn.textContent = 'Music: ' + (musicOn ? 'On' : 'Off'); }
+  function renderMusicBtn() { renderVol(); }   // v2.5: müzik açma/kapama yerine ses kaydırıcıları
+  function setVol(kind, v) {
+    v = Math.max(0, Math.min(100, Math.round(v)));
+    if (kind === 'mus') { volMus = v; writeStore(VOL_MUS_KEY, String(v)); if (A.mus) A.mus.gain.setTargetAtTime(volGain(v), A.ctx.currentTime, 0.03); if (music) music.state.last = null; }
+    else { volSfx = v; writeStore(VOL_SFX_KEY, String(v)); if (A.sfx) A.sfx.gain.setTargetAtTime(volGain(v), A.ctx.currentTime, 0.03); }
+    renderVol();
+  }
+  function renderVol() {
+    if (!el.volMus) return;
+    el.volMus.value = volMus; el.volSfx.value = volSfx;
+    el.volMusOut.textContent = volMus ? volMus + '%' : 'Off'; el.volSfxOut.textContent = volSfx ? volSfx + '%' : 'Off';
+  }
+
 
   function openCode() {
     toggle(el.code, 'code', true);
@@ -586,6 +649,10 @@
     ready.appendChild(title);
     ready.appendChild(tap);
     ready.appendChild(readyBest);
+    var starBadge = h('p', 'kk-starbadge');          // v2.5: kazanılan ★ (bitirilen yolculuk) — başlığın altında
+    ready.appendChild(starBadge);
+    var progress = h('p', 'kk-progress');
+    ready.appendChild(progress);
     // Skin seçici: ‹ AD ›  (kilitliyse önizleme + gereken skor)
     var skins = h('div', 'kk-skins');
     var prev = h('button', 'kk-btn kk-arrow', '‹'); prev.type = 'button'; prev.setAttribute('aria-label', 'Previous skin');
@@ -633,10 +700,27 @@
     pcard.appendChild(h('h2', 'kk-card-title', 'Paused'));
     var resumeBtn = h('button', 'kk-btn kk-again', 'Resume'); resumeBtn.type = 'button';
     var restartBtn = h('button', 'kk-btn kk-ghost', 'Restart'); restartBtn.type = 'button';
-    var musicBtn = h('button', 'kk-btn kk-ghost', 'Music: On'); musicBtn.type = 'button';
-    pcard.appendChild(resumeBtn); pcard.appendChild(restartBtn); pcard.appendChild(musicBtn);
+    // v2.5: ayrı müzik ve efekt sesi
+    function volRow(id, label) {
+      var row = h('label', 'kk-vol'); row.setAttribute('for', id);
+      var name = h('span', 'kk-vol-name', label), out = h('span', 'kk-vol-out', '100%');
+      var inp = h('input', 'kk-input kk-range'); inp.type = 'range'; inp.id = id; inp.min = 0; inp.max = 100; inp.step = 5;
+      row.appendChild(name); row.appendChild(inp); row.appendChild(out);
+      return { row: row, inp: inp, out: out };
+    }
+    var vm = volRow('kk-vol-mus', 'Music'), vs = volRow('kk-vol-sfx', 'Effects');
+    pcard.appendChild(resumeBtn); pcard.appendChild(restartBtn); pcard.appendChild(vm.row); pcard.appendChild(vs.row);
     pausedL.appendChild(pcard);
     var count = h('div', 'kk-count');
+    // v2.2: Yolculuk sonu → rebirth
+    var finL = h('div', 'kk-layer kk-finish');
+    var fcard = h('div', 'kk-card kk-fcard');
+    fcard.appendChild(h('p', 'kk-label', 'Journey complete'));
+    var finStars = h('p', 'kk-fin-stars', '★');
+    var finGift = h('p', 'kk-fin-gift');
+    var rebirthBtn = h('button', 'kk-btn kk-again', 'Rebirth'); rebirthBtn.type = 'button';
+    fcard.appendChild(finStars); fcard.appendChild(finGift); fcard.appendChild(rebirthBtn);
+    finL.appendChild(fcard);
     // Gizli kod kutusu
     var codeL = h('div', 'kk-layer kk-code');
     var ccard = h('form', 'kk-card kk-ccard');
@@ -650,6 +734,33 @@
     ccard.appendChild(codeInput); ccard.appendChild(codeMsg); ccard.appendChild(codeOk); ccard.appendChild(codeCancel);
     codeL.appendChild(ccard);
 
+    // v2.5: Skor tablosu: sol üstte kupa düğmesi (ana ekran ve bitiş ekranında) + kâğıt kart
+    var boardBtn = h('button', 'kk-btn kk-boardbtn');
+    boardBtn.type = 'button'; boardBtn.setAttribute('aria-label', 'Top scores'); boardBtn.title = 'Top scores';
+    boardBtn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4h10v4a5 5 0 0 1-10 0V4Z" fill="currentColor"/><path d="M7 6H4.5a2.5 2.5 0 0 0 2.6 3.6M17 6h2.5a2.5 2.5 0 0 1-2.6 3.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.5 13h3v3.5h-3zM8 19h8v1.6H8z" fill="currentColor"/><path d="M9.5 16.5h5l.8 2.5H8.7z" fill="currentColor"/></svg>';
+    var boardL = h('div', 'kk-layer kk-board');
+    var bcard = h('div', 'kk-card kk-bcard');
+    bcard.appendChild(h('h2', 'kk-card-title', 'Top scores'));
+    // v2.5: sekmeler — This week / All time (çevrimiçi, herkes) · This phone (bu cihaz)
+    var tabs = h('div', 'kk-tabs'); tabs.setAttribute('role', 'tablist');
+    var tabBtns = {};
+    [['week', 'This week'], ['alltime', 'All time'], ['local', 'This phone']].forEach(function (tb) {
+      var b = h('button', 'kk-btn kk-tab', tb[1]); b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.tab = tb[0];
+      tabs.appendChild(b); tabBtns[tb[0]] = b;
+    });
+    bcard.appendChild(tabs);
+    var nameForm = h('form', 'kk-nameform');
+    var nameLbl = h('p', 'kk-label', 'Your name on the scoreboard');
+    var nameInput = h('input', 'kk-input kk-nameinput'); nameInput.type = 'text'; nameInput.maxLength = 14; nameInput.autocomplete = 'nickname'; nameInput.placeholder = 'Name';
+    var nameOk = h('button', 'kk-btn kk-again', 'Save'); nameOk.type = 'submit';
+    nameForm.appendChild(nameLbl); nameForm.appendChild(nameInput); nameForm.appendChild(nameOk);
+    bcard.appendChild(nameForm);
+    var boardList = h('ol', 'kk-board-list');
+    var boardMe = h('button', 'kk-btn kk-board-me'); boardMe.type = 'button';
+    var boardClose = h('button', 'kk-btn kk-ghost', 'Close'); boardClose.type = 'button';
+    bcard.appendChild(boardList); bcard.appendChild(boardMe); bcard.appendChild(boardClose);
+    boardL.appendChild(bcard);
+
     // Ekran okuyucu duyurusu
     var live = h('p', 'kk-sr');
     live.setAttribute('aria-live', 'polite');
@@ -658,9 +769,12 @@
     frame.appendChild(dead);
     frame.appendChild(pausedL);
     frame.appendChild(codeL);
+    frame.appendChild(finL);
+    frame.appendChild(boardL);
     frame.appendChild(count);
     frame.appendChild(pauseBtn);
     frame.appendChild(mute);
+    frame.appendChild(boardBtn);
     root.appendChild(frame);
     root.appendChild(live);
 
@@ -669,8 +783,12 @@
       dead: dead, badge: badge, scoreVal: scoreVal, deadBest: deadBest,
       again: again, hint: hint, mute: mute, live: live,
       skins: skins, prev: prev, next: next, skinName: skinName, skinLock: skinLock, devtap: devtap,
-      pauseBtn: pauseBtn, paused: pausedL, resumeBtn: resumeBtn, restartBtn: restartBtn, musicBtn: musicBtn, count: count,
-      code: codeL, codeCard: ccard, codeInput: codeInput, codeMsg: codeMsg, codeCancel: codeCancel
+      pauseBtn: pauseBtn, paused: pausedL, resumeBtn: resumeBtn, restartBtn: restartBtn, count: count,
+      volMus: vm.inp, volSfx: vs.inp, volMusOut: vm.out, volSfxOut: vs.out,
+      progress: progress, starBadge: starBadge, finish: finL, finStars: finStars, finGift: finGift, rebirthBtn: rebirthBtn,
+      code: codeL, codeCard: ccard, codeInput: codeInput, codeMsg: codeMsg, codeCancel: codeCancel,
+      board: boardL, boardBtn: boardBtn, boardList: boardList, boardClose: boardClose,
+      tabs: tabs, tabBtns: tabBtns, nameForm: nameForm, nameInput: nameInput, boardMe: boardMe
     };
   }
 
@@ -697,13 +815,13 @@
 
   // ---------- Girdi ----------
   function isButton(target) {
-    return !!(target && target.closest && target.closest('.kk-btn, .kk-input, .kk-ccard'));
+    return !!(target && target.closest && target.closest('.kk-btn, .kk-input, .kk-ccard, .kk-bcard, .kk-board'));
   }
 
   // Ortak eylem: moda göre kanat çırp ya da yeniden başla
   function act() {
     var s = cfg.getState();
-    if (!s || paused || shown.code) return;
+    if (!s || paused || shown.code || shown.board) return;
     if (s.mode === 'dead') {
       if (s.modeTime > RESTART_DELAY) cfg.onRestart();
       // daha erken dokunuş: yoksay (yanlışlıkla yeniden başlamayı önler)
@@ -726,6 +844,7 @@
     if (e.target && e.target.tagName === 'INPUT') { if (e.key === 'Escape') closeCode(); return; }  // kod yazılırken oyun tuşları kapalı
     var code = e.code || '';
     var key = e.key || '';
+    if (shown.board) { if (code === 'Escape' || key === 'Escape') { e.preventDefault(); closeBoard(); } return; }
     if (code === 'Escape' || code === 'KeyP' || key === 'Escape' || key === 'p' || key === 'P') {
       e.preventDefault(); if (paused && !resumeAt) resume(); else pause(); return;
     }
@@ -783,12 +902,26 @@
     });
     el.codeCard.addEventListener('submit', function (e) { e.preventDefault(); submitCode(); });
     el.codeCancel.addEventListener('click', closeCode);
+    el.rebirthBtn.addEventListener('click', function (e) { releaseFocus(e, el.rebirthBtn); rebirth(); });
     el.pauseBtn.addEventListener('click', function (e) { unlockAudio(); releaseFocus(e, el.pauseBtn); pause(); });
+    el.boardBtn.addEventListener('click', function (e) { releaseFocus(e, el.boardBtn); openBoard(); });
+    el.boardClose.addEventListener('click', function (e) { releaseFocus(e, el.boardClose); closeBoard(); });
+    el.board.addEventListener('pointerdown', function (e) { if (e.target === el.board) { e.stopPropagation(); closeBoard(); } });
+    Object.keys(el.tabBtns).forEach(function (k) { el.tabBtns[k].addEventListener('click', function (e) { releaseFocus(e, el.tabBtns[k]); boardTab = k; renderBoard(); }); });
+    el.nameForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var v = el.nameInput.value; try { el.nameInput.blur(); } catch (er) { /* yoksay */ }
+      KK.Online.setName(v).then(function () { renderBoard(); }, function () { renderBoard(); });
+      if (KK.Online.name()) renderBoard();
+    });
+    el.boardMe.addEventListener('click', function (e) {
+      releaseFocus(e, el.boardMe);
+      el.nameForm.hidden = false; el.boardMe.hidden = true; el.nameInput.value = KK.Online.name() || ''; el.nameInput.focus();
+    });
     el.resumeBtn.addEventListener('click', function (e) { releaseFocus(e, el.resumeBtn); resume(); });
     el.restartBtn.addEventListener('click', function (e) { releaseFocus(e, el.restartBtn); restartFromPause(); });
-    el.musicBtn.addEventListener('click', function (e) {
-      releaseFocus(e, el.musicBtn); musicOn = !musicOn; writeStore(MUSIC_KEY, musicOn ? '1' : '0'); M.dirty = true; renderMusicBtn();
-    });
+    el.volMus.addEventListener('input', function () { unlockAudio(); setVol('mus', +el.volMus.value); });
+    el.volSfx.addEventListener('input', function () { unlockAudio(); setVol('sfx', +el.volSfx.value); });
 
     el.again.addEventListener('click', function (e) {
       var s = cfg.getState();
@@ -832,19 +965,45 @@
         writeStore(BEST_KEY, best);
       }
       el.scoreVal.textContent = String(score);
+      var rank = finishing ? -1 : addScore(score);   // v2.5: skor tablosu (yolculuk bitişi kendi kaydını yapar)
+      if (!finishing) submitOnline(s);
       // v2.0: bu turda açılan skinler
       var fresh = skinList().filter(function (k) { return !k.secret && k.req > oldBest && k.req <= best; }).map(function (k) { return k.name; });
-      el.deadBest.textContent = 'Best: ' + best + (fresh.length ? '  \u00b7  New skin: ' + fresh.join(', ') : '');
+      el.deadBest.textContent = 'Best: ' + best + (fresh.length ? '  \u00b7  New skin: ' + fresh.join(', ') : '') + (checkpoint ? ' · next flight from ' + checkpoint : '') + (rank >= 0 ? ' \u00b7 #' + (rank + 1) + ' on your board' : '');
       el.badge.classList.toggle('is-on', isRecord && score > 0);
       el.live.textContent = 'Crashed. Score ' + score + (isRecord && score > 0 ? '. New best!' : '. Best ' + best + '.');
     } else if (mode === 'ready') {
       el.readyBest.textContent = 'Best: ' + best;
-      browse = skinSel; renderSkin();
+      browse = skinSel; renderSkin(); renderProgress();
       if (document.activeElement === el.again) el.again.blur();
     }
   }
 
   // ---------- Genel API ----------
+  // ---- v2.5: iPhone kurulum rehberi ----
+  // iOS'ta uygulama dosyası paylaşılamaz; link WhatsApp'tan atılır, oyun Safari'den ana ekrana eklenir.
+  // Sadece iPhone/iPad'de ve oyun ana ekrandan AÇILMAMIŞSA, hazır ekranında görünür. Kapatılırsa bu oturumda bir daha çıkmaz.
+  var iosHint = null;
+  function isIOS() { var u = navigator.userAgent || ''; return /iPad|iPhone|iPod/.test(u) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); }
+  function isStandalone() { return navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches); }
+  function buildIosHint() {
+    if (!isIOS() || isStandalone()) return;
+    try { if (sessionStorage.getItem('kk.ioshint') === '0') return; } catch (e) { /* yoksay */ }
+    var SHARE = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" style="vertical-align:-3px"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 10H6v10h12V10h-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+    iosHint = document.createElement('div');
+    iosHint.className = 'kk-ios'; iosHint.setAttribute('role', 'note');
+    iosHint.innerHTML = '<button class="kk-ios-x" type="button" aria-label="Close">\u00d7</button>' +
+      '<b class="kk-ios-t">Install on iPhone</b>' +
+      '<ol><li>Opened from WhatsApp? Tap <b>\u22ef</b> and choose <b>Open in Safari</b></li>' +
+      '<li>Tap ' + SHARE + ' <b>Share</b></li><li>Choose <b>Add to Home Screen</b></li></ol>';
+    iosHint.querySelector('.kk-ios-x').addEventListener('click', function (e) {
+      e.stopPropagation(); iosHint.remove(); iosHint = null;
+      try { sessionStorage.setItem('kk.ioshint', '0'); } catch (er) { /* yoksay */ }
+    });
+    iosHint.addEventListener('pointerdown', function (e) { e.stopPropagation(); });
+    document.body.appendChild(iosHint);
+  }
+
   KK.UI = {
     init: function (opts) {
       cfg = opts || {};
@@ -856,23 +1015,28 @@
       bindInput(cfg.root);
       syncFrame();
       el.readyBest.textContent = 'Best: ' + best;
-      renderSkin(); renderMusicBtn();
+      renderSkin(); renderMusicBtn(); renderProgress();
+      buildIosHint();
+      if (KK.Online) { try { KK.Online.flush(); } catch (e) { /* yoksay */ } }   // v2.5: bekleyen skoru gönder
       var saved = readStore(DEV_KEY);                // kayıtlı kod hâlâ doğru mu? (özetle kontrol)
       if (saved) checkDev(saved).then(function (ok) { if (ok) { devOn = true; skinSel = readStore(SKIN_KEY) || skinSel; browse = skinSel; renderSkin(); } }, noop);
     },
     isPaused: function () { return paused; },
+    startOpts: function () { return { score: checkpoint, rebirth: stars }; },
     skinFor: function (mode) { return mode === 'ready' ? browse : skinSel; },
 
     getBest: function () { return best; },
-    _audio: A, _music: M,             // test kancaları
+    _audio: A, _music: M, _musicEngine: function () { return music; },   // test kancaları
 
     handleEvents: function (events, state) {
       if (!events || !events.length) return;
       var play = canPlay();
       for (var i = 0; i < events.length; i++) {
         var ev = events[i];
-        if (ev === 'hit' || ev === 'bump') {
-          try { if (navigator.vibrate) navigator.vibrate(ev === 'bump' ? [30, 40, 30] : 40); } catch (e) { /* yoksay */ }
+        if (ev === 'checkpoint' && state.score > checkpoint) { checkpoint = state.score; writeStore(CP_KEY, checkpoint); }
+        if (ev === 'finaleEnd') finishJourney();   // v2.5: kart, kara delik finali bitince açılır
+        if (ev === 'hit' || ev === 'bump' || ev === 'shield') {
+          try { if (navigator.vibrate) navigator.vibrate(ev === 'bump' ? [30, 40, 30] : ev === 'shield' ? 25 : 40); } catch (e) { /* yoksay */ }
         }
         if (play && SFX[ev]) {
           try { SFX[ev](); } catch (e) { /* ses hatası oyunu durdurmasın */ }
@@ -881,10 +1045,12 @@
     },
 
     update: function (state) {
+      if (iosHint) iosHint.hidden = !state || state.mode !== 'ready';
       if (!state || !el.root) return;
       try { musicUpdate(state); } catch (e) { /* müzik hatası oyunu durdurmasın */ }
       toggle(el.pauseBtn, 'pauseBtn', state.mode === 'playing' && !paused);
-      if (paused && state.mode !== 'playing') { paused = false; resumeAt = 0; toggle(el.paused, 'paused', false); el.count.textContent = ''; }
+      toggle(el.boardBtn, 'boardBtn', (state.mode === 'ready' || state.mode === 'dead') && !paused);
+      if (paused && !finishing && state.mode !== 'playing') { paused = false; resumeAt = 0; toggle(el.paused, 'paused', false); el.count.textContent = ''; }
       if (resumeAt) {                                  // 3-2-1 geri sayım
         var left = resumeAt - performance.now();
         if (left <= 0) { resumeAt = 0; paused = false; el.count.textContent = ''; }

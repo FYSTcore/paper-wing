@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="tr" translate="no" class="notranslate">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="google" content="notranslate">
+<title>Paper Wing · Müzik Stüdyosu</title>
+<link rel="icon" href="icons/icon-192.png">
+<style>
+  @font-face { font-family: "Bungee"; src: url("fonts/bungee-latin-400-normal.woff2") format("woff2"); font-display: swap; }
+  @font-face { font-family: "Figtree"; src: url("fonts/figtree-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+  @font-face { font-family: "Figtree"; src: url("fonts/figtree-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: swap; }
+  @font-face { font-family: "Figtree"; src: url("fonts/figtree-latin-800-normal.woff2") format("woff2"); font-weight: 800; font-display: swap; }
+  :root {
+    --ink: #1b1838; --ink2: #241f48; --dusk: #5a3a6e; --paper: #fbf7ef; --glow: #ffcf6b; --edge: #4a3f7a;
+    --dim: rgba(251, 247, 239, .55); --cell: #2c2656; --on: #ffcf6b; --play: #6fd8e0;
+    --font-display: "Bungee", "Arial Black", sans-serif; --font-body: "Figtree", system-ui, sans-serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--ink); color: var(--paper); font-family: var(--font-body); -webkit-tap-highlight-color: transparent; }
+  body { padding: max(12px, env(safe-area-inset-top)) 16px 40px; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 4px 0 12px; }
+  h1 { margin: 0; font-family: var(--font-display); font-weight: 400; font-size: clamp(20px, 6vw, 30px); letter-spacing: .02em; }
+  h1 span { color: var(--glow); }
+  .status { font-size: 13px; font-weight: 600; color: var(--dim); }
+  .status.ok { color: #7ff0b0; }
+  h2 { margin: 0 0 10px; font-size: 13px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--glow); }
+  h2 small { font-weight: 600; letter-spacing: .04em; text-transform: none; color: var(--dim); margin-left: 6px; }
+  .card { background: var(--ink2); border: 1px solid var(--edge); border-radius: 16px; padding: 14px; margin: 0 0 12px; }
+  .chips { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 10px; scrollbar-width: thin; }
+  .chip { flex: none; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--edge); background: var(--ink2); color: var(--paper);
+          font: 800 13px/1 var(--font-body); cursor: pointer; white-space: nowrap; }
+  .chip.on { background: var(--glow); color: var(--ink); border-color: var(--glow); }
+  .chip .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #ff7ab0; margin-left: 6px; vertical-align: middle; }
+  .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .play { width: 64px; height: 64px; border-radius: 50%; border: 0; background: var(--glow); color: var(--ink); font-size: 26px; cursor: pointer; flex: none; }
+  .play.on { background: var(--play); }
+  .grow { flex: 1 1 200px; min-width: 0; }
+  label { font-size: 13px; font-weight: 600; color: var(--dim); }
+  input[type=range] { width: 100%; accent-color: var(--glow); }
+  .val { font-weight: 800; color: var(--paper); font-variant-numeric: tabular-nums; }
+  .pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .pill { padding: 4px 9px; border-radius: 999px; font-size: 12px; font-weight: 800; border: 1px solid var(--edge); color: var(--dim); }
+  .pill.on { background: rgba(255, 207, 107, .15); border-color: var(--glow); color: var(--glow); }
+  .toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: var(--paper); cursor: pointer; }
+  .toggle input { width: 20px; height: 20px; accent-color: var(--glow); }
+  .chords { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .chord { border: 1px solid var(--edge); border-radius: 12px; padding: 8px; text-align: center; transition: background .15s; }
+  .chord.now { background: rgba(111, 216, 224, .16); border-color: var(--play); }
+  .chord b { display: block; font-family: var(--font-body); font-weight: 800; font-size: 22px; margin-bottom: 6px; }
+  select { width: 100%; padding: 8px; border-radius: 10px; border: 1px solid var(--edge); background: var(--ink); color: var(--paper); font: 600 14px var(--font-body); }
+  .gridwrap { overflow-x: auto; }
+  .grid { display: grid; grid-template-columns: 52px repeat(16, minmax(0, 1fr)); gap: 2px; }
+  .grid .cell:nth-child(17n + 6), .grid .cell:nth-child(17n + 10), .grid .cell:nth-child(17n + 14) { margin-left: 2px; }
+  .grid .lab { font-size: 11px; font-weight: 800; color: var(--dim); display: flex; align-items: center; justify-content: flex-end; padding-right: 4px; white-space: nowrap; }
+  .grid .lab em { font-style: normal; color: var(--paper); margin-left: 4px; font-weight: 600; opacity: .7; }
+  .cell { aspect-ratio: 1 / 1.4; border-radius: 4px; background: var(--cell); border: 0; padding: 0; cursor: pointer; }
+  .cell.beat { background: #352e66; }
+  .cell.on { background: var(--on); box-shadow: 0 0 10px rgba(255, 207, 107, .55); }
+  .cell.drum.on { background: #ff7ab0; box-shadow: 0 0 10px rgba(255, 122, 176, .5); }
+  .cell.bass.on { background: #7fd8ff; box-shadow: 0 0 10px rgba(127, 216, 255, .5); }
+  .cell.head { outline: 2px solid var(--play); outline-offset: -2px; }
+  .hint { font-size: 12px; color: var(--dim); margin: 8px 0 0; line-height: 1.45; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+  @media (max-width: 480px) { .two { grid-template-columns: 1fr; } .chords { grid-template-columns: repeat(2, 1fr); } }
+  .btns { display: flex; gap: 8px; flex-wrap: wrap; }
+  .btn { padding: 11px 14px; border-radius: 12px; border: 1px solid var(--edge); background: var(--ink); color: var(--paper); font: 800 14px var(--font-body); cursor: pointer; text-decoration: none; }
+  .btn.main { background: var(--glow); color: var(--ink); border-color: var(--glow); }
+  .btn.warn { color: #ff9ab0; }
+  button:focus-visible, select:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid var(--glow); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Paper Wing · <span>Müzik Stüdyosu</span></h1>
+    <div class="status" id="status">Değişiklikler bu cihaza otomatik kaydedilir</div>
+  </header>
+
+  <div class="chips" id="chips" role="tablist" aria-label="Gök cismi"></div>
+
+  <section class="card">
+    <div class="row">
+      <button class="play" id="play" aria-label="Çal">▶</button>
+      <div class="grow">
+        <label for="mult">Hız katsayısı (oyundaki gibi) — <span class="val" id="multV">×1.50</span> · <span class="val" id="bpmV">91 BPM</span></label>
+        <input type="range" id="mult" min="1" max="2.2" step="0.05" value="1.5">
+        <div class="pills" id="pills"></div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <label class="toggle"><input type="checkbox" id="fire"> Çarpma sonrası (boğuk ses)</label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Akorlar <small>her akor 2 ölçü çalar · 4 akor döngü yapar</small></h2>
+    <div class="chords" id="chords"></div>
+  </section>
+
+  <section class="card">
+    <h2>Melodi <small>her sütun 16'lık bir adım · satırlar o anki akorun tonları</small></h2>
+    <div class="gridwrap"><div class="grid" id="melody"></div></div>
+    <p class="hint">Melodi akorun tonlarından seçilir, bu yüzden akor değişince melodi de kendiliğinden ona uyar. Bir sütunda tek nota olur; aynı kareye tekrar dokunursan susar.</p>
+  </section>
+
+  <section class="card">
+    <h2>Ritim <small>bas ×1.2 · kick + hi-hat ×1.45 · trampet ×1.75 hızda girer</small></h2>
+    <div class="gridwrap"><div class="grid" id="drums"></div></div>
+  </section>
+
+  <section class="card">
+    <h2>Ses</h2>
+    <div class="two">
+      <div><label for="root">Kök nota</label><select id="root"></select></div>
+      <div><label for="scale">Gam</label><select id="scale"></select></div>
+      <div><label for="pad">Pad dalgası</label><select id="pad"></select></div>
+      <div><label for="arpW">Melodi dalgası</label><select id="arpW"></select></div>
+      <div><label for="oct">Melodi oktavı</label><select id="oct"><option value="0">Kök oktav</option><option value="12">+1 oktav</option><option value="24">+2 oktav</option><option value="36">+3 oktav</option></select></div>
+      <div><label for="cut">Pad parlaklığı — <span class="val" id="cutV"></span></label><input type="range" id="cut" min="300" max="3000" step="50"></div>
+      <div><label for="rev">Yankı — <span class="val" id="revV"></span></label><input type="range" id="rev" min="0" max="0.9" step="0.05"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Karışım</h2>
+    <div class="two" id="mix"></div>
+  </section>
+
+  <section class="card">
+    <h2>Oyuna aktar</h2>
+    <label class="toggle"><input type="checkbox" id="use"> Bu cihazdaki oyunda benim müziğimi kullan</label>
+    <p class="hint">Açıkken bu telefondaki oyun buradaki müziği çalar (oyunu kapatıp aç). Herkesin oyununda çalması için <b>Dışa aktar</b> ile music.json indir ve GitHub'a oyun dosyalarının yanına yükle.</p>
+    <div class="btns" style="margin-top:10px">
+      <a class="btn main" href="index.html">Oyunu aç</a>
+      <button class="btn" id="export">Dışa aktar (music.json)</button>
+      <button class="btn" id="importBtn">İçe aktar</button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+      <button class="btn warn" id="resetOne">Bu temayı sıfırla</button>
+      <button class="btn warn" id="resetAll">Hepsini sıfırla</button>
+    </div>
+  </section>
+</div>
+
+<script src="music.js"></script>
+<script>
+(function () {
+  'use strict';
+  var Mu = KK.Music, $ = function (id) { return document.getElementById(id); };
+  var NAMES = ['Dünya', 'Ay', 'Venüs', 'Merkür', 'Güneş', 'Mars', 'Jüpiter', 'Satürn', 'Uranüs', 'Neptün', 'Plüton',
+               'Oort', 'Alpha Centauri', 'Orion', 'Pulsar', 'Andromeda', 'TON 618'];
+  var themes, cur = 0, ctx = null, engine = null, playing = false;
+
+  // ---- Kayıt ----
+  function save() {
+    try {
+      localStorage.setItem(Mu.LOCAL_KEY, JSON.stringify({ version: 1, themes: themes }));
+      if (localStorage.getItem(Mu.USE_KEY) === null) { localStorage.setItem(Mu.USE_KEY, '1'); $('use').checked = true; }
+      $('status').textContent = 'Kaydedildi ✓'; $('status').className = 'status ok';
+    } catch (e) { $('status').textContent = 'Kaydedilemedi (tarayıcı depolaması kapalı)'; $('status').className = 'status'; }
+    if (engine) engine.setThemes(themes);
+    renderChips();
+  }
+  function edited(i) { return JSON.stringify(themes[i]) !== JSON.stringify(Mu.normalize(Mu.DEFAULTS[i], i)); }
+
+  // ---- Ses (oyundakiyle aynı zincir: ön kazanç → yumuşak doyum → sınırlayıcı) ----
+  function ensureAudio() {
+    if (ctx) { if (ctx.state !== 'running') ctx.resume(); return; }
+    var AC = window.AudioContext || window.webkitAudioContext;
+    ctx = new AC();
+    var master = ctx.createGain(), pre = ctx.createGain(), drive = ctx.createWaveShaper(), lim = ctx.createDynamicsCompressor();
+    pre.gain.value = 1.7;
+    var n = 1024, curve = new Float32Array(n), k = 2.2;
+    for (var i = 0; i < n; i++) { var x = i / (n - 1) * 2 - 1; curve[i] = Math.tanh(k * x) / Math.tanh(k); }
+    drive.curve = curve; drive.oversample = '2x';
+    lim.threshold.value = -9; lim.knee.value = 4; lim.ratio.value = 16; lim.attack.value = 0.002; lim.release.value = 0.18;
+    master.connect(pre); pre.connect(drive); drive.connect(lim); lim.connect(ctx.destination);
+    var len = ctx.sampleRate, noise = ctx.createBuffer(1, len, ctx.sampleRate), d = noise.getChannelData(0);
+    for (i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    var ir = ctx.createBuffer(2, ctx.sampleRate * 3, ctx.sampleRate);
+    for (var ch = 0; ch < 2; ch++) { var c2 = ir.getChannelData(ch); for (i = 0; i < c2.length; i++) c2[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / c2.length, 3); }
+    var conv = ctx.createConvolver(); conv.buffer = ir; var wet = ctx.createGain(); wet.gain.value = 0.55; conv.connect(wet); wet.connect(master);
+    engine = Mu.create({ ctx: ctx, out: master, noise: noise, reverb: conv, vol: 0.24, themes: themes });
+    engine.onStep = function (b, chord, t) {
+      setTimeout(function () { if (playing) playhead(b, chord); }, Math.max(0, (t - ctx.currentTime) * 1000));
+    };
+  }
+  function push() {
+    if (!engine) return;
+    engine.update({ mode: 'playing', mult: +$('mult').value, fireOut: $('fire').checked, hush: false, on: playing, want: cur });
+  }
+  $('play').onclick = function () {
+    ensureAudio();
+    playing = !playing;
+    $('play').textContent = playing ? '■' : '▶'; $('play').classList.toggle('on', playing);
+    $('play').setAttribute('aria-label', playing ? 'Durdur' : 'Çal');
+    if (playing) { engine.jump(cur); engine.start(); } else { engine.stop(); playhead(-1, -1); }
+    push();
+  };
+
+  // ---- Görünüm ----
+  function renderChips() {
+    var box = $('chips'); box.innerHTML = '';
+    NAMES.forEach(function (n, i) {
+      var b = document.createElement('button');
+      b.className = 'chip' + (i === cur ? ' on' : ''); b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', i === cur);
+      b.innerHTML = n + (edited(i) ? '<span class="dot" title="Düzenlendi"></span>' : '');
+      b.onclick = function () { cur = i; renderAll(); if (engine) { engine.jump(cur); push(); } };
+      box.appendChild(b);
+    });
+  }
+  function opt(sel, items, val) {
+    sel.innerHTML = items.map(function (it) { return '<option value="' + it[0] + '"' + (String(it[0]) === String(val) ? ' selected' : '') + '>' + it[1] + '</option>'; }).join('');
+  }
+  var ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+  function renderChords() {
+    var T = themes[cur], box = $('chords'); box.innerHTML = '';
+    T.prog.forEach(function (d, k) {
+      var div = document.createElement('div'); div.className = 'chord'; div.id = 'ch' + k;
+      div.innerHTML = '<b>' + Mu.chordName(T, d) + '</b>';
+      var s = document.createElement('select'); s.setAttribute('aria-label', (k + 1) + '. akor');
+      opt(s, ROMAN.map(function (r, i) { return [i, r + ' · ' + Mu.chordName(T, i)]; }), d);
+      s.onchange = function () { T.prog[k] = +s.value; save(); renderChords(); renderMelody(); };
+      div.appendChild(s); box.appendChild(div);
+    });
+  }
+  var TONE_LAB = ['1', '3', '5', '1↑', '3↑', '5↑'];
+  function cells(box, rows, cls, isOn, onTap) {
+    box.innerHTML = '';
+    rows.forEach(function (r) {
+      var l = document.createElement('div'); l.className = 'lab'; l.innerHTML = r.label; box.appendChild(l);
+      for (var s = 0; s < 16; s++) (function (s) {
+        var c = document.createElement('button');
+        c.className = 'cell ' + cls + (s % 4 === 0 ? ' beat' : '') + (isOn(r, s) ? ' on' : '');
+        c.dataset.step = s; c.setAttribute('aria-label', r.name + ', adım ' + (s + 1));
+        c.setAttribute('aria-pressed', isOn(r, s));
+        c.onclick = function () { onTap(r, s); };
+        box.appendChild(c);
+      })(s);
+    });
+  }
+  function renderMelody() {
+    var T = themes[cur], tones = Mu.chordTones(T, T.prog[0]);
+    var rows = [5, 4, 3, 2, 1, 0].map(function (k) {
+      return { k: k, name: 'Ton ' + TONE_LAB[k], label: TONE_LAB[k] + '<em>' + Mu.noteName(T.root + T.oct + tones[k]).replace(/\d+$/, '') + '</em>' };
+    });
+    cells($('melody'), rows, 'mel', function (r, s) { return T.arp[s] === r.k; }, function (r, s) {
+      T.arp[s] = T.arp[s] === r.k ? -1 : r.k; save(); renderMelody();
+    });
+  }
+  function renderDrums() {
+    var T = themes[cur];
+    var rows = [{ key: 'kick', name: 'Kick', label: 'Kick', cls: 'drum' }, { key: 'snare', name: 'Trampet', label: 'Trampet', cls: 'drum' },
+                { key: 'hat', name: 'Hi-hat', label: 'Hi-hat', cls: 'drum' }, { key: 'bass', name: 'Bas', label: 'Bas', cls: 'bass' }];
+    var box = $('drums'); box.innerHTML = '';
+    rows.forEach(function (r) {
+      var l = document.createElement('div'); l.className = 'lab'; l.textContent = r.label; box.appendChild(l);
+      for (var s = 0; s < 16; s++) (function (s) {
+        var on = T[r.key].indexOf(s) >= 0, c = document.createElement('button');
+        c.className = 'cell ' + r.cls + (s % 4 === 0 ? ' beat' : '') + (on ? ' on' : '');
+        c.dataset.step = s; c.setAttribute('aria-label', r.name + ', adım ' + (s + 1)); c.setAttribute('aria-pressed', on);
+        c.onclick = function () {
+          var a = T[r.key], i = a.indexOf(s);
+          if (i >= 0) a.splice(i, 1); else { a.push(s); a.sort(function (x, y) { return x - y; }); }
+          save(); renderDrums();
+        };
+        box.appendChild(c);
+      })(s);
+    });
+  }
+  function renderSound() {
+    var T = themes[cur], roots = [];
+    for (var m = 28; m <= 59; m++) roots.push([m, Mu.noteName(m)]);
+    opt($('root'), roots, T.root);
+    opt($('scale'), Object.keys(Mu.SCALES).map(function (k) { return [k, Mu.SCALE_NAMES[k]]; }), T.scale);
+    var waves = [['sine', 'Sinüs (yumuşak)'], ['triangle', 'Üçgen (tatlı)'], ['sawtooth', 'Testere (parlak)'], ['square', 'Kare (oyunsu)']];
+    opt($('pad'), waves, T.pad); opt($('arpW'), waves, T.arpW);
+    $('oct').value = String(T.oct);
+    $('cut').value = T.cut; $('cutV').textContent = T.cut + ' Hz';
+    $('rev').value = T.rev; $('revV').textContent = Math.round(T.rev * 100) + '%';
+    var mix = $('mix'); mix.innerHTML = '';
+    [['pad', 'Pad'], ['arp', 'Melodi'], ['bass', 'Bas'], ['drums', 'Davul']].forEach(function (p) {
+      var w = document.createElement('div');
+      w.innerHTML = '<label>' + p[1] + ' — <span class="val">' + Math.round(T.mix[p[0]] * 100) + '%</span></label><input type="range" min="0" max="1.5" step="0.05" value="' + T.mix[p[0]] + '" aria-label="' + p[1] + ' sesi">';
+      var r = w.querySelector('input'), v = w.querySelector('.val');
+      r.oninput = function () { T.mix[p[0]] = +r.value; v.textContent = Math.round(r.value * 100) + '%'; };
+      r.onchange = save;
+      mix.appendChild(w);
+    });
+  }
+  ['root', 'scale', 'pad', 'arpW', 'oct'].forEach(function (id) {
+    $(id).onchange = function () {
+      var T = themes[cur], v = $(id).value;
+      T[id] = (id === 'root' || id === 'oct') ? +v : v;
+      save(); renderChords(); renderMelody();
+    };
+  });
+  $('cut').oninput = function () { themes[cur].cut = +$('cut').value; $('cutV').textContent = $('cut').value + ' Hz'; };
+  $('cut').onchange = save;
+  $('rev').oninput = function () { themes[cur].rev = +$('rev').value; $('revV').textContent = Math.round($('rev').value * 100) + '%'; };
+  $('rev').onchange = save;
+
+  function renderPills() {
+    var k = +$('mult').value;
+    $('multV').textContent = '×' + k.toFixed(2); $('bpmV').textContent = Math.round(72 + 38 * (k - 1)) + ' BPM';
+    $('pills').innerHTML = [['Pad', 1], ['Melodi', 1], ['Bas', 1.2], ['Kick + hi-hat', 1.45], ['Trampet + 16\'lık', 1.75]].map(function (p) {
+      return '<span class="pill' + (k >= p[1] ? ' on' : '') + '">' + p[0] + '</span>';
+    }).join('');
+  }
+  $('mult').oninput = function () { renderPills(); push(); };
+  $('fire').onchange = push;
+
+  // Çalma kafası: o anki adım ve akor vurgulanır
+  function playhead(b, chord) {
+    document.querySelectorAll('.cell.head').forEach(function (c) { c.classList.remove('head'); });
+    document.querySelectorAll('.chord.now').forEach(function (c) { c.classList.remove('now'); });
+    if (b < 0) return;
+    document.querySelectorAll('.cell[data-step="' + b + '"]').forEach(function (c) { c.classList.add('head'); });
+    var ch = $('ch' + chord); if (ch) ch.classList.add('now');
+  }
+
+  // ---- Dışa / içe aktarma, sıfırlama ----
+  $('export').onclick = function () {
+    var blob = new Blob([JSON.stringify({ version: 1, themes: themes }, null, 1)], { type: 'application/json' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'music.json';
+    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  };
+  $('importBtn').onclick = function () { $('importFile').click(); };
+  $('importFile').onchange = function () {
+    var f = this.files[0]; if (!f) return;
+    f.text().then(function (txt) {
+      var data = JSON.parse(txt); themes = Mu.normalizeAll(data.themes); save(); renderAll();
+      $('status').textContent = 'İçe aktarıldı ✓';
+    }).catch(function () { $('status').textContent = 'Dosya okunamadı'; $('status').className = 'status'; });
+  };
+  $('resetOne').onclick = function () {
+    if (!confirm(NAMES[cur] + ' temasını varsayılana döndür?')) return;
+    themes[cur] = Mu.normalize(Mu.DEFAULTS[cur], cur); save(); renderAll();
+  };
+  $('resetAll').onclick = function () {
+    if (!confirm('Bütün temalar varsayılana dönsün mü?')) return;
+    themes = Mu.normalizeAll(null); save(); renderAll();
+  };
+  $('use').onchange = function () { try { localStorage.setItem(Mu.USE_KEY, $('use').checked ? '1' : '0'); } catch (e) {} };
+
+  function renderAll() { renderChips(); renderChords(); renderMelody(); renderDrums(); renderSound(); renderPills(); }
+
+  // Başlangıç: bu cihazdaki kayıt varsa o, yoksa yayınlanmış/varsayılan temalar
+  var loc = Mu.readLocal();
+  try { $('use').checked = localStorage.getItem(Mu.USE_KEY) !== '0'; } catch (e) {}
+  (loc && loc.themes ? Promise.resolve(Mu.normalizeAll(loc.themes)) : Mu.load()).then(function (list) { themes = list; renderAll(); });
+})();
+</script>
+</body>
+</html>
