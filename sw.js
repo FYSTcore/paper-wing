@@ -1,6 +1,6 @@
 // Paper Wing service worker: oyunun tüm dosyalarını telefona kaydeder, internetsiz de açılır.
 // Oyunu güncellediğinde VERSION'ı artır ki telefonlar yeni sürümü indirsin.
-var VERSION = 'paper-wing-v27';  // v27 = oyun sürümü 3.0
+var VERSION = 'paper-wing-v28';  // v28 = oyun sürümü 3.0.1 (tam ekran, ses)
 // v2.5: aynı alan adında test deposu da var → sadece KENDİ önbelleklerimizi silelim, sadece kendi önbelleğimizden okuyalım
 var PREFIX = 'paper-wing-v';
 var FILES = [

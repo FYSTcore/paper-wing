@@ -78,7 +78,7 @@
 <script>
   window.KK = window.KK || {};
   // Her güncellemede bunu ve sw.js'deki VERSION'ı birlikte artır
-  KK.APP_VERSION = '3.0';
+  KK.APP_VERSION = '3.0.1';
   KK.W = 360; KK.H = 640; KK.GROUND_Y = 584;
   KK.PALETTE = { skyTop:'#1b1838', skyMid:'#5a3a6e', skyLow:'#e9825a', sun:'#ffcf6b', cityFar:'#3a2f5c', cityNear:'#26203f', tower:'#2e2852', towerEdge:'#4a3f7a', clockFace:'#f3ead8', clockInk:'#1b1838', paper:'#fbf7ef', paperShade:'#d9d0c0', ground:'#171430', groundTop:'#3d335f', glow:'#ffcf6b', text:'#fbf7ef' };
 </script>
@@ -105,6 +105,9 @@
     var dpr = Math.min(window.devicePixelRatio || 1, dprCap); // 3D'de piksel yükünü sınırla (v2.5: 2.0, yavaş cihazda 1.5)
     var scale = Math.min(window.innerWidth / KK.W, window.innerHeight / KK.H);
     var cssW = Math.floor(KK.W * scale), cssH = Math.floor(KK.H * scale);
+    // v3.0: telefon ekranı 9:16'dan uzunsa (çoğu telefon ~9:20) tüm ekranı kapla — üst/alt şeritler kalkar.
+    // En fazla 9:22'ye kadar uzar (daha uzun ekranlarda küçük şerit kalır). Geniş ekranda (PC) eski çerçeve.
+    if (window.innerHeight / window.innerWidth > KK.H / KK.W) { cssW = window.innerWidth; cssH = Math.min(window.innerHeight, Math.floor(cssW * 22 / 9)); }
     canvas.style.width = cssW + 'px'; canvas.style.height = cssH + 'px';
     document.getElementById('wrap').style.width = cssW + 'px';
     document.getElementById('wrap').style.height = cssH + 'px';

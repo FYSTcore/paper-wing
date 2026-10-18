@@ -43,7 +43,8 @@
       if (!AC) return;
       // v2.5.1: telefonda "bitli/cızırtılı" ses = ses iş parçacığının yetişememesi (underrun). Varsayılan 'interactive'
       // tampon Android'de ~256 örnek ≈ 5 ms; 30 ms tampon 6 kat pay bırakır, dokunuş gecikmesi fark edilmez.
-      try { A.ctx = new AC({ latencyHint: 0.03 }); } catch (e) { try { A.ctx = new AC(); } catch (e2) { return; } }
+      // v3.0: hâlâ cızırdayan telefonlar için tampon 30 → 50 ms (pay 6 → 10 kat; dokunuş gecikmesi +20 ms, hissedilmez)
+      try { A.ctx = new AC({ latencyHint: 0.05 }); } catch (e) { try { A.ctx = new AC(); } catch (e2) { return; } }
       A.master = A.ctx.createGain();
       A.master.gain.value = muted ? 0 : MASTER_VOL;
       // Telefon hoparlörleri ~200 Hz altını çalamaz; bizim tok seslerin gövdesi 22-165 Hz.
@@ -178,13 +179,15 @@
     n.start(t, Math.random() * 0.5); n.stop(t + 0.12);
   }
 
-  // Sentetik yankı: üstel sönen gürültüden üretilmiş 2 sn'lik "salon" yankısı (v2.5.1: 3 → 2 sn, telefonda %33 daha az iş)
+  // Sentetik yankı: üstel sönen gürültüden üretilmiş "salon" yankısı.
+  // v3.0: ses iş parçacığının en ağır işi buydu (2 yankı × 2 kanal × 2 sn). Tek kanal + 1.4 sn → 2×1×1.4 = 2.8 vs 8 → %65 daha az iş.
+  // Kuyruğun sesi zaten (1−t)³ ile sönüyor: 1.4 sn'lik yankıda son yarım saniye −27 dB'nin altında, duyulmuyordu.
   function getReverb(dest) {
     dest = dest || A.sfx;
     var key = dest === A.mus ? 'reverbM' : 'reverb';
     if (A[key]) return A[key];
-    var c = A.ctx, len = Math.floor(c.sampleRate * 2), ir = c.createBuffer(2, len, c.sampleRate);
-    for (var ch = 0; ch < 2; ch++) {
+    var c = A.ctx, len = Math.floor(c.sampleRate * 1.4), ir = c.createBuffer(1, len, c.sampleRate);
+    for (var ch = 0; ch < 1; ch++) {
       var d = ir.getChannelData(ch);
       for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
     }

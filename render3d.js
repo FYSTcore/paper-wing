@@ -15,7 +15,7 @@ window.KK = window.KK || {};
   var towers = {};                              // gate.id → Group
   var bits = [];                                // kağıt kırpıntısı havuzu
   var far, near, low, roadTex, lamps, sunGlow;
-  var hudScore, hudFlash, lastScore = -1, hudTf = '', hudFo = -1;
+  var hudScore, hudFlash, lastScore = -1, hudTf = '', hudFo = -1, vFovK = 1;
   var shakeT = 0, flashT = 0, lastMode = null, flapBurstPending = false, finE = 0, finFlash = false;
   var reduced = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var shared = {};                              // paylaşılan geometri ve malzemeler
@@ -869,7 +869,7 @@ window.KK = window.KK || {};
     // v3.0: kodla açılan özel skinler (secret). AGA = Halil'in annesine, CHEERS = arkadaşına (bira şişesi)
     { id: 'aga',      name: 'AGA', secret: true, shape: 'delta', extra: ['canard', 'winglet'], paper: '#3fd58a', shade: '#1c8a52', line: '#062a18', glow: 0.55, head: '#e6ffef', tail: '#2fff8a', spark: '#c8ffd8', halo: '#5affa8', trail: 'ribbon', anim: 'leaf' },
     { id: 'cheers',   name: 'CHEERS', secret: true, shape: 'bottle', paper: '#8a4b12', shade: '#5e2f08', line: '#1a0a02', glow: 0.35, head: '#fff6d8', tail: '#ffb347', spark: '#fffbe8', halo: '#ffcf6b', trail: 'comet', anim: 'roll' },
-    { id: 'fyst',     name: 'DEV FYST', secret: true, shape: 'dart', extra: ['canard', 'blade'], paper: '#ffffff', shade: '#e6dcff', line: '#ffffff', glow: 0.6, head: '#ffffff', tail: '#ff9ad5', spark: '#ffffff', halo: '#ffb0e0', trail: 'holo', anim: 'holo' }
+    { id: 'fyst',     name: 'FYST', secret: true, shape: 'dart', extra: ['canard', 'blade'], paper: '#ffffff', shade: '#e6dcff', line: '#ffffff', glow: 0.6, head: '#ffffff', tail: '#ff9ad5', spark: '#ffffff', halo: '#ffb0e0', trail: 'holo', anim: 'holo' }
   ];
   // Test sayfasında gök cisimleri 4 kat sık geldiği için kilit puanları da 4'e bölünür
   if (KK.TEST_BUILD) KK.SKINS.forEach(function (k) { if (k.req) k.req = Math.round(k.req * PLANET_EVERY / 200); });
@@ -1844,6 +1844,11 @@ window.KK = window.KK || {};
       if (!renderer) return;
       renderer.setPixelRatio(dpr);
       renderer.setSize(w, h, false);
+      // v3.0 tam ekran: ekran 9:16'dan uzunsa yatay görüş açısı aynı kalır, dikey açı büyür →
+      // oyun alanı aynı genişlikte, üstte daha çok gökyüzü, altta daha çok yer görünür (siyah şerit yok)
+      camera.aspect = w / h;
+      vFovK = Math.max(1, (KK.W / KK.H) / camera.aspect);   // tan(dikey/2) çarpanı
+      camera.fov = -1;                                      // sonraki karede yeniden hesaplansın
     },
 
     draw: function (state, dt, realDt) {
@@ -1933,6 +1938,7 @@ window.KK = window.KK || {};
       camK += (k - camK) * Math.min(1, dt * 1.5);
       warpT = Math.max(0, warpT - rdt * 1.4);
       var fov = 46 + 7 * camK + 9 * Math.sin(Math.min(1, warpT) * Math.PI) * (reduced ? 0 : 1) - 8 * finE;   // v2.5: finalde yakınlaşır
+      if (vFovK > 1.0001) fov = 2 * Math.atan(Math.tan(fov * Math.PI / 360) * vFovK) * 180 / Math.PI;   // v3.0: uzun ekran
       if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
       camera.position.set(base.x + sway, base.y, base.z + 2.6 * camK);
       if (!reduced && camK > 0.6 && state.mode === 'playing') {           // tam hıza yakın: hafif motor titreşimi

@@ -154,6 +154,9 @@ window.KK = window.KK || {};
     function tick() {
       if (c.state !== 'running') return;
       if (M.nextTime < c.currentTime - 0.3) M.nextTime = c.currentTime + 0.05;   // askıdan dönünce yetiş
+      // v3.0: telefon kısa süre takılınca (gezegen geçişi vb.) zamanı geçmiş notalar çalınmaz, atlanır —
+      // geçmişe planlanan nota zarfının başı kesilir, bu da "çıt" sesi yapıyordu. Ritim kaymaz (adım sayacı ilerler).
+      while (M.nextTime < c.currentTime + 0.005) { M.nextTime += 60 / (M.bpm * (T().tempo || 1)) / 4; M.step++; }
       while (M.nextTime < c.currentTime + 0.25) {
         step(M.step, M.nextTime);
         M.nextTime += 60 / (M.bpm * (T().tempo || 1)) / 4;                      // 16'lık nota süresi (v2.5: tema tempo çarpanı)
