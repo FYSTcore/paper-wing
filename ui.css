@@ -298,11 +298,11 @@
 }
 .kk-hint.is-on { opacity: .85; }
 
-/* Sessiz düğmesi: v3.0'dan beri çerçevenin SAĞ ALTI (üstteki gök cisimlerini kapatmasın) */
+/* Sessiz düğmesi: v3.0.3'ten beri çerçevenin SOL ALTI, duraklat yanında */
 .kk-mute {
   position: absolute;
   bottom: max(14px, calc(env(safe-area-inset-bottom, 0px) + 8px - var(--kk-b, 0px)));
-  right: max(10px, calc(env(safe-area-inset-right, 0px) + 8px - var(--kk-r)));
+  left: max(14px, calc(env(safe-area-inset-left, 0px) + 8px - var(--kk-x)));   /* v3.0.3: sol alt köşe */
   width: 44px;
   height: 44px;
   padding: 10px;
@@ -374,8 +374,8 @@
 }
 .kk-arrow:active { transform: scale(.92); }
 .kk-skin-info {
-  /* v3.0: sabit genişlik → oklar isim uzunluğuna göre kaymaz (eskiden min-width idi) */
-  width: 10.5em;
+  /* v3.0: sabit genişlik → oklar isim uzunluğuna göre kaymaz (eskiden min-width idi). v3.0.3: 10.5 → 12em (SINGULARITY ★4 sığsın) */
+  width: 12em;
   flex: none;
   display: flex;
   flex-direction: column;
@@ -465,7 +465,7 @@
 .kk-pause {
   position: absolute;
   bottom: max(14px, calc(env(safe-area-inset-bottom, 0px) + 8px - var(--kk-b, 0px)));
-  right: calc(max(10px, calc(env(safe-area-inset-right, 0px) + 8px - var(--kk-r))) + 52px);
+  left: calc(max(14px, calc(env(safe-area-inset-left, 0px) + 8px - var(--kk-x))) + 52px);   /* v3.0.3: sesin sağında */
   width: 44px;
   height: 44px;
   padding: 10px;

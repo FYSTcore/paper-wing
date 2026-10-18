@@ -58,8 +58,13 @@
       // Limiter: tepeleri kırpar, genel sesi yüksek tutar
       var lim = A.ctx.createDynamicsCompressor();
       lim.threshold.value = -9; lim.knee.value = 4; lim.ratio.value = 16; lim.attack.value = 0.002; lim.release.value = 0.18;
-      var out = A.ctx.createGain(); out.gain.value = 1.0;
-      A.master.connect(pre); pre.connect(drive); drive.connect(lim); lim.connect(out); out.connect(A.ctx.destination);
+      var out = A.ctx.createGain(); out.gain.value = 0.85;   // v3.0.2: −1.4 dB pay (hoparlör sınırına dayanmasın)
+      // v3.0.2: telefon hoparlörü 200 Hz altını çalamaz ama zorlar → membran sınıra dayanıp "bitli" cızırdar.
+      // Müziğin enerjisinin %48-82'si 200 Hz altındaydı. Satürasyondan SONRA 140 Hz yüksek geçiren:
+      // temel frekans gider, eklenen harmonikler (2×, 3×...) kalır → bas hissi korunur, 200 Hz altı enerji ≈ yarıya iner.
+      // Limiterden ÖNCE: filtrenin faz kaymasıyla büyüyen tepeleri limiter yakalar.
+      var hp = A.ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 140; hp.Q.value = 0.707;
+      A.master.connect(pre); pre.connect(drive); drive.connect(hp); hp.connect(lim); lim.connect(out); out.connect(A.ctx.destination);
       A.out = out;                                   // test kancası (kayıt için)
       // v2.5: ayrı kanallar — efektler ve müzik kendi ses seviyeleriyle ana sese (sessiz düğmesi) bağlanır
       A.sfx = A.ctx.createGain(); A.sfx.gain.value = volGain(volSfx); A.sfx.connect(A.master);

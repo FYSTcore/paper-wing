@@ -14,8 +14,8 @@ window.KK = window.KK || {};
   var renderer, scene, camera, key, planeGroup, shadowBlob;
   var towers = {};                              // gate.id → Group
   var bits = [];                                // kağıt kırpıntısı havuzu
-  var far, near, low, roadTex, lamps, sunGlow;
-  var hudScore, hudFlash, lastScore = -1, hudTf = '', hudFo = -1, vFovK = 1;
+  var far, near, low, roadTex, lamps, sunGlow, plazaTex, plazaMat;
+  var hudScore, hudFlash, lastScore = -1, hudTf = '', hudFo = -1, vFovK = 1, viewShift = 0;
   var shakeT = 0, flashT = 0, lastMode = null, flapBurstPending = false, finE = 0, finFlash = false;
   var reduced = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var shared = {};                              // paylaşılan geometri ve malzemeler
@@ -85,6 +85,20 @@ window.KK = window.KK || {};
       g.fillStyle = '#3a3a3a'; g.fillRect(0, h * 0.82 + 4, w, h * 0.18);     // ön kaldırım
     });
     t.wrapS = THREE.RepeatWrapping;
+    return t;
+  }
+
+  // v3.0.2: ön meydan karosu — koyu taş, ince derz çizgileri, hafif ton farkı
+  function plazaTexture() {
+    var t = canvasTex(128, 128, function (g, w, h) {
+      g.fillStyle = '#2c2c2c'; g.fillRect(0, 0, w, h);
+      for (var i = 0; i < 2; i++) for (var j = 0; j < 2; j++) {
+        var v = 40 + ((i * 7 + j * 13) % 3) * 4;
+        g.fillStyle = 'rgb(' + v + ',' + v + ',' + v + ')'; g.fillRect(i * 64 + 2, j * 64 + 2, 60, 60);
+      }
+      for (var k = 0; k < 300; k++) { g.fillStyle = 'rgba(255,255,255,' + (Math.random() * 0.05).toFixed(3) + ')'; g.fillRect(Math.random() * w, Math.random() * h, 2, 2); }
+    });
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
     return t;
   }
 
@@ -646,6 +660,7 @@ window.KK = window.KK || {};
     shared.edgeMat.emissive.copy(c.edgeGlow); shared.capMat.emissive.copy(c.edgeGlow);
     shared.winLit.color.copy(c.win); shared.winGlowMat.color.copy(c.win); shared.winDark.color.copy(c.cityNear);
     baseMat.color.copy(c.base); roadMat.color.copy(c.road);
+    if (plazaMat) plazaMat.color.copy(c.road).multiplyScalar(1.15);
     shared.lampLit.color.copy(c.lamp); shared.glowMat.color.copy(c.lamp);
     hazeMats.forEach(function (m) { m.color.copy(c.haze); });
     stars.material.opacity = c.stars * 0.9; stars.visible = c.stars > 0.01;
@@ -1808,9 +1823,31 @@ window.KK = window.KK || {};
       road.position.set(0, GROUND, -2);          // z: -6 ile +2 arası
       road.receiveShadow = true;
       scene.add(road);
+      // v3.0.2: ön meydan — yolun önünden kameraya kadar karo zemin (tam ekranda ve hızda kamera geri
+      // çekilince altta boşluk/düz siyah görünüyordu). Kamera z=21+3.9'dan bakınca alt kenar ışını zemine
+      // en yakın z≈13'te değiyor; zemin z=+2 → +42 arası, yani her hızda boşluk kalmaz.
+      plazaTex = plazaTexture();
+      plazaTex.repeat.set(70, 20);                 // 2×2 birimlik karolar
+      plazaMat = new THREE.MeshLambertMaterial({ map: plazaTex });
+      var plaza = new THREE.Mesh(new THREE.PlaneGeometry(140, 40), plazaMat);
+      plaza.rotation.x = -Math.PI / 2;
+      plaza.position.set(0, GROUND - 0.005, 22);
+      plaza.receiveShadow = true;
+      scene.add(plaza);
+      // ön kaldırımın dibinde alçak çit/çalı şeridi (zemini bölsün diye)
+      var hedge = new THREE.Mesh(new THREE.BoxGeometry(140, 0.32, 0.5), baseMat);
+      hedge.position.set(0, GROUND + 0.16, 5.4); hedge.receiveShadow = true;
+      scene.add(hedge);
       // Sokak lambaları: arka kaldırımda, yolla aynı hızda kayar
       lamps = new THREE.Group();
       var poleMat = new THREE.MeshLambertMaterial({ color: color('#1a1630') });
+      // v3.0.2: ön kaldırım babaları — ışıklı tepeleriyle hızı hissettirir (3 birim arayla, 6'lık döngüye uyar)
+      for (var bi = 0; bi < 32; bi++) {
+        var bx = -48 + bi * 3;
+        var bol = new THREE.Mesh(shared.box, poleMat); bol.scale.set(0.16, 0.5, 0.16); bol.position.set(bx, GROUND + 0.25, 3.0);
+        var cap = new THREE.Mesh(shared.box, shared.lampLit); cap.scale.set(0.18, 0.06, 0.18); cap.position.set(bx, GROUND + 0.53, 3.0);
+        lamps.add(bol); lamps.add(cap);
+      }
       for (var li = 0; li < 16; li++) {
         var lx = -48 + li * 6;
         var pole = new THREE.Mesh(shared.box, poleMat);
@@ -1848,6 +1885,9 @@ window.KK = window.KK || {};
       // oyun alanı aynı genişlikte, üstte daha çok gökyüzü, altta daha çok yer görünür (siyah şerit yok)
       camera.aspect = w / h;
       vFovK = Math.max(1, (KK.W / KK.H) / camera.aspect);   // tan(dikey/2) çarpanı
+      // v3.0.2: fazladan görünen yüksekliğin %70'i üste verilir → şehir ve oyun alanı aşağı iner, alt boşluk azalır.
+      // 390×844'te: fazla alan 1 − 1/1.217 = %17.8 → aşağı kayma %17.8·0.7/2 = %6.2 ekran ≈ 53 px
+      viewShift = (1 - 1 / vFovK) * 0.7;
       camera.fov = -1;                                      // sonraki karede yeniden hesaplansın
     },
 
@@ -1915,6 +1955,7 @@ window.KK = window.KK || {};
       // Yol ve lambalar oyunla aynı hızda kayar (doku 8 birimde bir tekrar eder, lambalar 6'da bir)
       var worldScroll = state.scrollX / S;
       roadTex.offset.x = (worldScroll / 8) % 1;
+      plazaTex.offset.x = (worldScroll / 2) % 1;
       lamps.position.x = -(worldScroll % 6);
       // Pencere ışıkları hafifçe nefes alır
       // v2.5: müzik nabzı (ui.js): pencereler, hareler ve sokak pusu vuruşla birlikte parlar
@@ -1939,7 +1980,11 @@ window.KK = window.KK || {};
       warpT = Math.max(0, warpT - rdt * 1.4);
       var fov = 46 + 7 * camK + 9 * Math.sin(Math.min(1, warpT) * Math.PI) * (reduced ? 0 : 1) - 8 * finE;   // v2.5: finalde yakınlaşır
       if (vFovK > 1.0001) fov = 2 * Math.atan(Math.tan(fov * Math.PI / 360) * vFovK) * 180 / Math.PI;   // v3.0: uzun ekran
-      if (Math.abs(camera.fov - fov) > 0.01) { camera.fov = fov; camera.updateProjectionMatrix(); }
+      if (KK.DEBUG_CAMK != null) camK = KK.DEBUG_CAMK;   // test kancası (hız etkisini görmek için)
+      if (Math.abs(camera.fov - fov) > 0.01) {
+        camera.fov = fov; camera.updateProjectionMatrix();
+        if (viewShift) { camera.projectionMatrix.elements[9] = viewShift; camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert(); }   // görüntüyü NDC'de aşağı kaydır
+      }
       camera.position.set(base.x + sway, base.y, base.z + 2.6 * camK);
       if (!reduced && camK > 0.6 && state.mode === 'playing') {           // tam hıza yakın: hafif motor titreşimi
         var rum = (camK - 0.6) * 0.05;
