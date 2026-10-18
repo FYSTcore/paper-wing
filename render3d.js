@@ -271,6 +271,31 @@ window.KK = window.KK || {};
       sky: ['#020208', '#0a0a22', '#2a1e44'], fog: '#120e28', fogFar: 85, hemi: ['#c8b8ff', '#0a0814', 0.7], key: ['#ffe8c0', 0.9], rim: '#ffb070',
       city: ['#2c2650', '#201c3c', '#16122a'], win: '#ffe2a0', tower: '#28224a', edge: '#c0a8ff', base: '#100c1e',
       road: '#b0a0e0', lamp: '#ffe8b0', haze: '#c090ff', stars: 1, shapes: { spire: 1, cyl: 0.6, antenna: 0.4 } },
+    // ---- v3.1: yeni gök cisimleri ----
+    { name: 'EUROPA', kind: 17, sphere: true, R: 11.1, spin: 0.12, tilt: 0.05, incl: -0.15, atm: '#bfe0ff', atmK: 0.12, fire: '#7fe0ff', glow: '#a0d0f0',
+      sky: ['#02060e', '#0e2236', '#5a7a90'], fog: '#14283a', fogFar: 88, hemi: ['#c8dcf0', '#0e1418', 0.65], key: ['#f0f6ff', 1.0], rim: '#9ac8e8',
+      city: ['#3c4a58', '#2c3844', '#202a34'], win: '#ffb27a', tower: '#34424e', edge: '#a8c8e0', base: '#1a2228',
+      road: '#b0c4d8', lamp: '#ffd0a0', haze: '#9ac0e0', stars: 0.8, shapes: { dome: 1, spire: 0.5, box: 0.6 } },
+    { name: 'IO', kind: 18, sphere: true, R: 11.4, spin: 0.14, tilt: 0.05, incl: -0.18, atm: '#ffe080', atmK: 0.12, fire: '#ff8a1a', glow: '#ffc040',
+      sky: ['#1a0e02', '#5a3008', '#d09030'], fog: '#6a4010', hemi: ['#ffe090', '#2a1404', 0.85], key: ['#fff0c0', 1.0], rim: '#ff9030',
+      city: ['#5a4418', '#433210', '#30240a'], win: '#ff6a20', tower: '#4a3814', edge: '#e0b040', base: '#2a1c08',
+      road: '#e0c070', lamp: '#ffb050', haze: '#ffa030', stars: 0.3, shapes: { bunker: 1, cyl: 0.6, spire: 0.4 } },
+    { name: 'TITAN', kind: 19, sphere: true, R: 11.7, spin: 0.10, tilt: 0.1, incl: -0.2, atm: '#ffb050', atmK: 1.1, fire: '#ffb040', glow: '#ffa050',
+      sky: ['#2a1404', '#8a4a14', '#e09a40'], fog: '#a06020', fogNear: 16, fogFar: 54, hemi: ['#f0b060', '#2a1406', 0.85], key: ['#ffc880', 0.75], rim: '#ffa040',
+      city: ['#5a3818', '#442a12', '#321e0c'], win: '#7ad8ff', tower: '#4e3216', edge: '#c08040', base: '#2a180a',
+      road: '#d8a868', lamp: '#9ae0ff', haze: '#ffb060', stars: 0, shapes: { cyl: 1, dome: 0.6, antenna: 0.5 } },
+    { name: 'BETELGEUSE', vc: [0, 0], kind: 20, R: 13.0, spin: 1.0, tilt: 0, incl: 0, atm: '#ff6030', atmK: 1.0, fire: '#ff3a1a', glow: '#ff5a30',
+      sky: ['#100202', '#4a0806', '#a02010'], fog: '#3a0806', hemi: ['#ff9070', '#140404', 0.8], key: ['#ffa070', 1.0], rim: '#ff4020',
+      city: ['#3a1410', '#2a0e0a', '#1e0a08'], win: '#ffb060', tower: '#341210', edge: '#ff6040', edgeGlow: '#801808', base: '#180806',
+      road: '#e08070', lamp: '#ffc080', haze: '#ff5030', stars: 0.6, shapes: { spire: 1, box: 0.6, cyl: 0.4 } },
+    { name: 'CRAB NEBULA', vc: [0, 0], kind: 21, R: 14.0, spin: 1.0, tilt: 0, incl: 0, atm: '#8ab0ff', atmK: 1.0, fire: '#ff6a3a', glow: '#7a9aff',
+      sky: ['#03040e', '#141a3a', '#3a2a5a'], fog: '#141834', fogFar: 88, hemi: ['#a0b8ff', '#0a0810', 0.7], key: ['#ffd0b0', 0.9], rim: '#ff7a50',
+      city: ['#2a2c50', '#1e2040', '#14162c'], win: '#ff9a60', tower: '#24264a', edge: '#ff8a60', base: '#0e0e1e',
+      road: '#a0a8e0', lamp: '#ffb080', haze: '#7a90ff', stars: 0.8, shapes: { antenna: 0.8, spire: 0.7, box: 0.6 } },
+    { name: 'PILLARS OF CREATION', vc: [0.55, -0.05], kind: 22, R: 12.5, spin: 1.0, tilt: 0, incl: 0, atm: '#80d0b0', atmK: 1.0, fire: '#ffc04a', glow: '#7ad0b0',
+      sky: ['#020806', '#0c2a28', '#4a5a3a'], fog: '#123028', fogFar: 88, hemi: ['#c0e8d0', '#0a1008', 0.75], key: ['#ffe0a0', 0.95], rim: '#ffc060',
+      city: ['#2c3a30', '#202c24', '#16201a'], win: '#ffd080', tower: '#26342c', edge: '#d0b070', base: '#101a14',
+      road: '#a8c8b0', lamp: '#ffe0a0', haze: '#60c0a0', stars: 0.7, shapes: { spire: 1, cyl: 0.5, box: 0.5 } },
     { name: 'TON 618', kind: 'bh', R: 11.0, dx: -9, fire: '#6a1fd0', glow: '#ff8a5c',   // v2.6: finalde gölgesi daha çok görünsün diye ekrana 9 birim içeri
       sky: [P.skyTop, P.skyMid, P.skyLow], fog: '#4a3466', hemi: ['#8d79c9', P.ground, 0.75], key: ['#ffb27a', 0.95], rim: P.skyLow,
       city: [P.cityFar, P.cityNear, '#1f1a38'], win: P.glow, tower: P.tower, edge: P.towerEdge, base: '#211c3c',
@@ -278,13 +303,15 @@ window.KK = window.KK || {};
   ];
   // v2.6 Halil'in sırası: Dünya, Ay, sonra güneş sisteminde en sadeden en havalıya; halkalılar (Satürn, Uranüs) Güneş'ten hemen önce,
   // Güneş sistemin finali. Sonra derin uzayda yine sadeden havalıya; TON 618 her zaman son.
-  var ORDER = ['EARTH', 'THE MOON', 'MERCURY', 'PLUTO', 'MARS', 'VENUS', 'NEPTUNE', 'JUPITER', 'SATURN', 'URANUS', 'THE SUN',
-               'ALPHA CENTAURI', 'OORT CLOUD', 'ORION NEBULA', 'ANDROMEDA', 'MILKY WAY', 'PULSAR', 'TON 618'];
+  // v3.1: 6 yeni gök cismi havalılık sırasına yerleşti (24 gök cismi × 200 = 4800 puanlık yolculuk)
+  var ORDER = ['EARTH', 'THE MOON', 'MERCURY', 'PLUTO', 'EUROPA', 'MARS', 'VENUS', 'TITAN', 'NEPTUNE', 'IO', 'JUPITER', 'SATURN', 'URANUS', 'THE SUN',
+               'ALPHA CENTAURI', 'OORT CLOUD', 'BETELGEUSE', 'ORION NEBULA', 'CRAB NEBULA', 'ANDROMEDA', 'PILLARS OF CREATION', 'MILKY WAY', 'PULSAR', 'TON 618'];
   BODIES = ORDER.map(function (n) { return BODIES.filter(function (b) { return b.name === n; })[0]; });
   // v2.6: her gök cismine kendi kulesi (çarpışma kutusu aynı; sadece görünüş değişir, süsler boşluğa taşmaz)
   var TOWER_STYLE = { 'EARTH': 'clock', 'THE MOON': 'lunar', 'MERCURY': 'bunker', 'PLUTO': 'ice', 'MARS': 'silo', 'VENUS': 'cloud',
     'NEPTUNE': 'strips', 'JUPITER': 'bands', 'SATURN': 'ringed', 'URANUS': 'tilted', 'THE SUN': 'flare', 'ALPHA CENTAURI': 'twin',
-    'OORT CLOUD': 'shards', 'ORION NEBULA': 'crystal', 'ANDROMEDA': 'hover', 'MILKY WAY': 'obelisk', 'PULSAR': 'pylon', 'TON 618': 'clocktower' };
+    'OORT CLOUD': 'shards', 'ORION NEBULA': 'crystal', 'ANDROMEDA': 'hover', 'MILKY WAY': 'obelisk', 'PULSAR': 'pylon', 'TON 618': 'clocktower',
+    'EUROPA': 'lineae', 'IO': 'volcano', 'TITAN': 'refinery', 'BETELGEUSE': 'giant', 'CRAB NEBULA': 'web', 'PILLARS OF CREATION': 'pillar' };
   var PLANET_EVERY = KK.PLANET_EVERY = KK.TEST_BUILD ? 10 : 200;   // v2.5: test sayfasında hızlı geçiş
   KK.JOURNEY_END = BODIES.length * PLANET_EVERY;           // v2.2: son gök cisminde de 200 puan uçunca yolculuk biter
   KK.BODY_NAMES = BODIES.map(function (b) { return b.name; });                                   // kaç puanda bir gök cismi değişir (v2.0: tekrar 200)
@@ -420,6 +447,45 @@ window.KK = window.KK || {};
     '  col *= 0.85 + 0.3*fbm(q*12.0);',
     '  col = craters(q, col, 31.0); col = craters(q*1.4, col, 57.0);',
     '  return col * (0.015 + 1.15*lam);',
+    // ---- v3.1: yeni gezegen/uydu yüzeyleri ----
+    '#elif KIND == 17',                                       // EUROPA: buz kabuk, kızıl-kahve çatlak çizgileri (lineae), kaotik arazi
+    '  float m = fbm(q*2.2 + 13.0);',
+    '  vec3 col = mix(vec3(0.76,0.72,0.66), vec3(0.96,0.95,0.93), smoothstep(0.35, 0.68, m));',
+    '  col = mix(col, vec3(0.60,0.44,0.32), smoothstep(0.58, 0.74, fbm(q*3.0 + 40.0))*0.55);',      // kaotik arazi lekeleri
+    '  float rgd = 1.0 - abs(2.0*n3(q*16.0) - 1.0); col *= 1.0 - 0.12*smoothstep(0.9, 1.0, rgd);',    // ince buz kırıkları
+    // çatlaklar: küre üzerinde rastgele büyük çemberler (düzleme uzaklık ≈ 0), parça parça görünür, hafif kıvrımlı
+    '  for (int i = 0; i < 8; i++) {',
+    '    float fi = float(i) + 2.0;',
+    '    vec3 nd = normalize(vec3(h3(vec3(fi,2.0,3.0)) - 0.5, h3(vec3(fi,7.0,1.0)) - 0.5, h3(vec3(fi,4.0,9.0)) - 0.5));',
+    '    float dd = abs(dot(q, nd) + 0.05*(fbm(q*3.0 + fi) - 0.5));',
+    '    float wl = 0.006 + 0.012*h3(vec3(fi,1.0,1.0));',
+    '    float seg = smoothstep(0.38, 0.56, fbm(q*1.4 + fi*3.1));',
+    '    col = mix(col, vec3(0.80,0.62,0.48), smoothstep(wl*3.5, wl, dd)*seg*0.3);',                 // çatlak çevresi (açık pas)
+    '    col = mix(col, vec3(0.52,0.27,0.15), smoothstep(wl, wl*0.3, dd)*seg*0.9);',                 // çatlağın kendisi (koyu kızıl)
+    '  }',
+    '  return col * (0.02 + 1.1*lam);',
+    '#elif KIND == 18',                                       // IO: kükürt sarısı, beyaz kırağı, kara kalderalar, kızıl püskürme halkaları, yanan lav
+    '  float m = fbm(q*2.0 + 21.0);',
+    '  vec3 col = mix(vec3(0.92,0.80,0.36), vec3(0.98,0.95,0.78), smoothstep(0.42, 0.72, m));',
+    '  col = mix(col, vec3(0.82,0.50,0.20), smoothstep(0.55, 0.76, fbm(q*3.5 + 5.0))*0.6);',
+    '  col = mix(col, vec3(0.58,0.55,0.42), smoothstep(0.82, 0.95, abs(lat) + (m - 0.5)*0.1)*0.75);',   // kutuplar boz
+    '  float lava = 0.0;',
+    '  for (int i = 0; i < 11; i++) {',
+    '    float fi = float(i) + 3.0;',
+    '    vec3 cd = normalize(vec3(h3(vec3(fi,1.3,2.7)) - 0.5, (h3(vec3(fi,5.1,7.9)) - 0.5)*0.8, h3(vec3(fi,9.7,3.3)) - 0.5));',
+    '    float d = distance(q, cd), rr = 0.014 + 0.026*h3(vec3(fi,4.4,4.1));',
+    '    float dn = d + 0.03*(fbm(q*9.0 + fi) - 0.5);',                                                 // kenarlar düzensiz (hedef tahtası gibi olmasın)
+    '    col = mix(col, vec3(0.16,0.10,0.07), smoothstep(rr, rr*0.4, dn)*0.9);',
+    '    if (i == 0) col = mix(col, vec3(0.78,0.34,0.16), smoothstep(0.17, 0.08, dn)*smoothstep(0.03, 0.08, dn)*0.45*(0.6 + 0.6*fbm(q*6.0)));',   // tek, yumuşak kızıl püskürme izi (Pele)
+    '    lava += smoothstep(rr*0.4, 0.0, d) * (0.55 + 0.45*sin(uTime*1.8 + fi*2.3));',
+    '  }',
+    '  return col * (0.02 + 1.08*lam) + vec3(1.0, 0.36, 0.08) * lava * (0.5 + 0.9*(1.0 - lam));',   // lav gece yüzünde daha parlak
+    '#elif KIND == 19',                                       // TITAN: kalın turuncu sis, hafif kuşaklar, koyu kuzey başlığı
+    '  float tl = lat + (fbm(q*2.5) - 0.5)*0.06;',
+    '  vec3 col = mix(vec3(0.80,0.52,0.20), vec3(0.95,0.72,0.38), 0.5 + 0.5*sin(tl*6.0));',
+    '  col = mix(col, vec3(0.58,0.34,0.13), smoothstep(0.62, 0.92, lat)*0.55);',
+    '  col *= 0.93 + 0.12*fbm(q*4.0 + vec3(uTime*0.01, 0.0, 0.0));',
+    '  return col * (0.06 + 0.95*lam);',
     '#else',                                                  // VENÜS: kalın, girdaplı sarı bulut örtüsü
     '  vec3 w = q + 0.35*vec3(fbm(q*2.0 + uTime*0.02), fbm(q*2.0 + 5.0), fbm(q*2.0 + 9.0));',
     '  float v = fbm(vec3(w.x*2.0, w.y*5.0, w.z*2.0));',
@@ -505,29 +571,108 @@ window.KK = window.KK || {};
     '  float ring = exp(-pow((length(vec2(p.x, p.y*1.8)) - 1.35) / 0.28, 2.0)) * fbm(vec3(cos(ang)*3.0, sin(ang)*3.0, t*0.05 + r));',
     '  C += vec3(0.85, 0.35, 0.75) * ring * 0.85 * quad;',
     '  A = clamp(exp(-r*r*400.0), 0.0, 1.0);',
-    '#elif KIND == 16',                                   // v2.6 SAMANYOLU: Dünya'dan görünüşü — gökyüzünü çapraz kesen ışık şeridi
-    // Şerit kıvrılarak akar; ortasından koyu toz "Büyük Yarık" geçer; bir ucunda galaksinin merkezi (Yay) şişkin ve sıcak renkli;
-    // içinde pembe bulutsular ve yoğun yıldız alanı (yıldız yoğunluğu şeridin içinde ~9 kat fazla: eşik 0.995 → 0.955).
-    '  vec2 d = normalize(vec2(1.0, 0.55)), nn = vec2(-d.y, d.x);',     // sağa doğru yükselen şerit (sol alttan sağ üste)
-    '  vec2 pc = p - vec2(0.5, 0.75);',
-    '  float al = dot(pc, d), pe = dot(pc, nn);',
-    '  pe += 0.12*sin(al*0.45 + 0.6) + 0.08*(fbm(vec3(al*0.6, 0.0, t*0.02)) - 0.5);',
-    '  float w = 0.3 + 0.07*sin(al*0.7 + 1.0);',
-    '  float band = exp(-pe*pe/(w*w));',
-    '  float bulge = exp(-pow(al - 0.9, 2.0)/0.9) * exp(-pe*pe/0.16);',
-    '  float cloud = fbm(vec3(al*1.4 - t*0.01, pe*3.0, 3.0));',
-    '  float fine = fbm(vec3(al*4.0, pe*8.0, 7.0 + t*0.015));',
-    '  float rift = smoothstep(0.45, 0.72, fbm(vec3(al*1.1 + 2.0, pe*9.0, 1.0))) * exp(-pow((pe + 0.03)/0.12, 2.0)) * smoothstep(-3.0, 0.0, al);',
-    '  vec3 starC = mix(vec3(0.62, 0.70, 1.0), vec3(1.0, 0.84, 0.62), clamp(bulge*1.6, 0.0, 1.0));',
-    '  float glow = band*(0.4 + 0.6*cloud)*(0.65 + 0.55*fine) + bulge*0.75;',
-    '  C = starC * glow * (1.0 - 0.85*rift) * 1.5;',
-    '  float neb = smoothstep(0.74, 0.8, fbm(vec3(al*3.0, pe*6.0, 11.0))) * band;',
-    '  C += vec3(1.0, 0.42, 0.62) * neb * 0.4;',
-    '  vec2 g = floor(p*30.0); float sh = h3(vec3(g, 5.0));',
-    '  float st = step(mix(0.995, 0.955, band), sh);',
-    '  C += vec3(0.9, 0.95, 1.0) * st * smoothstep(0.16, 0.0, length(fract(p*30.0) - 0.5)) * (0.55 + 0.45*sin(t*(1.5 + sh*3.0) + sh*40.0));',
+    '#elif KIND == 16',                                   // v3.1 SAMANYOLU (yeniden): Dünya'dan görünen ışık şeridi — "çekilmiş resim" görünmesin diye
+    // eskiden gürültü şeride göre farklı ölçeklerde örnekleniyordu (boyuna ×1.4, enine ×3–9) → her şey boyuna uzamış görünüyordu.
+    // Artık bütün dokular İZOTROPİK (iki yönde aynı ölçek); şeridin yönünü sadece zarf (genişlik) ve toz yarığı veriyor.
+    '  vec2 d = normalize(vec2(1.0, 0.55)), nn = vec2(-d.y, d.x);',
+    '  vec2 wp = p + 0.35*vec2(fbm(vec3(p*0.6, 1.0)) - 0.5, fbm(vec3(p*0.6, 7.0)) - 0.5);',            // hafif bükülme (çizgi gibi dümdüz olmasın)
+    '  vec2 wc = wp - vec2(0.5, 0.75);',
+    '  float al = dot(wc, d), pe = dot(wc, nn) + 0.10*sin(al*0.35 + 0.6);',
+    '  float w = 0.42 + 0.10*sin(al*0.55 + 1.0) + 0.18*exp(-pow(al - 0.9, 2.0)/1.2);',                   // merkeze doğru kalınlaşır
+    '  float band = exp(-pe*pe/(w*w)), core = exp(-pe*pe/(w*w*0.22));',
+    '  float bulge = exp(-(pow(al - 0.9, 2.0)/0.75 + pe*pe/0.30));',                                     // galaksi merkezi (Yay): yuvarlak, sıcak
+    '  float cl = fbm(vec3(wp*1.7, 3.0 + t*0.01)), cl2 = fbm(vec3(wp*4.4, 9.0));',
+    '  float clouds = band * smoothstep(0.30, 0.85, cl*0.65 + cl2*0.45);',                               // yıldız bulutları (öbek öbek)
+    '  float rg = 1.0 - abs(2.0*fbm(vec3(wp*2.2, 5.0)) - 1.0), rg2 = 1.0 - abs(2.0*fbm(vec3(wp*5.2, 13.0)) - 1.0);',
+    '  float dust = smoothstep(0.58, 0.88, rg*0.7 + rg2*0.35) * exp(-pow((pe + 0.05)/(w*0.42), 2.0));',  // Büyük Yarık: ortadan geçen koyu toz
+    '  dust = max(dust, smoothstep(0.72, 0.95, rg2) * band * 0.45);',                                   // dağınık ince toz lifleri
+    '  vec3 colr = mix(vec3(0.68, 0.76, 1.0), vec3(1.0, 0.82, 0.58), clamp(bulge*1.5 + core*0.2, 0.0, 1.0));',
+    '  float glow = band*0.22 + clouds*0.85 + bulge*0.95;',
+    '  C = colr * glow * (1.0 - 0.82*dust) * 1.35;',
+    '  C += vec3(1.0, 0.36, 0.56) * smoothstep(0.80, 0.86, fbm(vec3(wp*6.5, 21.0))) * band * (1.0 - dust) * 0.5;',   // pembe bulutsu düğümleri
+    // yıldızlar: 3 katman, hücre içinde rastgele konum (ızgara düzeni görünmesin); şeritte ve bulutlarda yoğunlaşır
+    '  vec2 g1 = p*64.0, c1 = floor(g1); float h1 = h3(vec3(c1, 1.0));',
+    '  vec2 o1 = vec2(h3(vec3(c1, 2.0)), h3(vec3(c1, 3.0))) - 0.5;',
+    '  float s1 = step(mix(0.992, 0.70, clouds + bulge*0.5), h1) * smoothstep(0.22, 0.0, length(fract(g1) - 0.5 - o1*0.5));',
+    '  vec2 g2 = p*22.0, c2 = floor(g2); float h2 = h3(vec3(c2, 4.0));',
+    '  vec2 o2 = vec2(h3(vec3(c2, 5.0)), h3(vec3(c2, 6.0))) - 0.5;',
+    '  float s2 = step(mix(0.990, 0.93, band), h2) * smoothstep(0.16, 0.0, length(fract(g2) - 0.5 - o2*0.6));',
+    '  vec2 g3 = p*8.0, c3 = floor(g3); float h4 = h3(vec3(c3, 7.0)); vec2 f3 = fract(g3) - 0.5 - (vec2(h3(vec3(c3, 8.0)), h3(vec3(c3, 9.0))) - 0.5)*0.6;',
+    '  float s3 = step(0.975, h4) * (exp(-dot(f3, f3)*900.0) + exp(-length(f3)*14.0)*0.25 + (exp(-abs(f3.x)*120.0) + exp(-abs(f3.y)*120.0))*exp(-length(f3)*9.0)*0.35);',
+    '  vec3 sc = mix(vec3(0.75, 0.85, 1.0), vec3(1.0, 0.85, 0.65), h2);',                               // yıldız renk sıcaklıkları farklı
+    '  float tw = 0.75 + 0.25*sin(t*(1.3 + h1*3.0) + h1*40.0);',
+    '  C += sc * (s1*0.55 + s2*0.8 + s3*1.2) * tw * (1.0 - 0.7*dust);',
     '  C *= quad;',
-    '  A = clamp(glow*0.3 + rift*band*0.6, 0.0, 0.65) * quad;',
+    '  A = clamp(glow*0.3 + dust*band*0.55, 0.0, 0.65) * quad;',
+    '#elif KIND == 20',                                   // v3.1 BETELGEUSE: kırmızı süperdev — dev konveksiyon hücreleri, düzensiz kenar, nefes alır, toz kabukları
+    '  float ang = atan(p.y, p.x), r = length(p);',
+    '  float r0 = 0.95*(1.0 + 0.035*sin(t*0.45)) * (1.0 + 0.05*(n3(vec3(cos(ang)*2.0, sin(ang)*2.0, t*0.08)) - 0.5));',
+    '  if (r < r0) {',
+    '    vec2 u = p / r0; vec3 nrm = vec3(u, sqrt(max(0.0, 1.0 - dot(u, u))));',
+    '    float cells = fbm(vec3(nrm.xy*2.3 + nrm.z, t*0.035));',
+    '    float fine = fbm(vec3(nrm.xy*7.0, t*0.06 + 3.0));',
+    '    vec3 sc = mix(vec3(0.50, 0.07, 0.02), vec3(1.0, 0.42, 0.10), smoothstep(0.30, 0.70, cells));',
+    '    sc = mix(sc, vec3(1.0, 0.78, 0.45), smoothstep(0.66, 0.82, cells*0.8 + fine*0.3));',
+    '    float dim = smoothstep(0.55, 0.75, fbm(vec3(u*1.8 + 4.0, t*0.02))) * smoothstep(0.2, -0.6, u.y);',   // "Büyük Kararma" toz bulutu
+    '    sc *= (0.35 + 0.65*pow(nrm.z, 0.6)) * (1.0 - 0.55*dim);',
+    '    float e = smoothstep(r0, r0 - 0.02, r);',
+    '    C = sc * 1.35 * e; A = e;',
+    '  }',
+    '  float ro = max(r - r0, 0.0);',
+    '  C += vec3(1.0, 0.30, 0.10) * exp(-ro*2.6) * 0.55 * quad;',                                   // kırmızı hale
+    '  float sh1 = exp(-pow((r - 1.65)/0.22, 2.0)), sh2 = exp(-pow((r - 2.45)/0.32, 2.0));',
+    '  float clump = fbm(vec3(cos(ang)*3.0 + r, sin(ang)*3.0, t*0.02 + 5.0));',
+    '  float plume = exp(-pow(length(p - vec2(-0.55, 1.05)) / 0.45, 2.0));',                       // gerçekteki gibi tek yana taşan gaz tüyü
+    '  C += vec3(1.0, 0.45, 0.22) * (sh1*0.32 + sh2*0.18 + plume*0.35) * smoothstep(0.35, 0.75, clump) * quad;',
+    '#elif KIND == 21',                                   // v3.1 YENGEÇ BULUTSUSU: mavi senkrotron ışığı + turuncu-kızıl lif ağı + çakan pulsar
+    '  vec2 q = rot(p, -0.55); q.x /= 1.55; q.y /= 1.05;',
+    '  float e = length(q), ang = atan(q.y, q.x);',
+    '  float edge = e * (1.0 + 0.10*(fbm(vec3(cos(ang)*2.0, sin(ang)*2.0, 1.0)) - 0.5));',
+    '  float mask = smoothstep(1.05, 0.75, edge);',
+    '  vec3 w3 = vec3(p*1.4, t*0.015);',
+    '  vec3 wq = w3 + 0.5*vec3(fbm(w3 + 2.0), fbm(w3 + 8.0), 0.0);',
+    '  float fil = pow(1.0 - abs(2.0*fbm(wq*1.8) - 1.0), 7.0);',
+    '  float fil2 = pow(1.0 - abs(2.0*fbm(wq*3.6 + 4.0) - 1.0), 9.0);',
+    '  float shell = smoothstep(0.2, 0.95, edge);',
+    '  vec3 fc = mix(vec3(1.0, 0.32, 0.18), vec3(1.0, 0.72, 0.35), fbm(wq*2.5 + 9.0));',
+    '  float syn = exp(-e*e*2.2) * (0.6 + 0.4*fbm(vec3(p*2.0, t*0.03)));',
+    '  C = (vec3(0.45, 0.62, 1.0)*syn*0.9 + fc*(fil*0.9 + fil2*0.6)*(0.35 + 0.65*shell)*1.6) * mask * quad;',
+    '  float wr = 0.18 + fract(t*0.15)*0.35;',                                                       // merkezden dışa yayılan "dalgacık" halkası
+    '  C += vec3(0.7, 0.85, 1.0) * exp(-pow((length(p*vec2(1.0, 1.6)) - wr)/0.03, 2.0)) * (1.0 - fract(t*0.15)) * 0.35;',
+    '  float pr = length(p), blink = pow(abs(sin(t*9.0)), 18.0);',                                  // pulsar: saniyede ~3 çakma
+    '  C += vec3(0.9, 0.95, 1.0) * (exp(-pr*pr*2500.0)*(1.0 + 2.0*blink) + exp(-pr*22.0)*0.5*blink);',
+    '  A = clamp((fil*0.5 + syn*0.3) * mask, 0.0, 0.6) * quad;',
+    '#elif KIND == 22',                                   // v3.1 YARATILIŞ SÜTUNLARI: parlayan gazın önünde üç koyu toz sütunu, tepeleri ışıkla yanar
+    '  p *= 2.0;',                                        // derin uzay cisminde 1 birim ≈ yarım ekran → sütunlar yarı boyda
+    '  vec3 g3 = vec3(p*0.9, t*0.02);',
+    '  float gn = fbm(g3 + 0.5*vec3(fbm(g3*1.3 + 3.0), fbm(g3*1.3 + 7.0), 0.0));',
+    '  vec3 gas = mix(vec3(0.10, 0.45, 0.50), vec3(0.95, 0.72, 0.40), smoothstep(0.3, 0.75, gn + p.y*0.12));',
+    '  gas *= (0.45 + 0.75*gn) * exp(-length(p)*0.6);',
+    // sütunlar: [taban x, eğim, genişlik, tepe y]; kenarlar gürültüyle kemirilir, tepeler yuvarlak
+    '  float dust = 0.0, rim = 0.0;',
+    '  vec4 P0 = vec4(-0.55, 0.14, 0.30, 1.05), P1 = vec4(0.30, -0.04, 0.22, 0.35), P2 = vec4(0.95, 0.08, 0.16, -0.05);',
+    '  for (int i = 0; i < 3; i++) {',
+    '    vec4 c = i == 0 ? P0 : (i == 1 ? P1 : P2);',
+    '    float cx = c.x + c.y*(p.y + 1.6);',
+    '    float wd = c.z * (1.0 + 0.3*smoothstep(0.0, -1.6, p.y)) * (0.7 + 0.6*fbm(vec3(p*3.0, float(i)*5.0)));',
+    '    float dx = abs(p.x - cx + 0.06*(fbm(vec3(p*11.0, float(i))) - 0.5)) / wd;',   // kenarlar kemirilmiş, pürüzlü
+    '    float top = c.w + 0.12*(fbm(vec3(p.x*5.0, float(i), 2.0)) - 0.5);',
+    '    float dy = (p.y - top) / (wd*0.9);',
+    '    float shape = dy > 0.0 ? length(vec2(dx, dy)) : dx;',
+    '    float dI = smoothstep(1.05, 0.75, shape);',
+    '    dust = max(dust, dI);',
+    '    rim = max(rim, smoothstep(0.7, 1.0, shape) * smoothstep(1.2, 1.0, shape) * smoothstep(top - 0.9, top + 0.1, p.y));',
+    '  }',
+    '  dust *= smoothstep(-2.0, -0.9, p.y);',
+    '  vec3 dc = mix(vec3(0.10, 0.05, 0.03), vec3(0.45, 0.24, 0.12), fbm(vec3(p*6.0, 3.0))) * (0.6 + 0.5*smoothstep(-1.5, 1.2, p.y));',   // üstten aydınlanır
+    '  C = (gas*(1.0 - dust) + dc*dust + vec3(1.0, 0.85, 0.55)*rim*1.3) * quad;',
+    // JWST gibi 6 dikenli parlak yıldızlar
+    '  for (int i = 0; i < 4; i++) {',
+    '    vec2 sp = vec2(h3(vec3(float(i), 3.0, 1.0)), h3(vec3(float(i), 8.0, 2.0)))*2.6 - 1.3; vec2 dv = p - sp;',
+    '    float dl = length(dv), aa = atan(dv.y, dv.x), spk = pow(abs(cos(aa*3.0)), 60.0) * exp(-dl*5.0) + exp(-dl*dl*600.0);',
+    '    C += vec3(1.0, 0.95, 0.9) * spk * (1.0 - dust) * (0.8 + 0.2*sin(t*1.5 + float(i)));',
+    '  }',
+    '  A = clamp(dust*0.85 + gn*0.2, 0.0, 0.9) * quad;',
     '#else',                                              // ANDROMEDA: eğik sarmal galaksi
     '  vec2 q = rot(p - vec2(0.95, 0.05), -0.45); q.y /= 0.32;',   // merkez ekrana kaydırıldı
     '  float r = length(q), ang = atan(q.y, q.x);',
@@ -549,7 +694,7 @@ window.KK = window.KK || {};
     '  vec2 p = (vUv*2.0 - 1.0) * vec2(HX, HY);',
     '  float r = length(p);',
     '  float quad = smoothstep(1.0, 0.8, abs(vUv.x*2.0 - 1.0)) * smoothstep(1.0, 0.75, abs(vUv.y*2.0 - 1.0));', // dörtgen kenarı görünmesin
-    '#if KIND >= 11',
+    '#if DEEP',
     // v2.5: derin uzayda dörtgen kare; HER katman merkezden kenara yuvarlak bir geçişle söner (ışınlar/kuyruklar kesilmesin)
     '#if KIND == 16',
     '  float circ = 1.0;',                                // Samanyolu şeridi kenara kadar uzanır (sadece dörtgen kenarı söner)
@@ -590,6 +735,18 @@ window.KK = window.KK || {};
     '  }',
     '#if RING',
     '  if (rz >= 0.0) { C = rc*ra + C*(1.0 - ra); A = ra + A*(1.0 - ra); }',
+    '#endif',
+    '#if KIND == 18',                                         // v3.1 Io: kenarda yükselen volkan bulutu (şemsiye biçimi, mavimsi)
+    '  vec2 pd = normalize(vec2(-0.62, 0.78)), pn = vec2(-pd.y, pd.x), pp = p - pd*0.99;',
+    '  float pu = dot(pp, pd), pv = dot(pp, pn);',
+    '  float umb = exp(-pow((length(vec2(pv, pu*1.4)) - 0.17)/0.025, 2.0)) * step(0.0, pu);',
+    '  float col1 = exp(-pv*pv/0.0016) * exp(-pu*5.0) * step(0.0, pu);',
+    '  float pl = (umb*0.8 + col1*0.6) * step(1.0, r) * (0.75 + 0.25*sin(uTime*1.3));',
+    '  C += vec3(0.55, 0.72, 1.0) * pl * 0.6; A = max(A, pl*0.25);',
+    '#endif',
+    '#if KIND == 19',                                         // v3.1 Titan: atmosferin üstünde ayrık mavi sis katmanı
+    '  float side19 = 0.25 + 0.75*max(dot(normalize(p + vec2(1e-5)), normalize(L.xy)), 0.0);',
+    '  C += vec3(0.45, 0.68, 1.0) * exp(-pow((r - 1.04)/0.012, 2.0)) * side19 * 0.9 * quad;',
     '#endif',
     '#if KIND == 8',                                          // Güneş tacı: yavaş sönen, ışınlı hale
     '  float ang = atan(p.y, p.x);',
@@ -677,11 +834,11 @@ window.KK = window.KK || {};
         mesh = bhMesh; mat = bhMat;
         mesh.scale.setScalar(def.R / 7.5);                   // gölge yarıçapı ≈ 7.5 → diğerleriyle aynı boy
       } else {
-        var deepK = def.kind >= 11, hx = deepK ? (def.span || PL_DEEP) : PL_HX, hy = deepK ? (def.span || PL_DEEP) : PL_HY;   // v2.5 (v2.6: span = özel boy)
+        var deepK = def.kind >= 11 && !def.sphere, hx = deepK ? (def.span || PL_DEEP) : PL_HX, hy = deepK ? (def.span || PL_DEEP) : PL_HY;   // v2.5 (v2.6: span = özel boy)
         mat = new THREE.ShaderMaterial(Object.assign({
           uniforms: { uTime: { value: 0 }, uFade: { value: 0 }, uSpin: { value: def.spin }, uTilt: { value: def.tilt },
                       uIncl: { value: def.incl }, uAtmK: { value: def.atmK }, uAtm: { value: color(def.atm) } },
-          defines: { KIND: def.kind, RING: (def.kind === 4 || def.kind === 5) ? 1 : 0, HX: hx.toFixed(2), HY: hy.toFixed(2) },
+          defines: { KIND: def.kind, DEEP: deepK ? 1 : 0, RING: (def.kind === 4 || def.kind === 5) ? 1 : 0, HX: hx.toFixed(2), HY: hy.toFixed(2) },
           vertexShader: BH_VERT, fragmentShader: PL_FRAG
         }, blend));
         mesh = new THREE.Mesh(new THREE.PlaneGeometry(2 * hx * def.R, 2 * hy * def.R), mat);
@@ -1182,7 +1339,7 @@ window.KK = window.KK || {};
       var dir = capAtBottom ? 1 : -1;          // kuleye doğru yön
       var st = style;
       // Gövde: kutu (çoğu), silindir (Mars, Venüs), altıgen (Plüton, Orion)
-      var bodyGeo = (st === 'silo' || st === 'cloud') ? shared.round : (st === 'ice' || st === 'crystal') ? shared.hex : shared.box;
+      var bodyGeo = (st === 'silo' || st === 'cloud' || st === 'refinery') ? shared.round : (st === 'ice' || st === 'crystal') ? shared.hex : shared.box;
       var body = new THREE.Mesh(bodyGeo, shared.towerMat);
       body.scale.set(w, h, d); body.position.y = cy;
       if (bodyGeo === shared.hex) body.rotation.y = Math.PI / 6;   // düz yüz öne baksın (pencereler oturabilsin)
@@ -1200,7 +1357,7 @@ window.KK = window.KK || {};
       function inside(k) { return capAtBottom ? along(k) < limitHi2 : along(k) > GROUND - 2; }
       var limitHi2 = TOP_VISIBLE + 2;
       // Kapak (boşluk kenarı): biçim gök cismine göre
-      var capGeo = (st === 'silo' || st === 'cloud') ? shared.round : (st === 'ice' || st === 'crystal') ? shared.hex : shared.box;
+      var capGeo = (st === 'silo' || st === 'cloud' || st === 'refinery') ? shared.round : (st === 'ice' || st === 'crystal') ? shared.hex : shared.box;
       var cap = new THREE.Mesh(capGeo, shared.capMat);
       cap.scale.set(w * 1.18, 0.3, d * 1.18); cap.position.y = capEdge + dir * 0.15;
       cap.castShadow = true; parent.add(cap);
@@ -1261,6 +1418,28 @@ window.KK = window.KK || {};
         for (i = 0; i < 5; i++) part(shared.ball, shared.accentMat, 0.05, 0.05, 0.05, (i % 2 ? 1 : -1) * (w / 2 - 0.1), along(0.8 + i * 1.1), d / 2 + 0.03);   // köşelerde (pencerelerin dışında)
       } else if (st === 'pylon') {                            // Pulsar: vuruşla parlayan yatay halkalar
         for (i = 0; i < 3; i++) { var pr = part(shared.torus, shared.accentMat, w * 0.72, w * 0.72, 1.4, 0, along(0.65 + i * 0.75)); pr.rotation.x = Math.PI / 2; band(along(0.65 + i * 0.75), 0.08); }
+      } else if (st === 'lineae') {                           // v3.1 Europa: buz kapak + gövdede çapraz kızıl çatlak çizgileri
+        part(shared.box, shared.capMat, w * 1.1, 0.16, d * 1.1, 0, along(0.5)); band(along(0.5), 0.1);
+        for (i = 0; i < 3; i++) { kk = 1.3 + i * 2.1; if (!inside(kk)) break;
+          var ln = part(shared.box, shared.accentMat, w * 1.02, 0.04, 0.02, 0, along(kk), d / 2 + 0.015); ln.rotation.z = i % 2 ? 0.45 : -0.45; band(along(kk), 0.3); }
+      } else if (st === 'volcano') {                          // v3.1 Io: ağızda yanan lav halkası + yanlardan süzülen parlak lav kanalları
+        part(shared.box, shared.accentMat, w * 1.06, 0.07, d * 1.06, 0, along(0.38)); band(along(0.38), 0.05);
+        [-1, 1].forEach(function (sx, j) { var L1 = 1.8 + j * 1.1; part(shared.box, shared.accentMat, 0.02, L1, 0.07, sx * (w / 2 + 0.012), along(0.5 + L1 / 2), (j ? -0.15 : 0.18) * d); });
+      } else if (st === 'refinery') {                         // v3.1 Titan: metan rafinerisi — iki yan boru, küre tank, kelepçeler
+        [-1, 1].forEach(function (sx) { var ph = Math.min(h, 8); part(shared.round, shared.edgeMat, 0.09, ph, 0.09, sx * (w / 2 + 0.07), along(ph / 2 + 0.2), 0); });
+        part(shared.ball, shared.accentMat, 0.22, 0.22, 0.22, w * 0.66, along(0.65), 0.15);
+        for (i = 0; i < 3; i++) { kk = 1.4 + i * 1.8; if (!inside(kk)) break; var cl = part(shared.torus, shared.edgeMat, w * 0.53, w * 0.53, 1.4, 0, along(kk)); cl.rotation.x = Math.PI / 2; band(along(kk), 0.08); }
+      } else if (st === 'giant') {                            // v3.1 Betelgeuse: kapağa yarısı gömülü dev kızıl küre + ince bant
+        part(shared.ball, shared.accentMat, w * 0.42, w * 0.42, w * 0.42, 0, along(0.74), d * 0.25); band(along(0.74), 0.45);   // yarıçap 0.67 → en uç along(0.07): boşluğa taşmaz
+        part(shared.box, shared.edgeMat, w * 1.08, 0.1, d * 1.08, 0, along(1.2)); band(along(1.2), 0.06);
+      } else if (st === 'web') {                              // v3.1 Yengeç: gövdede çapraz lif ağı, ortasında pulsar noktası
+        for (i = 0; i < 2; i++) { kk = 1.1 + i * 2.6; if (!inside(kk + 0.6)) break;
+          [-1, 1].forEach(function (sg) { part(shared.box, shared.accentMat, w * 1.2, 0.035, 0.02, 0, along(kk), d / 2 + 0.015).rotation.z = sg * 0.75; });
+          part(shared.ball, shared.edgeMat, 0.07, 0.07, 0.07, 0, along(kk), d / 2 + 0.04); band(along(kk), 0.5); }
+      } else if (st === 'pillar') {                           // v3.1 Yaratılış Sütunları: kayalık yan çıkıntılar + ışıkla yanan uç çizgisi
+        part(shared.box, shared.accentMat, w * 1.2, 0.05, d * 1.2, 0, along(0.32)); band(along(0.32), 0.04);
+        [[-1, 0.8, 0.5], [1, 1.7, 0.4], [-1, 3.0, 0.36], [1, 4.2, 0.3]].forEach(function (q) { if (!inside(q[1])) return;
+          part(shared.box, shared.capMat, 0.2, q[2] * 2.2, d * 0.8, q[0] * (w / 2 + 0.07), along(q[1])); });
       } else if (st === 'clocktower') {                       // TON 618: saat kulesi — kadran müzikle parlar, akrep ve yelkovan zaman genişlemesiyle ağır ağır döner
         var cY = along(1.25), cZ = d / 2 + 0.02;
         part(shared.box, shared.capMat, w * 1.1, 1.35, 0.06, 0, cY, d / 2 - 0.01);
@@ -1285,7 +1464,7 @@ window.KK = window.KK || {};
       // aynı kattaki pencereler aynı yükseklikte; böylece pencereler asla üst üste binmez.
       // v2.6: yuvarlak/altıgen gövdede sadece ön yüze; kanat/alev/küre olan kulelerde yan yüzlere pencere yok; süslerin üstüne pencere yok
       var curved = bodyGeo === shared.round ? 1 : bodyGeo === shared.hex ? 2 : 0;
-      var noSide = curved > 0 || st === 'bunker' || st === 'flare' || st === 'twin' || st === 'ice';
+      var noSide = curved > 0 || st === 'bunker' || st === 'flare' || st === 'twin' || st === 'ice' || st === 'volcano' || st === 'pillar';
       while (yy > limitLo && yy < limitHi) {
         var n = 1 + (rnd() < 0.35 ? 1 : 0);    // bazen aynı katta iki pencere
         var used = {}, fy = yy + (rnd() - 0.5) * 0.12;

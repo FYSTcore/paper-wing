@@ -44,12 +44,19 @@ window.KK = window.KK || {};
     ['Andromeda', 45, 'major', [0, 5, 3, 4], 'sawtooth', 1300, 'triangle', [0, 2, 4, 5, 3, 1, 2, 4], [0, 8], [4, 12], 0.65, 24],
     // v2.6: Samanyolu — Lidyen (yükseltilmiş 4. derece "hayranlık" rengi), geniş yankı, açılıp kapanan arpej
     ['Milky Way', 48, 'lydian', [0, 4, 5, 3], 'sawtooth', 1700, 'triangle', [0, 2, 4, 5, 3, 5, 2, 4], [0, 8], [4, 12], 0.65, 24],
+    // v3.1: yeni gök cisimleri
+    ['Europa', 52, 'aeolian', [0, 5, 2, 6], 'sine', 1000, 'sine', [5, -1, 3, -1, 4, -1, 1, -1], [0, 8], [12], 0.65, 24],            // buz: seyrek, soğuk, uzun yankı
+    ['Io', 45, 'phrygDom', [0, 1, 4, 0], 'sawtooth', 1300, 'square', [0, 1, 3, 1, 0, 4, 3, 1], [0, 3, 8, 10], [4, 12], 0.35, 12],   // volkan: sert, doğulu frigyen dominant
+    ['Titan', 47, 'dorian', [0, 6, 3, 4], 'triangle', 800, 'triangle', [0, 2, -1, 4, 2, -1, 5, 3], [0, 8], [4, 12], 0.60, 12],        // sis: boğuk, gizemli
+    ['Betelgeuse', 40, 'harmMinor', [0, 5, 3, 4], 'sawtooth', 900, 'triangle', [0, -1, 2, -1, 4, -1, 5, 4], [0, 10], [4, 12], 0.60, 24],   // dev yıldız: alçak, ağır
+    ['Crab Nebula', 49, 'phrygian', [0, 3, 1, 6], 'square', 1100, 'square', [0, 3, 5, 3, 1, 4, 5, 4], [0, 4, 8, 12], [4, 12], 0.45, 12],   // pulsar kalbi: kare dalga, düz vuruş
+    ['Pillars of Creation', 50, 'mixolydian', [0, 3, 6, 4], 'sawtooth', 1500, 'triangle', [0, 4, 2, 5, 1, 4, 3, 5], [0, 8, 11], [4, 12], 0.60, 24],   // görkemli
     ['TON 618', 33, 'harmMinor', [0, 1, 0, 5], 'sawtooth', 420, 'sine', [4, -1, -1, -1, 5, -1, -1, -1], [0, 3], [], 0.75, 36]
   ];
   // v2.6: yolculuk sırası (render3d.js'deki ORDER ile aynı). Temalar sıra numarasıyla eşleştiği için aynı sıraya dizilir.
   (function () {
-    var ORDER = ['Earth', 'Moon', 'Mercury', 'Pluto', 'Mars', 'Venus', 'Neptune', 'Jupiter', 'Saturn', 'Uranus', 'Sun',
-                 'Alpha Centauri', 'Oort Cloud', 'Orion Nebula', 'Andromeda', 'Milky Way', 'Pulsar', 'TON 618'];
+    var ORDER = ['Earth', 'Moon', 'Mercury', 'Pluto', 'Europa', 'Mars', 'Venus', 'Titan', 'Neptune', 'Io', 'Jupiter', 'Saturn', 'Uranus', 'Sun',
+                 'Alpha Centauri', 'Oort Cloud', 'Betelgeuse', 'Orion Nebula', 'Crab Nebula', 'Andromeda', 'Pillars of Creation', 'Milky Way', 'Pulsar', 'TON 618'];
     var byName = {}; LEGACY.forEach(function (L) { byName[L[0]] = L; });
     LEGACY = ORDER.map(function (n) { return byName[n]; });
   })();
@@ -92,8 +99,11 @@ window.KK = window.KK || {};
     });
     return o;
   }
+  // v3.1: kayıtlı temalar İSİMLE eşleşir (gök cismi eklenince/sıra değişince editörde yaptığın ayarlar başka gezegene kaymaz)
   function normalizeAll(list) {
-    return DEFAULTS.map(function (d, i) { return normalize(list && list[i], i); });
+    var named = Array.isArray(list) && list.some(function (t) { return t && t.name; }), byName = {};
+    if (named) list.forEach(function (t) { if (t && t.name) byName[t.name] = t; });
+    return DEFAULTS.map(function (d, i) { return normalize(named ? byName[d.name] : (list && list[i]), i); });
   }
 
   function midiHz(m) { return 440 * Math.pow(2, (m - 69) / 12); }
