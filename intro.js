@@ -77,7 +77,7 @@ var HOLO = (function () {
   }
   function setup(src) {
     aspect = src.width / src.height;
-    var dpr = Math.min(window.devicePixelRatio || 1, 3), cssW = Math.min(innerWidth * .84, 560), cssH = cssW / aspect;
+    var dpr = Math.min(window.devicePixelRatio || 1, 3), cssW = Math.min(innerWidth * .76, 500)   /* v3.0: %84 → %76 (biraz küçük) */, cssH = cssW / aspect;
     cv.style.width = cssW + 'px'; cv.style.height = cssH + 'px'; cv.width = Math.round(cssW * dpr); cv.height = Math.round(cssH * dpr);
     gl = cv.getContext('webgl', { premultipliedAlpha: true, alpha: true, antialias: false });
     if (!gl) { var x2 = cv.getContext('2d'); if (x2) x2.drawImage(src, 0, 0, cv.width, cv.height); return false; }

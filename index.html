@@ -44,8 +44,9 @@
   #game { display: block; touch-action: none; }
   #hud { position: absolute; inset: 0; pointer-events: none; }
   #score {
-    position: absolute; top: max(1.6%, env(safe-area-inset-top, 0px)); left: 0; right: 0; text-align: center;   /* v2.1: yukarı (görüşü kapatmasın) */
-    font-family: var(--font-display); font-size: clamp(36px, 10.5vmin, 62px); color: var(--paper);
+    /* v3.0: alta — üstteki gök cisimlerini kapatmasın. Duraklat/ses (sağ alt) ve canlar (sol alt) ile aynı satır: 44 px yükseklik, alttan 14 px */
+    position: absolute; bottom: max(14px, env(safe-area-inset-bottom, 0px)); left: 0; right: 0; height: 44px; line-height: 44px; text-align: center;
+    font-family: var(--font-display); font-size: clamp(30px, 9vmin, 50px); color: var(--paper);
     text-shadow: 0 3px 0 var(--ink), 0 0 18px rgba(255, 207, 107, 0.35);
     font-variant-numeric: tabular-nums;
     transform-origin: 50% 60%;
@@ -77,7 +78,7 @@
 <script>
   window.KK = window.KK || {};
   // Her güncellemede bunu ve sw.js'deki VERSION'ı birlikte artır
-  KK.APP_VERSION = '2.6.3';
+  KK.APP_VERSION = '3.0';
   KK.W = 360; KK.H = 640; KK.GROUND_Y = 584;
   KK.PALETTE = { skyTop:'#1b1838', skyMid:'#5a3a6e', skyLow:'#e9825a', sun:'#ffcf6b', cityFar:'#3a2f5c', cityNear:'#26203f', tower:'#2e2852', towerEdge:'#4a3f7a', clockFace:'#f3ead8', clockInk:'#1b1838', paper:'#fbf7ef', paperShade:'#d9d0c0', ground:'#171430', groundTop:'#3d335f', glow:'#ffcf6b', text:'#fbf7ef' };
 </script>
@@ -94,7 +95,12 @@
 
   // v2.5: daha keskin gezegenler için çözünürlük sınırı 1.75 → 2.0 (piksel yükü 2.0²/1.75² = +%31).
   // Koruma: oynarken ilk 180 karenin ortalaması 50 fps altındaysa sınır 1.5'e iner (1.5²/1.75² = −%26).
-  var dprCap = 2.0, perfN = 0, perfMs = 0, perfDone = false;
+  // v3.0: kademeli otomatik kalite. Her 180 karelik ölçümde ortalama < 50 fps ise bir kademe iner:
+  //   0: DPR 2.0 + gölge → 1: DPR 1.5 (piksel −%44) → 2: DPR 1.25 (−%61) → 3: DPR 1.25 + gölgeler kapalı
+  // Seçilen kademe cihazda saklanır, sonraki açılışta oradan başlar (her seferinde baştan yavaşlamasın).
+  var PERF_KEY = 'kk.perf', LV_DPR = [2.0, 1.5, 1.25, 1.25];
+  var perfLv = 0; try { perfLv = Math.max(0, Math.min(3, parseInt(localStorage.getItem(PERF_KEY), 10) || 0)); } catch (e) { /* yoksay */ }
+  var dprCap = LV_DPR[perfLv], perfN = 0, perfMs = 0, perfDone = perfLv >= 3;
   function resize() {
     var dpr = Math.min(window.devicePixelRatio || 1, dprCap); // 3D'de piksel yükünü sınırla (v2.5: 2.0, yavaş cihazda 1.5)
     var scale = Math.min(window.innerWidth / KK.W, window.innerHeight / KK.H);
@@ -108,6 +114,7 @@
   var state = KK.Game.create();
   try { KK.Render3D.init(canvas, document.getElementById('hud')); }
   catch (err) { document.getElementById('fallback').hidden = false; return; }
+  if (perfLv >= 3 && KK.Render3D.lowPower) KK.Render3D.lowPower();
   window.addEventListener('resize', resize);
   resize();
 
@@ -137,7 +144,15 @@
     }
     if (!perfDone && state.mode === 'playing' && !paused && rawMs < 250) {
       perfN++; perfMs += rawMs;
-      if (perfN >= 180) { perfDone = true; if (1000 * perfN / perfMs < 50 && dprCap > 1.5) { dprCap = 1.5; resize(); } }
+      if (perfN >= 180) {
+        if (1000 * perfN / perfMs < 50) {
+          perfLv++; dprCap = LV_DPR[perfLv]; resize();
+          if (perfLv >= 3 && KK.Render3D.lowPower) KK.Render3D.lowPower();
+          try { localStorage.setItem(PERF_KEY, String(perfLv)); } catch (e) { /* yoksay */ }
+          perfDone = perfLv >= 3;
+        } else perfDone = true;            // yeterince akıcı → ölçüm biter
+        perfN = 0; perfMs = 0;
+      }
     }
     state.best = KK.UI.getBest();
     if (KK.UI.skinFor) KK.Render3D.setSkin(KK.UI.skinFor(state.mode));
@@ -145,7 +160,7 @@
     KK.UI.handleEvents(state.events, state);
     KK.UI.update(state);
     state.events.length = 0;
-    verEl.hidden = state.mode !== 'ready';
+    var vh = state.mode !== 'ready'; if (verEl.hidden !== vh) verEl.hidden = vh;   // v3.0: DOM'a sadece değişince yaz
     // Yeni sürüm indirildiyse: oyun ortasında değil, ana ekrandayken sessizce yenile
     if (KK.updateReady && state.mode === 'ready') { KK.updateReady = false; location.reload(); return; }
     requestAnimationFrame(frame);

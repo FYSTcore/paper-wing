@@ -415,11 +415,17 @@
   }
 
   // ---------- v2.0: Skinler, dev hediyesi, durdurma ----------
-  var SKIN_KEY = 'kk.skin', DEV_KEY = 'kk.dev', MUSIC_KEY = 'kk.music';
+  var SKIN_KEY = 'kk.skin', DEV_KEY = 'kk.dev', CODES_KEY = 'kk.codes', MUSIC_KEY = 'kk.music';
   // Dev hediyesi kodunun SHA-256 özeti ('paperwing:' + KOD). Kodun kendisi hiçbir dosyada yok:
   // özetten koda geri dönmek mümkün değil; tahminle bulmak 32^12 ≈ 1.2·10^18 deneme ister.
-  var DEV_HASH = '078af0359ac79e276cb61799f7312c35298086ceb461f2eb0909933cfa1543aa';
-  var devOn = false;
+  // v3.0: birden fazla gizli skin — her kodun özeti bir skini açar (kodlar dosyada yok, sadece özetleri)
+  var CODE_SKINS = {
+    '078af0359ac79e276cb61799f7312c35298086ceb461f2eb0909933cfa1543aa': { id: 'fyst',   msg: 'Dev gift unlocked ✦' },
+    '2f76b5a7a11b2f436cccbf9306f1d3c5a02b74d91332de55e701131a27db11bf': { id: 'aga',    msg: 'AGA unlocked ♥' },
+    'b8eb0345bf8a22d06380b4a5665f9a6c00de553ed9d5b8515c7d0d842bf2b4a8': { id: 'cheers', msg: 'Cheers! 🍺' }
+  };
+  var owned = {};          // açılmış gizli skinler: { fyst: true, ... }
+  function readCodes() { try { var a = JSON.parse(readStore(CODES_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
   var skinSel = readStore(SKIN_KEY) || 'paper';   // uçarken kullanılan (kilidi açık) skin
   var browse = skinSel;                            // ana ekranda göz atılan (kilitli de olabilir)
   var musicOn = readStore(MUSIC_KEY) !== '0';
@@ -450,7 +456,6 @@
     el.tabs.hidden = !on;
     Object.keys(el.tabBtns).forEach(function (k) { var b = el.tabBtns[k]; b.classList.toggle('is-on', k === boardTab); b.setAttribute('aria-selected', k === boardTab ? 'true' : 'false'); });
     el.nameForm.hidden = true; el.boardMe.hidden = true;
-    el.xfer.hidden = !(boardTab === 'local' || !on);
     if (boardTab !== 'local' && on) return renderOnline(boardTab);
     renderLocal();
   }
@@ -506,35 +511,6 @@
     if (run <= 0) return;
     try { KK.Online.submit({ score: s.score | 0, run: run, secs: s.runTime || 0, stars: stars, skin: skinSel }); } catch (e) { /* yoksay */ }
   }
-  // ---- v2.6: kayıt kodu ----
-  var SAVE_KEYS = ['kk.best', 'kk.cp', 'kk.stars', 'kk.scores', 'kk.skin', 'kk.dev', 'kk.music', 'kk.muted', 'kk.vol.mus', 'kk.vol.sfx',
-    'kk.name', 'kk.nameAsked', 'kk.ioshint', 'kk.fb.auth', 'kk.fb.best', 'kk.fb.week', 'kk.fb.queue'];
-  function saveCode() {
-    var o = {}; SAVE_KEYS.forEach(function (k) { var v = readStore(k); if (v != null) o[k] = v; });
-    return 'PW1:' + btoa(unescape(encodeURIComponent(JSON.stringify(o))));
-  }
-  function readCode(code) {
-    code = String(code || '').replace(/\s+/g, '');
-    if (code.indexOf('PW1:') !== 0) return null;
-    try { var o = JSON.parse(decodeURIComponent(escape(atob(code.slice(4))))); return o && typeof o === 'object' ? o : null; } catch (e) { return null; }
-  }
-  var xferWarned = false;
-  function copySave() {
-    var code = saveCode();
-    var shown = function () { el.xText.hidden = false; el.xText.value = code; el.xLoad.hidden = true; try { el.xText.focus(); el.xText.select(); } catch (e) { /* yoksay */ } };
-    var ok = function () { el.xMsg.textContent = 'Copied. Send it to yourself, then paste it in the new app.'; };
-    try { navigator.clipboard.writeText(code).then(ok, function () { shown(); el.xMsg.textContent = 'Copy the code above and send it to yourself.'; }); }
-    catch (e) { shown(); el.xMsg.textContent = 'Copy the code above and send it to yourself.'; }
-  }
-  function loadSave() {
-    var o = readCode(el.xText.value);
-    if (!o) { el.xMsg.textContent = 'That is not a Paper Wing save code.'; return; }
-    var theirs = parseInt(o['kk.best'], 10) || 0;
-    if (theirs < best && !xferWarned) { xferWarned = true; el.xMsg.textContent = 'This save\u2019s best is ' + theirs + ', lower than this phone\u2019s ' + best + '. Tap Load again to replace it.'; return; }
-    SAVE_KEYS.forEach(function (k) { try { if (o[k] == null) window.localStorage.removeItem(k); else writeStore(k, o[k]); } catch (e) { /* yoksay */ } });
-    el.xMsg.textContent = 'Progress loaded. Restarting\u2026';
-    setTimeout(function () { location.reload(); }, 900);
-  }
   function openBoard() { renderBoard(); toggle(el.board, 'board', true); }
   // v2.5.1: isim girmeyen oyuncunun skoru hiç gönderilmiyordu (tabloyu hiç açmayan = tabloda yok).
   // İlk düşüşte isim kutusu bir kez kendiliğinden açılır; skor bekler, isim kaydedilince gönderilir.
@@ -584,10 +560,11 @@
       return Array.prototype.map.call(new Uint8Array(buf), function (b) { return ('0' + b.toString(16)).slice(-2); }).join('');
     });
   }
-  function checkDev(code) { return sha256('paperwing:' + normCode(code)).then(function (h) { return h === DEV_HASH; }); }
+  // kod → açtığı skin kaydı (yoksa null)
+  function checkCode(code) { return sha256('paperwing:' + normCode(code)).then(function (h) { return CODE_SKINS[h] || null; }); }
 
-  function skinList() { return (KK.SKINS || []).filter(function (k) { return !k.secret || devOn; }); }
-  function skinUnlocked(k) { return k.secret ? devOn : k.stars ? stars >= k.stars : best >= (k.req || 0); }
+  function skinList() { return (KK.SKINS || []).filter(function (k) { return !k.secret || owned[k.id]; }); }
+  function skinUnlocked(k) { return k.secret ? !!owned[k.id] : k.stars ? stars >= k.stars : best >= (k.req || 0); }
   function findSkin(id) { var l = skinList(); for (var i = 0; i < l.length; i++) if (l[i].id === id) return l[i]; return null; }
   function stepSkin(d) {
     var l = skinList(); if (!l.length) return;
@@ -604,7 +581,9 @@
     el.skinName.textContent = k ? k.name : '';
     el.skinLock.textContent = !k ? '' : skinUnlocked(k) ? (i + 1) + ' / ' + l.length : (k.stars ? 'LOCKED · finish the journey' + (k.stars > 1 ? ' ' + k.stars + '×' : '') : 'LOCKED · reach ' + k.req);
     el.skins.classList.toggle('is-locked', !!k && !skinUnlocked(k));
-    el.skins.classList.toggle('is-dev', !!k && !!k.secret);
+    // v3.0: isim stilleri — DEV FYST holografik logo yazısı, AGA yeşil-altın, CHEERS bira köpüğü, ★ skinler gökkuşağı
+    var st = !k ? '' : k.id === 'fyst' ? 'dev' : k.id === 'aga' ? 'aga' : k.id === 'cheers' ? 'cheers' : k.stars ? 'star' : '';
+    ['dev', 'aga', 'cheers', 'star'].forEach(function (c) { el.skins.classList.toggle('is-' + c, st === c); });
   }
 
   function pause() {
@@ -646,11 +625,12 @@
   function closeCode() { toggle(el.code, 'code', false); try { el.codeInput.blur(); } catch (e) { /* yoksay */ } }
   function submitCode() {
     var v = el.codeInput.value;
-    checkDev(v).then(function (ok) {
-      if (!ok) { el.codeMsg.textContent = 'Wrong code'; el.codeCard.classList.remove('kk-shake'); void el.codeCard.offsetWidth; el.codeCard.classList.add('kk-shake'); return; }
-      devOn = true; writeStore(DEV_KEY, normCode(v));
-      browse = skinSel = 'fyst'; writeStore(SKIN_KEY, skinSel);
-      el.codeMsg.textContent = 'Dev gift unlocked ✦';
+    checkCode(v).then(function (hit) {
+      if (!hit) { el.codeMsg.textContent = 'Wrong code'; el.codeCard.classList.remove('kk-shake'); void el.codeCard.offsetWidth; el.codeCard.classList.add('kk-shake'); return; }
+      owned[hit.id] = true;
+      var list = readCodes(), n = normCode(v); if (list.indexOf(n) < 0) { list.push(n); writeStore(CODES_KEY, JSON.stringify(list)); }
+      browse = skinSel = hit.id; writeStore(SKIN_KEY, skinSel);
+      el.codeMsg.textContent = hit.msg;
       renderSkin();
       setTimeout(closeCode, 1300);
     }, function () { el.codeMsg.textContent = 'Not supported here'; });
@@ -804,16 +784,7 @@
     var boardList = h('ol', 'kk-board-list');
     var boardMe = h('button', 'kk-btn kk-board-me'); boardMe.type = 'button';
     var boardClose = h('button', 'kk-btn kk-ghost', 'Close'); boardClose.type = 'button';
-    // v2.6: ilerlemeyi taşı (yeni uygulamaya / başka telefona). Kayıt kodu = tüm kk.* ayarlarının base64'ü
-    var xfer = h('div', 'kk-xfer'); xfer.hidden = true;
-    var xRow = h('div', 'kk-xrow'), xCopy = h('button', 'kk-btn kk-ghost', 'Copy save code'), xPaste = h('button', 'kk-btn kk-ghost', 'Paste save code');
-    xCopy.type = xPaste.type = 'button'; xRow.appendChild(xCopy); xRow.appendChild(xPaste);
-    var xText = h('textarea', 'kk-input kk-xtext'); xText.rows = 3; xText.hidden = true; xText.placeholder = 'Paste your save code here'; xText.setAttribute('aria-label', 'Save code');
-    var xLoad = h('button', 'kk-btn kk-again', 'Load progress'); xLoad.type = 'button'; xLoad.hidden = true;
-    var xMsg = h('p', 'kk-code-msg', '');
-    xfer.appendChild(h('p', 'kk-label', 'Move your progress to another phone or the new app'));
-    xfer.appendChild(xRow); xfer.appendChild(xText); xfer.appendChild(xLoad); xfer.appendChild(xMsg);
-    bcard.appendChild(boardList); bcard.appendChild(boardMe); bcard.appendChild(xfer); bcard.appendChild(boardClose);
+    bcard.appendChild(boardList); bcard.appendChild(boardMe); bcard.appendChild(boardClose);
     boardL.appendChild(bcard);
 
     // Ekran okuyucu duyurusu
@@ -843,8 +814,7 @@
       progress: progress, starBadge: starBadge, finish: finL, finStars: finStars, finGift: finGift, rebirthBtn: rebirthBtn,
       code: codeL, codeCard: ccard, codeInput: codeInput, codeMsg: codeMsg, codeCancel: codeCancel,
       board: boardL, boardBtn: boardBtn, boardList: boardList, boardClose: boardClose,
-      tabs: tabs, tabBtns: tabBtns, nameForm: nameForm, nameInput: nameInput, boardMe: boardMe,
-      xfer: xfer, xCopy: xCopy, xPaste: xPaste, xText: xText, xLoad: xLoad, xMsg: xMsg
+      tabs: tabs, tabBtns: tabBtns, nameForm: nameForm, nameInput: nameInput, boardMe: boardMe
     };
   }
 
@@ -867,11 +837,13 @@
     s.setProperty('--kk-w', r.width + 'px');
     s.setProperty('--kk-h', r.height + 'px');
     s.setProperty('--kk-r', Math.max(0, window.innerWidth - r.right) + 'px');
+    s.setProperty('--kk-b', Math.max(0, window.innerHeight - r.bottom) + 'px');   // v3.0: alt düğmeler için
   }
 
   // ---------- Girdi ----------
   function isButton(target) {
-    return !!(target && target.closest && target.closest('.kk-btn, .kk-input, .kk-ccard, .kk-bcard, .kk-board'));
+    // v3.0: skin seçici satırı da (oklar arası boşluk dahil) oyunu başlatmaz
+    return !!(target && target.closest && target.closest('.kk-btn, .kk-input, .kk-ccard, .kk-bcard, .kk-board, .kk-skins'));
   }
 
   // Ortak eylem: moda göre kanat çırp ya da yeniden başla
@@ -962,9 +934,6 @@
     el.pauseBtn.addEventListener('click', function (e) { unlockAudio(); releaseFocus(e, el.pauseBtn); pause(); });
     el.boardBtn.addEventListener('click', function (e) { releaseFocus(e, el.boardBtn); openBoard(); });
     el.boardClose.addEventListener('click', function (e) { releaseFocus(e, el.boardClose); closeBoard(); });
-    el.xCopy.addEventListener('click', function (e) { releaseFocus(e, el.xCopy); copySave(); });
-    el.xPaste.addEventListener('click', function (e) { releaseFocus(e, el.xPaste); el.xText.hidden = false; el.xLoad.hidden = false; el.xText.value = ''; el.xMsg.textContent = ''; xferWarned = false; try { el.xText.focus(); } catch (er) { /* yoksay */ } });
-    el.xLoad.addEventListener('click', function (e) { releaseFocus(e, el.xLoad); loadSave(); });
     el.board.addEventListener('pointerdown', function (e) { if (e.target === el.board) { e.stopPropagation(); closeBoard(); } });
     Object.keys(el.tabBtns).forEach(function (k) { el.tabBtns[k].addEventListener('click', function (e) { releaseFocus(e, el.tabBtns[k]); boardTab = k; renderBoard(); }); });
     el.nameForm.addEventListener('submit', function (e) {
@@ -1078,8 +1047,12 @@
       renderSkin(); renderMusicBtn(); renderProgress();
       buildIosHint();
       if (KK.Online) { try { KK.Online.flush(); } catch (e) { /* yoksay */ } }   // v2.5: bekleyen skoru gönder
-      var saved = readStore(DEV_KEY);                // kayıtlı kod hâlâ doğru mu? (özetle kontrol)
-      if (saved) checkDev(saved).then(function (ok) { if (ok) { devOn = true; skinSel = readStore(SKIN_KEY) || skinSel; browse = skinSel; renderSkin(); } }, noop);
+      // kayıtlı kodlar hâlâ doğru mu? (özetle kontrol) — v2.x'ten kalan tek dev kodu (kk.dev) da sayılır
+      var saved = readCodes(), legacy = readStore(DEV_KEY); if (legacy && saved.indexOf(normCode(legacy)) < 0) saved.push(normCode(legacy));
+      if (saved.length) Promise.all(saved.map(function (c) { return checkCode(c).catch(function () { return null; }); })).then(function (hits) {
+        var any = false; hits.forEach(function (hh) { if (hh) { owned[hh.id] = true; any = true; } });
+        if (any) { skinSel = readStore(SKIN_KEY) || skinSel; browse = skinSel; renderSkin(); }
+      }, noop);
     },
     isPaused: function () { return paused; },
     startOpts: function () { return { score: checkpoint, rebirth: stars }; },

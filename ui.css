@@ -298,10 +298,10 @@
 }
 .kk-hint.is-on { opacity: .85; }
 
-/* Sessiz düğmesi: çerçevenin sağ üstü, güvenli alanın içinde */
+/* Sessiz düğmesi: v3.0'dan beri çerçevenin SAĞ ALTI (üstteki gök cisimlerini kapatmasın) */
 .kk-mute {
   position: absolute;
-  top: max(10px, calc(env(safe-area-inset-top, 0px) + 8px - var(--kk-y)));
+  bottom: max(14px, calc(env(safe-area-inset-bottom, 0px) + 8px - var(--kk-b, 0px)));
   right: max(10px, calc(env(safe-area-inset-right, 0px) + 8px - var(--kk-r)));
   width: 44px;
   height: 44px;
@@ -361,8 +361,9 @@
   font-size: clamp(13px, 4cqw, 17px);
 }
 .kk-arrow {
-  width: 40px;
-  height: 40px;
+  flex: none;
+  width: 46px;
+  height: 46px;
   padding: 0;
   font-size: 26px;
   line-height: 1;
@@ -373,7 +374,9 @@
 }
 .kk-arrow:active { transform: scale(.92); }
 .kk-skin-info {
-  min-width: 9.5em;
+  /* v3.0: sabit genişlik → oklar isim uzunluğuna göre kaymaz (eskiden min-width idi) */
+  width: 10.5em;
+  flex: none;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -381,6 +384,10 @@
   text-shadow: 0 2px 6px var(--ink);
 }
 .kk-skin-name {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-family: var(--font-display);
   font-size: 1.1em;
   letter-spacing: .06em;
@@ -394,13 +401,51 @@
   opacity: .75;
 }
 .kk-skins.is-locked .kk-skin-name { color: var(--paper); opacity: .55; }
-.kk-skins.is-dev .kk-skin-name {
+.kk-skins.is-star .kk-skin-name {
+  /* v3.0: yıldızla açılan skinler — gökkuşağı akan isim */
   background: linear-gradient(90deg, #ff6ad5, #ffd36a, #6affd2, #6a9bff, #ff6ad5);
   background-size: 200% 100%;
   -webkit-background-clip: text; background-clip: text;
   color: transparent;
   animation: kk-holo 3s linear infinite;
 }
+/* v3.0: DEV FYST — açılıştaki FYST logosunun yazısı: Anton, dikeyde 0.596 basık, holografik beyaz/pembe/mavi */
+.kk-skins.is-dev .kk-skin-name {
+  font-family: "Anton", var(--font-display);
+  font-size: 2.3em;
+  line-height: 1;
+  letter-spacing: .04em;
+  transform: scaleY(.596);
+  margin: -.2em 0 -.24em;
+  overflow: visible;
+  background: linear-gradient(100deg, #ffffff 0%, #ffc6e6 22%, #ff8cc8 34%, #ffffff 50%, #8cc8ff 66%, #e3b8f2 80%, #ffffff 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 6px rgba(255, 150, 210, .55)) drop-shadow(0 2px 0 #1b1838);
+  animation: kk-holo 2.4s linear infinite;
+}
+/* v3.0: AGA — zümrüt yeşili, ışıltılı altın süpürme */
+.kk-skins.is-aga .kk-skin-name {
+  font-size: 1.35em;
+  letter-spacing: .2em;
+  background: linear-gradient(90deg, #2fbf71, #8affc0, #ffe9a0, #8affc0, #2fbf71);
+  background-size: 200% 100%;
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 0 #062a18) drop-shadow(0 0 6px rgba(90, 255, 168, .5));
+  animation: kk-holo 4s linear infinite;
+}
+/* v3.0: CHEERS — kehribar bira, köpük beyazı */
+.kk-skins.is-cheers .kk-skin-name {
+  background: linear-gradient(180deg, #fffbe8 0 34%, #ffc547 38%, #d9861a 100%);
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 0 #1a0a02) drop-shadow(0 0 6px rgba(255, 197, 71, .5));
+}
+/* Gradyan isimlerde text-shadow yazının ÜSTÜNE çizilip onu karartıyordu → gölge yerine filter: drop-shadow */
+.kk-skins.is-star .kk-skin-name, .kk-skins.is-dev .kk-skin-name, .kk-skins.is-aga .kk-skin-name, .kk-skins.is-cheers .kk-skin-name { text-shadow: none; }
+.kk-skins.is-star .kk-skin-name { filter: drop-shadow(0 2px 0 #1b1838) drop-shadow(0 0 5px rgba(255, 255, 255, .25)); }
 @keyframes kk-holo { to { background-position: 200% 0; } }
 
 /* Gizli dokunma alanı: sürüm yazısının üstünde, görünmez */
@@ -419,7 +464,7 @@
 /* ---------- v2.0: Durdurma ---------- */
 .kk-pause {
   position: absolute;
-  top: max(10px, calc(env(safe-area-inset-top, 0px) + 8px - var(--kk-y)));
+  bottom: max(14px, calc(env(safe-area-inset-bottom, 0px) + 8px - var(--kk-b, 0px)));
   right: calc(max(10px, calc(env(safe-area-inset-right, 0px) + 8px - var(--kk-r))) + 52px);
   width: 44px;
   height: 44px;
@@ -518,7 +563,8 @@
   #intro { position: fixed; inset: 0; background: #000; display: grid; place-items: center; z-index: 1000; touch-action: none; }
   #intro.out { opacity: 0; transition: opacity .4s ease; }
   #introFlash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
-  #introLogo { position: relative; opacity: 0; will-change: transform; }
+  /* v3.0: optik merkez — kutu ekranın tam ortasında 'aşağıda' görünüyordu; alt boşluk 7vh → logo 3.5vh yukarı */
+  #introLogo { position: relative; opacity: 0; will-change: transform; margin-bottom: 7vh; }
   #introCv { display: block; filter: drop-shadow(0 0 0 rgba(255, 170, 220, 0)); }
   .introStar { position: absolute; right: -3%; top: -12%; width: 16%; aspect-ratio: 1; opacity: 0; transform: scale(0); pointer-events: none;
     background: radial-gradient(circle, #fff 0 6%, rgba(255, 200, 235, .85) 9%, transparent 30%),
@@ -627,11 +673,3 @@
 .kk-nameinput { text-transform: none; letter-spacing: .02em; }
 .kk-board-me { align-self: center; min-height: 32px; padding: 4px 10px; border: 0; background: transparent; color: var(--dusk); font: 700 12px/1.35 var(--font-body); white-space: pre-line; text-decoration: underline; text-underline-offset: 3px; opacity: .8; }
 .kk-board-me[hidden] { display: none; }
-
-/* v2.6: kayıt kodu (ilerlemeyi taşı) */
-.kk-xfer { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
-.kk-xfer[hidden] { display: none; }
-.kk-xrow { display: flex; gap: 8px; }
-.kk-xrow .kk-btn { flex: 1; min-width: 0; }
-.kk-xtext { text-transform: none; letter-spacing: 0; text-align: left; font: 600 11px/1.35 ui-monospace, Menlo, Consolas, monospace; min-height: 64px; resize: none; word-break: break-all; }
-.kk-xtext[hidden], .kk-xfer .kk-btn[hidden] { display: none; }
