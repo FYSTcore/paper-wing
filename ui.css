@@ -564,7 +564,7 @@
   #intro.out { opacity: 0; transition: opacity .4s ease; }
   #introFlash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
   /* v3.0: optik merkez — kutu ekranın tam ortasında 'aşağıda' görünüyordu; alt boşluk 7vh → logo 3.5vh yukarı */
-  #introLogo { position: relative; opacity: 0; will-change: transform; margin-bottom: 7vh; }
+  #introLogo { position: relative; opacity: 0; will-change: transform; }   /* v3.0.4: tam ortada (uygulama artık gerçekten tam ekran) */
   #introCv { display: block; filter: drop-shadow(0 0 0 rgba(255, 170, 220, 0)); }
   .introStar { position: absolute; right: -3%; top: -12%; width: 16%; aspect-ratio: 1; opacity: 0; transform: scale(0); pointer-events: none;
     background: radial-gradient(circle, #fff 0 6%, rgba(255, 200, 235, .85) 9%, transparent 30%),

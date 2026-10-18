@@ -1,6 +1,6 @@
 // Paper Wing service worker: oyunun tüm dosyalarını telefona kaydeder, internetsiz de açılır.
 // Oyunu güncellediğinde VERSION'ı artır ki telefonlar yeni sürümü indirsin.
-var VERSION = 'paper-wing-v29';  // v29 = oyun sürümü 3.0.2 (ön meydan, ses filtresi)
+var VERSION = 'paper-wing-v31';  // v31 = oyun sürümü 3.0.4 (geçişler yukarı, logo ortada)
 // v2.5: aynı alan adında test deposu da var → sadece KENDİ önbelleklerimizi silelim, sadece kendi önbelleğimizden okuyalım
 var PREFIX = 'paper-wing-v';
 var FILES = [
@@ -10,7 +10,11 @@ var FILES = [
   'icons/icon-v2-192.png', 'icons/icon-v2-512.png', 'icons/maskable-v2-512.png', 'icons/apple-touch-icon-v2.png'
 ];
 self.addEventListener('install', function (e) {
-  e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(FILES); }).then(function () { return self.skipWaiting(); }));
+  // v3.0.4: cache:'reload' → dosyalar tarayıcının HTTP önbelleğinden değil sunucudan taze alınır.
+  // (GitHub Pages dosyaları 10 dk önbellekte tutar; eskiden yeni sürüm bazen eski dosyalarla karışıyordu.)
+  e.waitUntil(caches.open(VERSION).then(function (c) {
+    return c.addAll(FILES.map(function (f) { return new Request(f, { cache: 'reload' }); }));
+  }).then(function () { return self.skipWaiting(); }));
 });
 self.addEventListener('activate', function (e) {
   e.waitUntil(caches.keys().then(function (keys) {

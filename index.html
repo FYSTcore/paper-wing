@@ -44,9 +44,9 @@
   #game { display: block; touch-action: none; }
   #hud { position: absolute; inset: 0; pointer-events: none; }
   #score {
-    /* v3.0: alta — üstteki gök cisimlerini kapatmasın. Duraklat/ses (sağ alt) ve canlar (sol alt) ile aynı satır: 44 px yükseklik, alttan 14 px */
-    position: absolute; bottom: max(14px, env(safe-area-inset-bottom, 0px)); left: 0; right: 0; height: 44px; line-height: 44px; text-align: center;
-    font-family: var(--font-display); font-size: clamp(30px, 9vmin, 50px); color: var(--paper);
+    /* v3.0.3: tekrar üstte (tam ekranda gök cisimleri aşağı indiği için artık kapatmıyor) */
+    position: absolute; top: max(1.6%, env(safe-area-inset-top, 0px)); left: 0; right: 0; text-align: center;
+    font-family: var(--font-display); font-size: clamp(36px, 10.5vmin, 62px); color: var(--paper);
     text-shadow: 0 3px 0 var(--ink), 0 0 18px rgba(255, 207, 107, 0.35);
     font-variant-numeric: tabular-nums;
     transform-origin: 50% 60%;
@@ -78,7 +78,7 @@
 <script>
   window.KK = window.KK || {};
   // Her güncellemede bunu ve sw.js'deki VERSION'ı birlikte artır
-  KK.APP_VERSION = '3.0.2';
+  KK.APP_VERSION = '3.0.4';
   KK.W = 360; KK.H = 640; KK.GROUND_Y = 584;
   KK.PALETTE = { skyTop:'#1b1838', skyMid:'#5a3a6e', skyLow:'#e9825a', sun:'#ffcf6b', cityFar:'#3a2f5c', cityNear:'#26203f', tower:'#2e2852', towerEdge:'#4a3f7a', clockFace:'#f3ead8', clockInk:'#1b1838', paper:'#fbf7ef', paperShade:'#d9d0c0', ground:'#171430', groundTop:'#3d335f', glow:'#ffcf6b', text:'#fbf7ef' };
 </script>

@@ -793,8 +793,8 @@ window.KK = window.KK || {};
   var PLANE_SVG = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M2 12 L22 4 L15 21 L11 14 Z" fill="currentColor"/><path d="M11 14 L22 4" stroke="#1b1838" stroke-width="1.4"/></svg>';
   function initStatus(hud) {
     livesWrap = document.createElement('div');
-    // v3.0: alt sol köşe — duraklat/ses düğmeleriyle aynı hizada (düğme 44 px, altta 14 px → merkez 36 px; bu satır ~22 px → alt 25 px)
-    livesWrap.style.cssText = 'position:absolute;bottom:calc(max(14px,env(safe-area-inset-bottom,0px)) + 11px);left:max(14px,env(safe-area-inset-left,0px));pointer-events:none;display:none;align-items:center;gap:10px;font:700 13px/1 var(--font-body);color:var(--paper);text-shadow:0 2px 0 #1b1838';
+    // v3.0.3: tekrar sol üst köşe
+    livesWrap.style.cssText = 'position:absolute;top:max(10px,env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));pointer-events:none;display:none;align-items:center;gap:10px;font:700 13px/1 var(--font-body);color:var(--paper);text-shadow:0 2px 0 #1b1838';
     livesEl = document.createElement('div'); livesEl.style.cssText = 'display:flex;gap:4px;color:var(--paper)';
     // v2.5: hız/alev yazısı kaldırıldı. Sırada: canlar · kalkan (hazırsa) · son checkpoint bayrağı
     shieldEl = document.createElement('div'); shieldEl.innerHTML = SHIELD_SVG(22); shieldEl.style.cssText = 'display:none;color:#8fd8ff;filter:drop-shadow(0 0 6px rgba(143,216,255,.8))';
@@ -802,7 +802,7 @@ window.KK = window.KK || {};
     livesWrap.appendChild(livesEl); livesWrap.appendChild(shieldEl); livesWrap.appendChild(cpEl);
     // Kalkan dolunca ekranın üstünde kısa beliren simge
     shieldPop = document.createElement('div');
-    shieldPop.style.cssText = 'position:absolute;left:0;right:0;bottom:calc(max(14px,env(safe-area-inset-bottom,0px)) + clamp(64px,16vmin,96px));display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:none;opacity:0;color:#8fd8ff';
+    shieldPop.style.cssText = 'position:absolute;left:0;right:0;top:calc(max(1.6%,env(safe-area-inset-top,0px)) + clamp(44px,12vmin,70px));display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:none;opacity:0;color:#8fd8ff';
     shieldPop.innerHTML = SHIELD_SVG(34) + '<div style="font:800 11px/1 var(--font-body);letter-spacing:.32em;color:#d8f2ff;text-shadow:0 2px 0 #1b1838">SHIELD READY</div>';
     hud.appendChild(shieldPop);
     // Checkpoint alınınca gök cismi adının altında belirgin bir rozet
@@ -1885,9 +1885,10 @@ window.KK = window.KK || {};
       // oyun alanı aynı genişlikte, üstte daha çok gökyüzü, altta daha çok yer görünür (siyah şerit yok)
       camera.aspect = w / h;
       vFovK = Math.max(1, (KK.W / KK.H) / camera.aspect);   // tan(dikey/2) çarpanı
-      // v3.0.2: fazladan görünen yüksekliğin %70'i üste verilir → şehir ve oyun alanı aşağı iner, alt boşluk azalır.
-      // 390×844'te: fazla alan 1 − 1/1.217 = %17.8 → aşağı kayma %17.8·0.7/2 = %6.2 ekran ≈ 53 px
-      viewShift = (1 - 1 / vFovK) * 0.7;
+      // v3.0.4: oyun alanı YUKARI kaydırılır (geçişler başparmak hizasından çıksın; altta artık ön meydan var).
+      // 390×844'te fazla alan E = 1 − 1/1.217 = %17.8. Kayma −0.4·E → üst boşluk E/2 − 0.2E = %5.3 (45 px),
+      // alt boşluk %12.5 (105 px). En alçak geçişin alt kenarı ekranın altından %17.5 yerine %27 yukarıda.
+      viewShift = -(1 - 1 / vFovK) * 0.4;
       camera.fov = -1;                                      // sonraki karede yeniden hesaplansın
     },
 
