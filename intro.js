@@ -1,7 +1,7 @@
 // Paper Wing v2.5 — FYST açılış logosu
 // Siyah ekran → BAM (logo oturur, sarsıntı, renk ayrışması, şok dalgası, tok darbe sesi)
 // → holografik ışık sol alttan sağ üste geçer (pembe önde, mavi arkada) → kararır, oyun açılır.
-// Dokununca/tuşa basınca atlanır. #bot veya #nointro ile hiç gösterilmez.
+// v3.0.6: atlanamaz (dokunuş/tuş yutulur). #bot veya #nointro ile hiç gösterilmez.
 (function () {
 window.KK = window.KK || {};
 // ───────── Holografik logo: WebGL shader, logonun şekli maske olarak kullanılır ─────────
@@ -120,21 +120,25 @@ var HOLO = (function () {
 var ctx = null, out = null;
 function audio() {
   if (ctx) return ctx;
-  var AC = window.AudioContext || window.webkitAudioContext; ctx = new AC();
-  var comp = ctx.createDynamicsCompressor(); comp.threshold.value = -8; comp.ratio.value = 12;
-  out = ctx.createGain(); out.gain.value = 0.85; out.connect(comp); comp.connect(ctx.destination);
+  var AC = window.AudioContext || window.webkitAudioContext;
+  try { ctx = new AC({ latencyHint: 0.05 }); } catch (e) { ctx = new AC(); }   // v3.0.5: oyundaki gibi 50 ms tampon
+  // v3.0.5: BAM'in enerjisinin %98'i 140 Hz altındaydı ve tepesi 2.14'e çıkıyordu (1.0 üstü = kırpılma → cızırtı).
+  // Oyunda işe yarayan çözüm burada da: 140 Hz yüksek geçiren → tepe 0.66, hoparlör zorlanmaz; doygunluk harmonikleri kalır.
+  var hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 140; hp.Q.value = 0.707;
+  var comp = ctx.createDynamicsCompressor(); comp.threshold.value = -8; comp.ratio.value = 12; comp.attack.value = 0.002;
+  out = ctx.createGain(); out.gain.value = 0.85; out.connect(hp); hp.connect(comp); comp.connect(ctx.destination);
   return ctx;
 }
 function noiseBuf(c, sec) { var b = c.createBuffer(1, c.sampleRate * sec, c.sampleRate), d = b.getChannelData(0); for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; return b; }
 function reverb(c, sec, decay) {
-  var b = c.createBuffer(2, c.sampleRate * sec, c.sampleRate);
-  for (var ch = 0; ch < 2; ch++) { var d = b.getChannelData(ch); for (var i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, decay); }
+  var b = c.createBuffer(1, c.sampleRate * sec, c.sampleRate);   // v3.0.5: tek kanal (yarı iş)
+  for (var ch = 0; ch < 1; ch++) { var d = b.getChannelData(ch); for (var i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, decay); }
   var cv = c.createConvolver(); cv.buffer = b; var w = c.createGain(); w.gain.value = 0.45; cv.connect(w); w.connect(out); return cv;
 }
 // BAM (tok): telefon hoparlörü ~150 Hz altını çalamaz → 50 Hz'lik bası tanh doygunlukla
 // 100/150/200 Hz harmoniklerine taşıyoruz (kulak eksik temel frekansı kendisi tamamlar)
 function sfxBam() {
-  var c = audio(), t = c.currentTime + 0.01, rv = reverb(c, 3.2, 2.2);
+  var c = audio(), t = c.currentTime + 0.01, rv = reverb(c, 2.2, 2.2);   // v3.0.5: 3.2 → 2.2 sn (kuyruk zaten sönmüştü)
   var low = c.createGain(); low.gain.value = 1; low.connect(out); low.connect(rv);
   var sat = c.createWaveShaper(), curve = new Float32Array(1024);
   for (var i = 0; i < 1024; i++) { var xx = i / 511.5 - 1; curve[i] = Math.tanh(3 * xx) / Math.tanh(3); }
@@ -172,18 +176,18 @@ function sfxShine() {
 // Zaman çizelgesi (ms): 350 BAM · 900 holografik ışık (1000 ms) · 2700 kararma · 3100 bitti
 function playIntro(done) {
   var el = document.getElementById('intro'), timers = [], ended = false;
-  function eatKeys(e) { e.stopImmediatePropagation(); e.preventDefault(); skip(); }
+  // v3.0.6: açılış atlanamaz — tuşlar ve dokunuşlar yutulur (oyuna da geçmez), logo sonuna kadar oynar (~3.1 sn)
+  function eatKeys(e) { e.stopImmediatePropagation(); e.preventDefault(); }
   function finish() {
     if (ended) return; ended = true; HOLO.stop(); el.remove(); KK.introActive = false;
     window.removeEventListener('keydown', eatKeys, true);
     if (ctx) setTimeout(function () { try { ctx.close(); } catch (e) {} }, 1200);   // yankı kuyruğu bitsin
     if (done) done();
   }
-  function skip() { timers.forEach(clearTimeout); el.classList.add('out'); setTimeout(finish, 250); }
   function at(ms, fn) { timers.push(setTimeout(fn, ms)); }
   KK.introActive = true;
   window.addEventListener('keydown', eatKeys, true);
-  el.addEventListener('pointerdown', function (e) { e.stopPropagation(); skip(); }, { once: true });
+  el.addEventListener('pointerdown', function (e) { e.stopPropagation(); e.preventDefault(); try { if (ctx && ctx.state !== 'running') ctx.resume(); } catch (er) {} });
   setTimeout(finish, 6000);   // emniyet: ne olursa olsun 6 sn'de kalkar
   HOLO.ready().catch(function () {}).then(function () {
     if (ended) return;

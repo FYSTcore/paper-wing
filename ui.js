@@ -102,8 +102,64 @@
     return !muted && A.ctx && A.ctx.state === 'running';
   }
 
-  // flap: tok bir kanat vuruşu — alçak "fıs" + kısa, derin bir gövde sesi
+  // ---------- v3.0.7: skinlere özel kanat sesleri ----------
+  // Kısa ton: dalga tipi, başlangıç → bitiş frekansı (üstel kayma), süre, tepe; isteğe bağlı başlangıç gecikmesi
+  function tone(type, f0, f1, dur, peak, dly) {
+    var c = A.ctx, t = c.currentTime + (dly || 0), o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f0, t); if (f1 !== f0) o.frequency.exponentialRampToValueAtTime(f1, t + dur * 0.8);
+    envelope(g, t, peak, 0.004, dur); chain(o, g, A.sfx); o.start(t); o.stop(t + dur + 0.02);
+  }
+  // Filtreli gürültü patlaması: filtre tipi, frekans başı → sonu, Q, süre, tepe
+  function hiss(type, f0, f1, q, dur, peak) {
+    var c = A.ctx, t = c.currentTime, src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    src.buffer = A.noise; f.type = type; f.Q.value = q;
+    f.frequency.setValueAtTime(f0, t); f.frequency.exponentialRampToValueAtTime(f1, t + dur * 0.9);
+    envelope(g, t, peak, 0.003, dur); chain(src, f, g, A.sfx); src.start(t, Math.random() * 0.8); src.stop(t + dur + 0.02);
+  }
+  var flapN = 0;                                       // melodik skinlerde sıradaki nota
+  function vary(f) { return f * (0.97 + Math.random() * 0.06); }   // her vuruş ±%3 farklı (makine tekrarı gibi duyulmasın)
+  // Notalar Hz: pentatonik diziler (her sıra uyumlu, hangi notada kesilse kulağı rahatsız etmez)
+  var FYST_NOTES = [1318.5, 1568, 1760, 2093, 1760, 1568];      // E6 G6 A6 C7 A6 G6 — holografik arpej
+  var AGA_NOTES = [784, 880, 1046.5, 1174.7, 1318.5];             // G5 A5 C6 D6 E6 — majör pentatonik, yumuşak marimba
+  var SKIN_FLAP = {
+    // CHEERS: şişe kapağı "pop" + cam tıngırtısı (iki kısmi ton, cam gibi uyumsuz oran 1:1.5:2.76)
+    cheers: function () {
+      tone('sine', 380, 900, 0.045, 0.42);
+      var f = vary(2350); tone('sine', f, f, 0.16, 0.10, 0.012); tone('sine', f * 1.5, f * 1.5, 0.11, 0.06, 0.012); tone('sine', f * 2.76, f * 2.76, 0.07, 0.04, 0.012);
+      hiss('highpass', 5000, 7000, 0.7, 0.05, 0.08);   // köpük fısı
+    },
+    // FYST: tiz hava süpürmesi + sırayla çalan parıltı arpeji (her dokunuş bir sonraki nota)
+    fyst: function () {
+      hiss('bandpass', 2600, 900, 0.9, 0.08, 0.28);
+      var n = FYST_NOTES[flapN++ % FYST_NOTES.length];
+      tone('sine', n, n, 0.22, 0.13); tone('triangle', n * 2.003, n * 2.003, 0.12, 0.05);   // ince ikinci kat (hafif kayık = parıltı)
+    },
+    // AGA: yaprak hışırtısı + yumuşak tahta marimba notası
+    aga: function () {
+      hiss('bandpass', 3200, 1800, 1.2, 0.09, 0.22);
+      var n = AGA_NOTES[flapN++ % AGA_NOTES.length]; tone('triangle', n, n, 0.18, 0.16); tone('sine', n / 2, n / 2, 0.14, 0.10);
+    },
+    // ★ NOVA: parlak tek "ping"
+    nova: function () { sfxFlapBase(0.75); tone('sine', vary(1320), 1320, 0.16, 0.14); },
+    // ★★ NEBULA: nefes gibi yumuşak bulut — alçak geçiren hava + iki hafif kayık sinüs (koro)
+    nebula: function () { hiss('lowpass', 1800, 500, 0.5, 0.14, 0.4); tone('sine', 523.3, 523.3, 0.2, 0.08); tone('sine', 527, 527, 0.2, 0.08); tone('sine', 784, 784, 0.16, 0.05); },
+    // ★★★ QUASAR: jet/lazer "zıp" — testere dişi hızla aşağı kayar
+    quasar: function () { hiss('bandpass', 1400, 500, 0.8, 0.07, 0.25); tone('sawtooth', vary(1800), 420, 0.07, 0.12); tone('square', 900, 300, 0.05, 0.05); },
+    // ★4 SINGULARITY: bükülen uzay "vuuum" — derinden aşağı kayan ton (140 Hz filtresinin üstünde kalır)
+    singularity: function () { hiss('lowpass', 900, 250, 1.5, 0.12, 0.3); tone('sine', vary(520), 150, 0.16, 0.38); tone('triangle', 260, 160, 0.12, 0.12); },
+    // ★5 SUPERNOVA: ateş patlaması — çıtırtılı gürültü + kızgın testere + küçük kıvılcım
+    supernova: function () { hiss('bandpass', 3500, 1200, 1.4, 0.09, 0.35); tone('sawtooth', vary(620), 190, 0.08, 0.14); tone('sine', 140, 90, 0.08, 0.35); tone('sine', vary(2600), 2600, 0.06, 0.05, 0.03); }
+  };
+
+  // flap: skinin kendi sesi varsa o, yoksa standart kanat vuruşu
   function sfxFlap() {
+    var fn = SKIN_FLAP[skinSel];
+    if (fn) { try { fn(); return; } catch (e) { /* yoksay → standart ses */ } }
+    sfxFlapBase(1);
+  }
+  // flap: tok bir kanat vuruşu — alçak "fıs" + kısa, derin bir gövde sesi (k = ses çarpanı)
+  function sfxFlapBase(k) {
+    k = k || 1;
     var c = A.ctx, t = c.currentTime;
     var src = c.createBufferSource();
     src.buffer = A.noise;
@@ -114,7 +170,7 @@
     bp.frequency.setValueAtTime(1100, t);
     bp.frequency.exponentialRampToValueAtTime(320, t + 0.09);
     var g = c.createGain();
-    envelope(g, t, 0.45, 0.006, 0.085);
+    envelope(g, t, 0.45 * k, 0.006, 0.085);
     chain(src, bp, g, A.sfx);
     src.start(t, Math.random() * 0.8);
     src.stop(t + 0.11);
@@ -123,7 +179,7 @@
     o.type = 'sine';
     o.frequency.setValueAtTime(120, t);
     o.frequency.exponentialRampToValueAtTime(70, t + 0.08);
-    envelope(og, t, 0.5, 0.004, 0.08);
+    envelope(og, t, 0.5 * k, 0.004, 0.08);
     chain(o, og, A.sfx);
     o.start(t); o.stop(t + 0.1);
   }
