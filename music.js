@@ -56,7 +56,7 @@ window.KK = window.KK || {};
   // v2.6: yolculuk sırası (render3d.js'deki ORDER ile aynı). Temalar sıra numarasıyla eşleştiği için aynı sıraya dizilir.
   (function () {
     var ORDER = ['Earth', 'Moon', 'Mercury', 'Pluto', 'Europa', 'Mars', 'Venus', 'Titan', 'Neptune', 'Io', 'Jupiter', 'Saturn', 'Uranus', 'Sun',
-                 'Alpha Centauri', 'Oort Cloud', 'Betelgeuse', 'Orion Nebula', 'Crab Nebula', 'Andromeda', 'Pillars of Creation', 'Milky Way', 'Pulsar', 'TON 618'];
+                 'Alpha Centauri', 'Oort Cloud', 'Betelgeuse', 'Orion Nebula', 'Andromeda', 'Milky Way', 'Pillars of Creation', 'Crab Nebula', 'Pulsar', 'TON 618'];
     var byName = {}; LEGACY.forEach(function (L) { byName[L[0]] = L; });
     LEGACY = ORDER.map(function (n) { return byName[n]; });
   })();
@@ -186,7 +186,7 @@ window.KK = window.KK || {};
       if (engine.onStep) engine.onStep(b, M.chord, t);
       var a = th.arp[b];
       if (a >= 0 && tones[a] != null) pluck(t, midiHz(root + th.oct + tones[a]), th.arpW, M.mode === 'playing' ? 0.075 : 0.05);
-      else if (M.fast && b % 2 === 1 && th.arp[b - 1] >= 0) pluck(t, midiHz(root + th.oct + 12 + tones[th.arp[b - 1]]), th.arpW, 0.04); // hızlıyken yankı notası
+      else if (M.fast && M.mult < 2.0 && b % 2 === 1 && th.arp[b - 1] >= 0) pluck(t, midiHz(root + th.oct + 12 + tones[th.arp[b - 1]]), th.arpW, 0.04); // hızlıyken yankı notası
       if (M.mult >= 1.2) {
         if (th.bass.indexOf(b) >= 0) bassNote(t, midiHz(root - 12 + tones[0]), 0.34);
         else if (M.mult >= 1.6 && b % 4 === 2) bassNote(t, midiHz(root + tones[0]), 0.16);
@@ -197,7 +197,7 @@ window.KK = window.KK || {};
       }
       if (M.mult >= 1.75) {
         if (th.snare.indexOf(b) >= 0) snare(t);
-        if (b % 2 === 1 && !th.drone) hat(t, 0.035, true);
+        if (b % 2 === 1 && !th.drone && (M.mult < 2.2 || b % 4 === 3)) hat(t, 0.035, true);   // v3.1.1: en hızlıda 16'lık hi-hat yarıya iner (ses işlemcisi yükü)
       }
     }
     // ---- Enstrümanlar ----

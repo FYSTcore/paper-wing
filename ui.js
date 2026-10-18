@@ -65,6 +65,8 @@
       // Limiterden ÖNCE: filtrenin faz kaymasıyla büyüyen tepeleri limiter yakalar.
       var hp = A.ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 140; hp.Q.value = 0.707;
       A.master.connect(pre); pre.connect(drive); drive.connect(hp); hp.connect(lim); lim.connect(out); out.connect(A.ctx.destination);
+      // v3.1.1: ses bekçisi — çıkışta bozuk sayı (NaN) görülürse tüm ses zinciri baştan kurulur (aşağıda audioWatchdog)
+      A.an = A.ctx.createAnalyser(); A.an.fftSize = 256; out.connect(A.an); A.wdBuf = new Float32Array(256); A.wdT = 0;
       A.out = out;                                   // test kancası (kayıt için)
       // v2.5: ayrı kanallar — efektler ve müzik kendi ses seviyeleriyle ana sese (sessiz düğmesi) bağlanır
       A.sfx = A.ctx.createGain(); A.sfx.gain.value = volGain(volSfx); A.sfx.connect(A.master);
@@ -147,6 +149,16 @@
     quasar: function () { hiss('bandpass', 1400, 500, 0.8, 0.07, 0.25); tone('sawtooth', vary(1800), 420, 0.07, 0.12); tone('square', 900, 300, 0.05, 0.05); },
     // ★4 SINGULARITY: bükülen uzay "vuuum" — derinden aşağı kayan ton (140 Hz filtresinin üstünde kalır)
     singularity: function () { hiss('lowpass', 900, 250, 1.5, 0.12, 0.3); tone('sine', vary(520), 150, 0.16, 0.38); tone('triangle', 260, 160, 0.12, 0.12); },
+    // v3.1.1 ★6 ECLIPSE: alçak, yuvarlak bir gong + yumuşak hava
+    eclipse: function () { hiss('lowpass', 1200, 400, 0.6, 0.12, 0.25); tone('sine', vary(440), 432, 0.32, 0.16); tone('triangle', 660, 655, 0.22, 0.06); },
+    // ★7 COMET: buz gibi ince ıslık + kristal parıltı
+    comet: function () { hiss('highpass', 6500, 3000, 0.7, 0.09, 0.28); tone('sine', vary(2637), 2637, 0.12, 0.08); tone('sine', 3951, 3951, 0.08, 0.04, 0.03); },
+    // ★8 BOREALIS: titreşen iki kayık ton (perde gibi dalgalanır) + hafif rüzgâr
+    borealis: function () { hiss('bandpass', 2200, 1400, 1.0, 0.12, 0.2); var f = AGA_NOTES[flapN++ % AGA_NOTES.length]; tone('sine', f, f, 0.26, 0.09); tone('sine', f * 1.007, f * 1.007, 0.26, 0.09); },
+    // ★9 MAGNETAR: elektrik çıtırtısı — yükselen kare dalga + kısa gürültü patlaması
+    magnetar: function () { hiss('bandpass', 4000, 2500, 3.0, 0.05, 0.3); tone('square', 300, vary(2400), 0.06, 0.07); tone('sine', 180, 140, 0.06, 0.3); },
+    // ★10 GENESIS: görkemli üçlü akor, notalar 25 ms arayla (arpej)
+    genesis: function () { hiss('lowpass', 2400, 700, 0.6, 0.1, 0.25); tone('triangle', 523.3, 523.3, 0.24, 0.11); tone('triangle', 659.3, 659.3, 0.22, 0.09, 0.025); tone('triangle', 784, 784, 0.2, 0.08, 0.05); },
     // ★5 SUPERNOVA: ateş patlaması — çıtırtılı gürültü + kızgın testere + küçük kıvılcım
     supernova: function () { hiss('bandpass', 3500, 1200, 1.4, 0.09, 0.35); tone('sawtooth', vary(620), 190, 0.08, 0.14); tone('sine', 140, 90, 0.08, 0.35); tone('sine', vary(2600), 2600, 0.06, 0.05, 0.03); }
   };
@@ -448,8 +460,32 @@
     for (var i = 0; i < beats.length; i++) { var d = now - beats[i].t; if (d >= 0) v = Math.max(v, beats[i].a * Math.exp(-5 * d)); }
     return v;
   };
+  // v3.1.1: Hızlanınca seslerin tamamen gitmesi: tek bir filtre bir an bozuk sayı (NaN) üretirse, ana zincirdeki kalıcı
+  // filtreler (140 Hz yüksek geçiren, müzik filtresi) o sayıyı hafızasında tutar ve SONSUZA KADAR sessiz kalır.
+  // Bekçi saniyede 2 kez çıkışa bakar; bozuksa ses bağlamını kapatıp her şeyi temiz kurar (müzik kaldığı temadan devam eder).
+  var audioResets = 0;
+  function audioWatchdog() {
+    var now = performance.now();
+    if (!A.an || now - A.wdT < 500) return;
+    A.wdT = now;
+    A.an.getFloatTimeDomainData(A.wdBuf);
+    for (var i = 0; i < A.wdBuf.length; i += 8) if (!isFinite(A.wdBuf[i])) { resetAudio(); return; }
+  }
+  function resetAudio() {
+    audioResets++;
+    try { if (music) music.stop(); } catch (e) { /* yoksay */ }
+    music = null; beats.length = 0;            // eski bağlamın zaman damgaları yeni bağlamda geçersiz
+    var old = A.ctx;
+    ['ctx', 'master', 'noise', 'out', 'sfx', 'mus', 'reverb', 'reverbM', 'an', 'wdBuf'].forEach(function (k) { A[k] = null; });
+    try { if (old) old.close(); } catch (e) { /* yoksay */ }
+    unlockAudio();
+  }
+  KK.audioResets = function () { return audioResets; };   // test kancaları
+  KK.__audio = function () { return A; };
   function musicUpdate(s) {
     if (!A.ctx || !KK.Music) return;
+    audioWatchdog();
+    if (!A.ctx) return;
     var want = Math.floor((s.score || 0) / (KK.PLANET_EVERY || 200));
     if (!music) {
       if (A.ctx.state !== 'running') return;
