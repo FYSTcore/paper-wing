@@ -42,8 +42,17 @@ window.KK = window.KK || {};
     ['Orion Nebula', 46, 'dorian', [0, 3, 4, 2], 'triangle', 1600, 'sine', [0, 4, 2, 5, 3, 5, 1, 4], [0, 8], [4, 12], 0.60, 24],
     ['Pulsar', 41, 'phrygian', [0, 1, 0, 6], 'square', 700, 'square', [0, 0, 3, 0, 0, 0, 5, 0], [0, 4, 8, 12], [4, 12], 0.35, 12],
     ['Andromeda', 45, 'major', [0, 5, 3, 4], 'sawtooth', 1300, 'triangle', [0, 2, 4, 5, 3, 1, 2, 4], [0, 8], [4, 12], 0.65, 24],
+    // v2.6: Samanyolu — Lidyen (yükseltilmiş 4. derece "hayranlık" rengi), geniş yankı, açılıp kapanan arpej
+    ['Milky Way', 48, 'lydian', [0, 4, 5, 3], 'sawtooth', 1700, 'triangle', [0, 2, 4, 5, 3, 5, 2, 4], [0, 8], [4, 12], 0.65, 24],
     ['TON 618', 33, 'harmMinor', [0, 1, 0, 5], 'sawtooth', 420, 'sine', [4, -1, -1, -1, 5, -1, -1, -1], [0, 3], [], 0.75, 36]
   ];
+  // v2.6: yolculuk sırası (render3d.js'deki ORDER ile aynı). Temalar sıra numarasıyla eşleştiği için aynı sıraya dizilir.
+  (function () {
+    var ORDER = ['Earth', 'Moon', 'Mercury', 'Pluto', 'Mars', 'Venus', 'Neptune', 'Jupiter', 'Saturn', 'Uranus', 'Sun',
+                 'Alpha Centauri', 'Oort Cloud', 'Orion Nebula', 'Andromeda', 'Milky Way', 'Pulsar', 'TON 618'];
+    var byName = {}; LEGACY.forEach(function (L) { byName[L[0]] = L; });
+    LEGACY = ORDER.map(function (n) { return byName[n]; });
+  })();
   var DEFAULTS = LEGACY.map(function (L) {
     var arp = []; for (var i = 0; i < 8; i++) { arp.push(L[7][i]); arp.push(-1); }
     return { name: L[0], root: L[1], scale: L[2], prog: L[3].slice(), pad: L[4], cut: L[5], arpW: L[6], arp: arp,
@@ -77,6 +86,7 @@ window.KK = window.KK || {};
     ['bass', 'kick', 'snare', 'hat'].forEach(function (k) {
       if (Array.isArray(t[k])) o[k] = t[k].map(function (v) { return v | 0; }).filter(function (v) { return v >= 0 && v < 16; });
     });
+    if (typeof t.tempo === 'number' && isFinite(t.tempo)) o.tempo = Math.max(0.5, Math.min(1.8, t.tempo));   // v2.6: tema temposu editörden ayarlanır
     if (t.mix && typeof t.mix === 'object') ['pad', 'arp', 'bass', 'drums'].forEach(function (k) {
       if (typeof t.mix[k] === 'number') o.mix[k] = Math.max(0, Math.min(1.5, t.mix[k]));
     });
@@ -178,8 +188,26 @@ window.KK = window.KK || {};
       }
     }
     // ---- Enstrümanlar ----
+    // v2.6: TON 618 dışında uzun "vuuu" pad yerine ritmik akor vuruşları (stab): 3-3-2 ritmi (adım 0, 3, 6 / 8, 11, 14),
+    // her vuruş 5 ms'de açılır, ~0.22 sn'de söner; akort farkı ±7 → ±3 cent (dalgalanma azalır)
+    var STABS = [0, 3, 6, 8, 11, 14];
     function pad(t, dur) {
-      var th = T(), tones = chordTones(th, th.prog[M.chord]);
+      var th = T();
+      if (!th.drone && !th.bend) {
+        var tones2 = chordTones(th, th.prog[M.chord]), step = dur / 32;
+        for (var bar = 0; bar < 2; bar++) STABS.forEach(function (sx, n) {
+          var ts = t + (bar * 16 + sx) * step, pk = (sx === 0 ? 0.075 : 0.05);
+          [0, 1, 2].forEach(function (k) {
+            var f = midiHz(th.root + tones2[k]), g = c.createGain(), f1 = c.createBiquadFilter();
+            f1.type = 'lowpass'; f1.frequency.setValueAtTime(Math.min(8000, th.cut * 2.2), ts); f1.frequency.exponentialRampToValueAtTime(Math.max(200, th.cut * 0.6), ts + 0.2); f1.Q.value = 0.7;
+            env(g, ts, pk, 0.005, 0.24);
+            [-3, 3].forEach(function (cents) { var o = c.createOscillator(); o.type = th.pad; o.frequency.value = f; o.detune.value = cents; o.connect(f1); o.start(ts); o.stop(ts + 0.3); });
+            f1.connect(g); g.connect(layers.pad);
+          });
+        });
+        return;
+      }
+      var tones = chordTones(th, th.prog[M.chord]);
       [0, 1, 2].forEach(function (k) {
         var f = midiHz(th.root + tones[k]);
         var g = c.createGain(), f1 = c.createBiquadFilter();

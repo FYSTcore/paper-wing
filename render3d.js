@@ -221,7 +221,7 @@ window.KK = window.KK || {};
       sky: ['#3a2008', '#9a6020', '#d8a050'], fog: '#8a5a20', fogNear: 18, fogFar: 56, hemi: ['#e0b070', '#2a1a08', 0.8], key: ['#ffd090', 0.75], rim: '#ffb050',
       city: ['#4a3418', '#352410', '#281a0b'], win: '#5ff0d0', tower: '#3e2c14', edge: '#8a6a30', base: '#22180a',
       road: '#c0a070', lamp: '#80ffe0', haze: '#ffb060', stars: 0, shapes: { cyl: 1, dome: 0.5, antenna: 0.4 } },
-    { name: 'URANUS', kind: 5, R: 11.7, spin: 0.15, tilt: 1.68, incl: -0.20, atm: '#8ff0f0', atmK: 0.7, fire: '#26e0e8', glow: '#6fd8e0',
+    { name: 'URANUS', kind: 5, R: 11.7, spin: 0.15, tilt: 1.68, incl: -0.62, atm: '#8ff0f0', atmK: 0.7, fire: '#26e0e8', glow: '#6fd8e0',
       sky: ['#0a2a30', '#2a7078', '#9ae0d8'], fog: '#3a8088', hemi: ['#b0f0f0', '#103038', 0.8], key: ['#e0ffff', 0.85], rim: '#a0fff0',
       city: ['#4a7a80', '#33585e', '#244248'], win: '#ff9ae0', tower: '#3a6066', edge: '#8ad0d0', base: '#1c3438',
       road: '#a0d8d8', lamp: '#ffb0e8', haze: '#a0fff0', stars: 0.3, shapes: { box: 1, spire: 0.4, antenna: 0.3 } },
@@ -233,31 +233,44 @@ window.KK = window.KK || {};
       sky: ['#030305', '#14100e', '#4a3a30'], fog: '#1a1512', fogFar: 85, hemi: ['#c0b0a0', '#141010', 0.5], key: ['#fff0e0', 0.75], rim: '#8a7a6a',
       city: ['#4a4038', '#3a322b', '#2a241f'], win: '#ffcf8a', tower: '#3c342c', edge: '#7a6a5a', base: '#221d18',
       road: '#a89888', lamp: '#ffd0a0', haze: '#c0a080', stars: 1, shapes: { dome: 0.8, bunker: 0.6, antenna: 0.5 } },
-    { name: 'OORT CLOUD', kind: 11, R: 12.5, spin: 1.0, tilt: 0, incl: 0, atm: '#9fe8ff', atmK: 1.0, fire: '#bff4ff', glow: '#7fd8ff',
+    { name: 'OORT CLOUD', vc: [0.15, 0.15], kind: 11, R: 12.5, spin: 1.0, tilt: 0, incl: 0, atm: '#9fe8ff', atmK: 1.0, fire: '#bff4ff', glow: '#7fd8ff',
       sky: ['#01030a', '#081428', '#1c3550'], fog: '#0c1626', fogFar: 90, hemi: ['#9ec4ff', '#0a1018', 0.6], key: ['#dff0ff', 0.8], rim: '#7fd8ff',
       city: ['#3a5a78', '#28425a', '#1c3044'], win: '#aef4ff', tower: '#2e4a66', edge: '#8fd8ff', base: '#14202e',
       road: '#9cc0e0', lamp: '#aef4ff', haze: '#6fb8ff', stars: 1, shapes: { spire: 1, dome: 0.5 } },
-    { name: 'ALPHA CENTAURI', kind: 12, R: 12.0, spin: 1.0, tilt: 0, incl: 0, atm: '#ffd27a', atmK: 1.2, fire: '#ffcc4a', glow: '#ffc060',
+    { name: 'ALPHA CENTAURI', vc: [0.52, -0.09], kind: 12, R: 12.0, spin: 1.0, tilt: 0, incl: 0, atm: '#ffd27a', atmK: 1.2, fire: '#ffcc4a', glow: '#ffc060',
       sky: ['#2a1a08', '#a0602a', '#ffd08a'], fog: '#a06a30', hemi: ['#ffe0a0', '#2a1808', 0.9], key: ['#fff0c8', 1.2], rim: '#ff9a50',
       city: ['#5a4030', '#43301f', '#302214'], win: '#ffe8b0', tower: '#4c3624', edge: '#e0a060', base: '#2a1c10',
       road: '#d8b890', lamp: '#fff0c0', haze: '#ffc080', stars: 0.1, shapes: { cyl: 1, box: 0.7, antenna: 0.4 } },
-    { name: 'ORION NEBULA', kind: 13, R: 15.5, spin: 1.0, tilt: 0, incl: 0, atm: '#ff80d0', atmK: 1.0, fire: '#ff5ad0', glow: '#e060c0',
+    { name: 'ORION NEBULA', vc: [0.6, 0.9], kind: 13, R: 15.5, spin: 1.0, tilt: 0, incl: 0, atm: '#ff80d0', atmK: 1.0, fire: '#ff5ad0', glow: '#e060c0',
       sky: ['#0a0418', '#3a1450', '#b04a8a'], fog: '#3a1a4a', hemi: ['#e0a0ff', '#100818', 0.8], key: ['#ffc0f0', 0.8], rim: '#60e0e0',
       city: ['#40285a', '#2e1c44', '#201430'], win: '#7ff0e0', tower: '#36224e', edge: '#e07ad0', base: '#180e24',
       road: '#c090d0', lamp: '#80fff0', haze: '#ff80d0', stars: 0.6, shapes: { spire: 1, box: 0.6 } },
-    { name: 'PULSAR', kind: 14, R: 12.5, spin: 1.0, tilt: 0, incl: 0, atm: '#7ab8ff', atmK: 1.0, fire: '#8ad8ff', glow: '#5aa8ff',
+    { name: 'PULSAR', vc: [0, 0], kind: 14, R: 12.5, spin: 1.0, tilt: 0, incl: 0, atm: '#7ab8ff', atmK: 1.0, fire: '#8ad8ff', glow: '#5aa8ff',
       sky: ['#000208', '#04102a', '#103060'], fog: '#061230', hemi: ['#80b0ff', '#04060c', 0.6], key: ['#d0e4ff', 0.9], rim: '#4a9aff',
       city: ['#1a2440', '#121a30', '#0c1222'], win: '#9ad0ff', tower: '#16203a', edge: '#5ab0ff', edgeGlow: '#103a80', base: '#080c18',
       road: '#7090c0', lamp: '#b0e0ff', haze: '#3a7aff', stars: 0.9, shapes: { antenna: 1, bunker: 0.6, box: 0.5 } },
-    { name: 'ANDROMEDA', kind: 15, R: 16.0, spin: 1.0, tilt: 0, incl: 0, atm: '#c0b0ff', atmK: 1.0, fire: '#ffd27a', glow: '#b090ff',
+    { name: 'ANDROMEDA', vc: [0.95, 0.05], kind: 15, R: 16.0, spin: 1.0, tilt: 0, incl: 0, atm: '#c0b0ff', atmK: 1.0, fire: '#ffd27a', glow: '#b090ff',
       sky: ['#04020c', '#160c30', '#3a2458'], fog: '#1a1030', fogFar: 85, hemi: ['#c0b0ff', '#08060e', 0.7], key: ['#fff0e0', 0.85], rim: '#ffc080',
       city: ['#2a2448', '#1e1a36', '#141026'], win: '#ffd8a0', tower: '#242040', edge: '#b09ae0', base: '#0e0a1a',
       road: '#a898d0', lamp: '#ffe0b0', haze: '#a080ff', stars: 1, shapes: { spire: 0.8, cyl: 0.6, dome: 0.5 } },
-    { name: 'TON 618', kind: 'bh', R: 11.0, fire: '#6a1fd0', glow: '#ff8a5c',
+    { name: 'MILKY WAY', vc: [0.5, 0.75], kind: 16, R: 16.5, span: 7, spin: 1.0, tilt: 0, incl: 0, atm: '#d0c0ff', atmK: 1.0, fire: '#ffe0a0', glow: '#c8a8ff',
+      sky: ['#020208', '#0a0a22', '#2a1e44'], fog: '#120e28', fogFar: 85, hemi: ['#c8b8ff', '#0a0814', 0.7], key: ['#ffe8c0', 0.9], rim: '#ffb070',
+      city: ['#2c2650', '#201c3c', '#16122a'], win: '#ffe2a0', tower: '#28224a', edge: '#c0a8ff', base: '#100c1e',
+      road: '#b0a0e0', lamp: '#ffe8b0', haze: '#c090ff', stars: 1, shapes: { spire: 1, cyl: 0.6, antenna: 0.4 } },
+    { name: 'TON 618', kind: 'bh', R: 11.0, dx: -9, fire: '#6a1fd0', glow: '#ff8a5c',   // v2.6: finalde gölgesi daha çok görünsün diye ekrana 9 birim içeri
       sky: [P.skyTop, P.skyMid, P.skyLow], fog: '#4a3466', hemi: ['#8d79c9', P.ground, 0.75], key: ['#ffb27a', 0.95], rim: P.skyLow,
       city: [P.cityFar, P.cityNear, '#1f1a38'], win: P.glow, tower: P.tower, edge: P.towerEdge, base: '#211c3c',
       road: '#b4a6e6', lamp: '#ffd98a', haze: '#ffa874', stars: 0.2, shapes: { box: 1, spire: 0.25 } }
   ];
+  // v2.6 Halil'in sırası: Dünya, Ay, sonra güneş sisteminde en sadeden en havalıya; halkalılar (Satürn, Uranüs) Güneş'ten hemen önce,
+  // Güneş sistemin finali. Sonra derin uzayda yine sadeden havalıya; TON 618 her zaman son.
+  var ORDER = ['EARTH', 'THE MOON', 'MERCURY', 'PLUTO', 'MARS', 'VENUS', 'NEPTUNE', 'JUPITER', 'SATURN', 'URANUS', 'THE SUN',
+               'ALPHA CENTAURI', 'OORT CLOUD', 'ORION NEBULA', 'ANDROMEDA', 'MILKY WAY', 'PULSAR', 'TON 618'];
+  BODIES = ORDER.map(function (n) { return BODIES.filter(function (b) { return b.name === n; })[0]; });
+  // v2.6: her gök cismine kendi kulesi (çarpışma kutusu aynı; sadece görünüş değişir, süsler boşluğa taşmaz)
+  var TOWER_STYLE = { 'EARTH': 'clock', 'THE MOON': 'lunar', 'MERCURY': 'bunker', 'PLUTO': 'ice', 'MARS': 'silo', 'VENUS': 'cloud',
+    'NEPTUNE': 'strips', 'JUPITER': 'bands', 'SATURN': 'ringed', 'URANUS': 'tilted', 'THE SUN': 'flare', 'ALPHA CENTAURI': 'twin',
+    'OORT CLOUD': 'shards', 'ORION NEBULA': 'crystal', 'ANDROMEDA': 'hover', 'MILKY WAY': 'obelisk', 'PULSAR': 'pylon', 'TON 618': 'clocktower' };
   var PLANET_EVERY = KK.PLANET_EVERY = KK.TEST_BUILD ? 10 : 200;   // v2.5: test sayfasında hızlı geçiş
   KK.JOURNEY_END = BODIES.length * PLANET_EVERY;           // v2.2: son gök cisminde de 200 puan uçunca yolculuk biter
   KK.BODY_NAMES = BODIES.map(function (b) { return b.name; });                                   // kaç puanda bir gök cismi değişir (v2.0: tekrar 200)
@@ -313,20 +326,39 @@ window.KK = window.KK || {};
     '  float m = fbm(q*2.0 + 1.0);',
     '  vec3 col = mix(vec3(0.52,0.18,0.07), vec3(0.86,0.46,0.22), smoothstep(0.30, 0.66, m));',
     '  col = mix(col, vec3(0.30,0.12,0.06), smoothstep(0.55, 0.72, fbm(q*3.4 + 8.0))*0.75);',
-    '  col = mix(col, vec3(0.38,0.14,0.07), smoothstep(0.035, 0.0, abs(lat + 0.08 + (m-0.5)*0.06)) * 0.6);',
+    // v2.6: Valles Marineris eskiden gezegeni boydan boya saran düz bir çizgiydi. Gerçeği ~4000 km (çevrenin ~%19'u ≈ 1.2 rad):
+    // boylamda 1.2 rad'lık pencereyle sınırlı, kıvrımlı ve kesik kesik.
+    '  vec2 ll = lonlat(q); float vw = smoothstep(0.62, 0.0, abs(ll.x - 0.9));',
+    '  float vm = smoothstep(0.03, 0.0, abs(lat + 0.08 + (m-0.5)*0.10 + 0.04*sin(ll.x*5.0))) * vw * (0.45 + 0.55*fbm(q*9.0));',
+    '  col = mix(col, vec3(0.38,0.14,0.07), vm * 0.65);',
     '  col = mix(col, vec3(0.96,0.94,0.90), smoothstep(0.86, 0.91, abs(lat) + (m - 0.5)*0.12));',
     '  return col * (0.025 + 1.05*lam);',
     '#elif KIND == 3',                                        // JÜPİTER
-    // v2.5: bantlar ters yönlerde akar (jet akımları), kenarlarında girdaplar; Büyük Kırmızı Leke dönen bir sarmal
-    '  float jet = sin(lat*22.0);',
+    // v2.6: eskiden sin(enlem·22) ile 11 eş aralıklı çizgi vardı (kendini tekrar ediyordu). Artık gerçek kuşak haritası:
+    // ekvator kuşağı açık (|enlem| < 0.12), Kuzey/Güney Ekvator Kuşakları koyu kahve (0.12–0.32), ılıman kuşaklar ince (≈0.5),
+    // kutuplar gri-mavi (> 0.65). Kuşaklar arası rüzgârlar ters yönde akar, kenarlarında girdap ve koyu "festoon"lar olur.
+    '  float jet = sin(lat*10.0);',
     '  vec3 qf = q + vec3(0.0, 0.0, uTime*0.03*sign(jet));',
-    '  float tl = lat + (fbm(qf*4.0) - 0.5)*0.10 + (fbm(qf*11.0 + 3.0) - 0.5)*0.035;',
-    '  float b = sin(tl*22.0), b2 = sin(tl*8.5 + 1.0);',
-    '  vec3 col = mix(vec3(0.93,0.88,0.77), vec3(0.78,0.58,0.40), smoothstep(-0.3, 0.6, b));',
-    '  col = mix(col, vec3(0.52,0.34,0.22), smoothstep(0.5, 0.95, b2)*0.55);',
-    '  col *= 0.86 + 0.26*fbm(vec3(qf.x*3.0, qf.y*26.0, qf.z*3.0));',
-    '  float eddy = smoothstep(0.62, 0.8, fbm(qf*9.0 + 11.0)) * (1.0 - abs(b));',      // bant kenarlarında beyaz girdaplar
-    '  col = mix(col, vec3(0.97,0.94,0.88), eddy*0.45);',
+    '  float tl = lat + (fbm(qf*3.0) - 0.5)*0.07 + (fbm(qf*9.0 + 3.0) - 0.5)*0.025;',
+    '  float a = abs(tl);',
+    '  float neb = smoothstep(0.10, 0.14, tl) * smoothstep(0.33, 0.27, tl);',
+    '  float seb = smoothstep(-0.11, -0.15, tl) * smoothstep(-0.35, -0.29, tl);',
+    '  float tb = smoothstep(0.44, 0.47, a) * smoothstep(0.56, 0.52, a);',
+    '  float pol = smoothstep(0.6, 0.82, a);',
+    '  vec3 col = vec3(0.95, 0.90, 0.80);',
+    '  col = mix(col, vec3(0.95, 0.83, 0.64), smoothstep(0.11, 0.0, a)*0.45);',
+    '  col = mix(col, vec3(0.66, 0.43, 0.28), neb*0.85);',
+    '  col = mix(col, vec3(0.72, 0.49, 0.32), seb*0.8);',
+    '  col = mix(col, vec3(0.78, 0.63, 0.48), tb*0.6);',
+    '  col = mix(col, vec3(0.60, 0.60, 0.64), pol*0.7);',
+    '  col *= 0.9 + 0.16*fbm(vec3(qf.x*2.5, qf.y*12.0, qf.z*2.5));',
+    '  float fest = smoothstep(0.66, 0.84, fbm(qf*7.0 + 5.0)) * smoothstep(0.05, 0.0, abs(tl - 0.11));',
+    '  col = mix(col, vec3(0.40, 0.40, 0.50), fest*0.6);',
+    '  float ov = smoothstep(0.78, 0.9, fbm(qf*6.0 + 21.0)) * smoothstep(0.05, 0.0, abs(tl + 0.5));',
+    '  col = mix(col, vec3(0.98, 0.96, 0.92), ov*0.7);',
+    '  float edge = max(smoothstep(0.03, 0.0, abs(a - 0.12)), smoothstep(0.03, 0.0, abs(a - 0.31)));',
+    '  float eddy = smoothstep(0.6, 0.8, fbm(qf*9.0 + 11.0)) * edge;',
+    '  col = mix(col, vec3(0.97, 0.94, 0.88), eddy*0.45);',
     '  vec2 ll = lonlat(q); vec2 d = (ll - vec2(0.7, -0.38)) * vec2(1.0, 2.2); float sp = length(d);',
     '  float sw = atan(d.y, d.x) + (0.24 - sp)*16.0 - uTime*0.35;',                    // içe doğru dönen sarmal
     '  float swn = fbm(vec3(cos(sw)*sp*10.0, sin(sw)*sp*10.0, 3.0));',
@@ -391,7 +423,8 @@ window.KK = window.KK || {};
     '  d *= 0.80 + 0.20*sin(rr*95.0);',
     '  return d * smoothstep(0.0, 0.03, x) * smoothstep(1.0, 0.97, x);',
     '#else',
-    '  return 0.75*smoothstep(0.012, 0.0, abs(rr - 1.56)) + 0.4*smoothstep(0.008, 0.0, abs(rr - 1.47)) + 0.35*smoothstep(0.008, 0.0, abs(rr - 1.41));',
+    // v2.6: Uranüs halkaları ekranda ~1.5 piksel kalıyordu (0.012 R). 2.5 kat kalın + aralarında soluk toz bandı
+    '  return 0.95*smoothstep(0.03, 0.0, abs(rr - 1.56)) + 0.6*smoothstep(0.02, 0.0, abs(rr - 1.47)) + 0.55*smoothstep(0.02, 0.0, abs(rr - 1.41)) + 0.14*smoothstep(1.36, 1.40, rr)*smoothstep(1.62, 1.58, rr);',
     '#endif',
     '}',
     // ---- v2.3: Derin uzay (KIND 11..15) — küre yerine kendi biçimleri ----
@@ -399,13 +432,13 @@ window.KK = window.KK || {};
     'vec4 deep(vec2 p, float quad){',
     '  vec3 C = vec3(0.0); float A = 0.0; float t = uTime;',
     '#if KIND == 11',                                     // OORT: kuyruklu yıldız — çekirdek, koma, iyon ve toz kuyruğu + buz kırıntıları
-    '  vec2 dir = normalize(vec2(1.0, 0.55)); vec2 nrm = vec2(-dir.y, dir.x);',   // v2.5: ~29° yukarı (uçuş hattını yatay kesmesin)
+    '  vec2 dir = normalize(vec2(-1.0, 0.42)); vec2 nrm = vec2(-dir.y, dir.x);',   // v2.6: kuyruk sola-yukarı, ekranın içine (sağ üstte sığmıyordu)
     '  float al = dot(p, dir), pe = dot(p, nrm);',
     '  pe += 0.035*sin(al*2.2 - t*1.3)*max(al, 0.0);',                              // v2.5: kuyruk yavaşça dalgalanır
-    '  float ion = exp(-pow(pe / (0.04 + 0.05*max(al, 0.0)), 2.0)) * exp(-max(al, 0.0)*0.45) * step(0.0, al);',
+    '  float ion = exp(-pow(pe / (0.04 + 0.05*max(al, 0.0)), 2.0)) * exp(-max(al, 0.0)*0.8) * step(0.0, al);',
     '  ion *= 0.6 + 0.6*n3(vec3(al*3.0 - t*0.8, pe*12.0, 1.0));',
     '  float pd = pe + 0.10*al*al;',                      // toz kuyruğu yörüngede kıvrılır
-    '  float dust = exp(-pow(pd / (0.08 + 0.22*max(al, 0.0)), 2.0)) * exp(-max(al, 0.0)*0.6) * step(0.0, al);',
+    '  float dust = exp(-pow(pd / (0.08 + 0.22*max(al, 0.0)), 2.0)) * exp(-max(al, 0.0)*1.0) * step(0.0, al);',
     '  float r = length(p);',
     '  float breath = 0.88 + 0.12*sin(t*1.7);',                                      // çekirdek nefes alır
     '  C += vec3(0.45, 0.75, 1.0) * ion * 0.55 + vec3(1.0, 0.86, 0.6) * dust * 0.4 * (0.85 + 0.3*n3(vec3(al*2.0 - t*0.4, pe*6.0, 2.0)));',   // v2.5: ~yarı parlaklık
@@ -458,6 +491,29 @@ window.KK = window.KK || {};
     '  float ring = exp(-pow((length(vec2(p.x, p.y*1.8)) - 1.35) / 0.28, 2.0)) * fbm(vec3(cos(ang)*3.0, sin(ang)*3.0, t*0.05 + r));',
     '  C += vec3(0.85, 0.35, 0.75) * ring * 0.85 * quad;',
     '  A = clamp(exp(-r*r*400.0), 0.0, 1.0);',
+    '#elif KIND == 16',                                   // v2.6 SAMANYOLU: Dünya'dan görünüşü — gökyüzünü çapraz kesen ışık şeridi
+    // Şerit kıvrılarak akar; ortasından koyu toz "Büyük Yarık" geçer; bir ucunda galaksinin merkezi (Yay) şişkin ve sıcak renkli;
+    // içinde pembe bulutsular ve yoğun yıldız alanı (yıldız yoğunluğu şeridin içinde ~9 kat fazla: eşik 0.995 → 0.955).
+    '  vec2 d = normalize(vec2(1.0, 0.55)), nn = vec2(-d.y, d.x);',     // sağa doğru yükselen şerit (sol alttan sağ üste)
+    '  vec2 pc = p - vec2(0.5, 0.75);',
+    '  float al = dot(pc, d), pe = dot(pc, nn);',
+    '  pe += 0.12*sin(al*0.45 + 0.6) + 0.08*(fbm(vec3(al*0.6, 0.0, t*0.02)) - 0.5);',
+    '  float w = 0.3 + 0.07*sin(al*0.7 + 1.0);',
+    '  float band = exp(-pe*pe/(w*w));',
+    '  float bulge = exp(-pow(al - 0.9, 2.0)/0.9) * exp(-pe*pe/0.16);',
+    '  float cloud = fbm(vec3(al*1.4 - t*0.01, pe*3.0, 3.0));',
+    '  float fine = fbm(vec3(al*4.0, pe*8.0, 7.0 + t*0.015));',
+    '  float rift = smoothstep(0.45, 0.72, fbm(vec3(al*1.1 + 2.0, pe*9.0, 1.0))) * exp(-pow((pe + 0.03)/0.12, 2.0)) * smoothstep(-3.0, 0.0, al);',
+    '  vec3 starC = mix(vec3(0.62, 0.70, 1.0), vec3(1.0, 0.84, 0.62), clamp(bulge*1.6, 0.0, 1.0));',
+    '  float glow = band*(0.4 + 0.6*cloud)*(0.65 + 0.55*fine) + bulge*0.75;',
+    '  C = starC * glow * (1.0 - 0.85*rift) * 1.5;',
+    '  float neb = smoothstep(0.74, 0.8, fbm(vec3(al*3.0, pe*6.0, 11.0))) * band;',
+    '  C += vec3(1.0, 0.42, 0.62) * neb * 0.4;',
+    '  vec2 g = floor(p*30.0); float sh = h3(vec3(g, 5.0));',
+    '  float st = step(mix(0.995, 0.955, band), sh);',
+    '  C += vec3(0.9, 0.95, 1.0) * st * smoothstep(0.16, 0.0, length(fract(p*30.0) - 0.5)) * (0.55 + 0.45*sin(t*(1.5 + sh*3.0) + sh*40.0));',
+    '  C *= quad;',
+    '  A = clamp(glow*0.3 + rift*band*0.6, 0.0, 0.65) * quad;',
     '#else',                                              // ANDROMEDA: eğik sarmal galaksi
     '  vec2 q = rot(p - vec2(0.95, 0.05), -0.45); q.y /= 0.32;',   // merkez ekrana kaydırıldı
     '  float r = length(q), ang = atan(q.y, q.x);',
@@ -481,10 +537,14 @@ window.KK = window.KK || {};
     '  float quad = smoothstep(1.0, 0.8, abs(vUv.x*2.0 - 1.0)) * smoothstep(1.0, 0.75, abs(vUv.y*2.0 - 1.0));', // dörtgen kenarı görünmesin
     '#if KIND >= 11',
     // v2.5: derin uzayda dörtgen kare; HER katman merkezden kenara yuvarlak bir geçişle söner (ışınlar/kuyruklar kesilmesin)
+    '#if KIND == 16',
+    '  float circ = 1.0;',                                // Samanyolu şeridi kenara kadar uzanır (sadece dörtgen kenarı söner)
+    '#else',
     '  float circ = smoothstep(1.0, 0.55, length(vUv*2.0 - 1.0));',
-    '  gl_FragColor = deep(p, quad) * circ * uFade; return;',
     '#endif',
-    '  vec3 L = normalize(vec3(0.75, 0.30, 0.60));',
+    '  gl_FragColor = deep(p, quad) * circ * uFade; return;',   // v2.6: aynalama kaldırıldı → ayrıntılar sağ üste yaslanır
+    '#endif',
+    '  vec3 L = normalize(vec3(-0.75, 0.30, 0.60));',   // v2.6: gök cismi sağ üstte → ışık soldan (ekranın ortasından)
     '  vec3 C = vec3(0.0); float A = 0.0;',
     '#if RING',
     '  vec3 ax = vec3(0.0, 1.0, 0.0); ax.yz = rot(ax.yz, -uIncl); ax.xy = rot(ax.xy, -uTilt);',
@@ -502,7 +562,7 @@ window.KK = window.KK || {};
     '#if KIND == 4',
     '  vec3 rc = vec3(1.0, 0.91, 0.70) * shade;',
     '#else',
-    '  vec3 rc = vec3(0.70, 0.84, 0.90) * shade;',
+    '  vec3 rc = vec3(0.80, 0.94, 1.0) * shade * 1.25;',
     '#endif',
     '  if (rz < 0.0) { C = rc*ra; A = ra; }',
     '#endif',
@@ -565,7 +625,8 @@ window.KK = window.KK || {};
   }
   var themeFrom = null, themeTo = null, themeT = 1, curTheme = null;
   var hemi = null, rimLight = null, baseMat = null, roadMat = null, hazeMats = [], stars = null, skyCv = null, skyTexture = null;
-  var anchor = null;                                        // gök cisminin merkezi (ekranın sol kenarında)
+  var anchor = null, anchorBH = null;                       // gök cisminin merkezi (v2.6: sağ üst); TON 618 kendi yerinde
+  var BODY_SCALE = 1.25;                                    // v2.6: gök cisimleri %25 büyük (TON 618 hariç)
   function paintSky(c0, c1, c2) {
     var g = skyCv.getContext('2d'), h = skyCv.height;
     var gr = g.createLinearGradient(0, 0, 0, h);
@@ -601,7 +662,7 @@ window.KK = window.KK || {};
         mesh = bhMesh; mat = bhMat;
         mesh.scale.setScalar(def.R / 7.5);                   // gölge yarıçapı ≈ 7.5 → diğerleriyle aynı boy
       } else {
-        var deepK = def.kind >= 11, hx = deepK ? PL_DEEP : PL_HX, hy = deepK ? PL_DEEP : PL_HY;   // v2.5
+        var deepK = def.kind >= 11, hx = deepK ? (def.span || PL_DEEP) : PL_HX, hy = deepK ? (def.span || PL_DEEP) : PL_HY;   // v2.5 (v2.6: span = özel boy)
         mat = new THREE.ShaderMaterial(Object.assign({
           uniforms: { uTime: { value: 0 }, uFade: { value: 0 }, uSpin: { value: def.spin }, uTilt: { value: def.tilt },
                       uIncl: { value: def.incl }, uAtmK: { value: def.atmK }, uAtm: { value: color(def.atm) } },
@@ -611,11 +672,15 @@ window.KK = window.KK || {};
         mesh = new THREE.Mesh(new THREE.PlaneGeometry(2 * hx * def.R, 2 * hy * def.R), mat);
         scene.add(mesh);
       }
-      mesh.position.copy(anchor);
+      mesh.position.copy(def.kind === 'bh' ? anchorBH : anchor); mesh.position.x += def.dx || 0;
+      if (def.kind !== 'bh') mesh.scale.setScalar(BODY_SCALE);
+      // v2.6: derin uzay cisimlerinin görsel merkezi (vc, yarıçap biriminde) dörtgenin ortasında değil → vc tam çapaya (sağ üst) otursun
+      // oyun sırasında kamera biraz kayar: görsel merkez ölçümde ~(+0.25R, −0.3R) kadar sağ-aşağıda kaldı → o kadar düzeltilir
+      if (def.vc) { mesh.position.x -= (def.vc[0] + 0.25) * def.R * BODY_SCALE; mesh.position.y -= (def.vc[1] - 0.3) * def.R * BODY_SCALE; }
       var vis = i === 0 ? 1 : 0;
       mat.uniforms.uFade.value = vis;
       mesh.visible = vis > 0;
-      planets.push({ def: def, mesh: mesh, mat: mat, vis: vis, baseS: mesh.scale.x });
+      planets.push({ def: def, mesh: mesh, mat: mat, vis: vis, baseS: mesh.scale.x, bx: mesh.position.x });
     });
     glowCol = color(BODIES[0].glow);
     BODIES.forEach(function (T) { towerContrast(T); T.c = themeColors(T); });
@@ -690,8 +755,8 @@ window.KK = window.KK || {};
       var e = pl.vis * pl.vis * (3 - 2 * pl.vis);
       pl.mat.uniforms.uFade.value = e;
       pl.mat.uniforms.uTime.value = state.t;
-      // Gelen soldan kayarak girer, giden sola kayıp çıkar
-      pl.mesh.position.x = anchor.x - (1 - e) * pl.def.R * 2.4;
+      // Gelen sağdan kayarak girer, giden sağa kayıp çıkar (v2.6: sağ üst)
+      pl.mesh.position.x = pl.bx + (1 - e) * pl.def.R * 2.4;
       pl.mesh.scale.setScalar(pl.baseS * (0.92 + 0.08 * e));
     }
     tmpC.set(BODIES[planetIdx].glow);
@@ -788,16 +853,16 @@ window.KK = window.KK || {};
     { id: 'storm',    name: 'STORM',    req: 1200, paper: '#e8c6a0', shade: '#b2683a', line: '#2a1406', glow: 0.35, head: '#ffe0c0', tail: '#c86a3a', spark: '#ffd0a0', trail: 'wave' },   // v2.5: Jüpiter
     { id: 'ringed',   name: 'RINGED',   req: 1400, paper: '#e8d6a8', shade: '#b89a60', line: '#2a1a08', glow: 0.35, head: '#fff0c0', tail: '#c0a060', spark: '#ffe8b0', trail: 'dash' },
     { id: 'tide',     name: 'TIDE',     req: 1800, paper: '#3a6cff', shade: '#1a2f9a', line: '#d8ecff', glow: 0.50, head: '#a8d8ff', tail: '#2a4bff', spark: '#c8e4ff', trail: 'wave' },   // v2.5: Neptün
-    { id: 'void',     name: 'VOID',     req: 2200, paper: '#141022', shade: '#07060c', line: '#ffc9a8', glow: 0.10, head: '#ffb070', tail: '#a24bff', spark: '#ff9a6a', trail: 'twin' },
-    { id: 'aurora',   name: 'AURORA',   req: 2600, paper: '#7affc8', shade: '#2ab08a', line: '#04201a', glow: 0.60, head: '#d0fff0', tail: '#ff7ad8', spark: '#b0ffe8', trail: 'rainbow' },   // v2.5: Orion
-    { id: 'beacon',   name: 'BEACON',   req: 2800, paper: '#ffffff', shade: '#9ad8ff', line: '#00b8e8', glow: 0.80, head: '#ffffff', tail: '#00b8ff', spark: '#c8f6ff', trail: 'pulse' },   // v2.5: Pulsar
-    { id: 'horizon',  name: 'HORIZON',  req: 3200, paper: '#0a0a12', shade: '#000000', line: '#ffb050', glow: 0.15, head: '#ffd090', tail: '#ff6a20', spark: '#ffc070', trail: 'wave' },   // v2.5: TON 618
+    { id: 'void', extra: ['winglet'],     name: 'VOID',     req: 2200, paper: '#141022', shade: '#07060c', line: '#ffc9a8', glow: 0.10, head: '#ffb070', tail: '#a24bff', spark: '#ff9a6a', trail: 'twin' },
+    { id: 'aurora', extra: ['canard', 'winglet'],   name: 'AURORA',   req: 2600, paper: '#7affc8', shade: '#2ab08a', line: '#04201a', glow: 0.60, head: '#d0fff0', tail: '#ff7ad8', spark: '#b0ffe8', trail: 'rainbow' },   // v2.5: Orion
+    { id: 'beacon', extra: ['biplane', 'fin'],   name: 'BEACON',   req: 2800, paper: '#ffffff', shade: '#9ad8ff', line: '#00b8e8', glow: 0.80, head: '#ffffff', tail: '#00b8ff', spark: '#c8f6ff', trail: 'pulse' },   // v2.5: Pulsar
+    { id: 'horizon', extra: ['canard', 'fin', 'blade'],  name: 'HORIZON',  req: 3200, paper: '#0a0a12', shade: '#000000', line: '#ffb050', glow: 0.15, head: '#ffd090', tail: '#ff6a20', spark: '#ffc070', trail: 'wave' },   // v2.5: TON 618
     // v2.5: yıldız (rebirth) skinleri EPIC: canlı efektler (anim). FYST hepsinin üstünde: holografik gövde + özel iz + yörünge parıltıları
-    { id: 'nova',     name: 'NOVA ★',      stars: 1, paper: '#fff4d6', shade: '#ffcf6b', line: '#5a1a00', glow: 0.85, head: '#ffffff', tail: '#ffb030', spark: '#fff2a8', trail: 'spark', anim: 'pulse' },
-    { id: 'nebula',   name: 'NEBULA ★★',  stars: 2, paper: '#c58bff', shade: '#7a3ad0', line: '#0e0520', glow: 0.55, head: '#ff9ae0', tail: '#6a5bff', spark: '#ffc0f0', trail: 'smoke', anim: 'drift' },
-    { id: 'quasar',   name: 'QUASAR ★★★', stars: 3, paper: '#9ff6ff', shade: '#3ad0e0', line: '#001a20', glow: 0.75, head: '#ffffff', tail: '#2f8bff', spark: '#bff8ff', trail: 'pulse', anim: 'jet' },
-    { id: 'singularity', name: 'SINGULARITY ★4', stars: 4, shape: 'delta', paper: '#0a0812', shade: '#000000', line: '#b06bff', glow: 0.15, head: '#d6b0ff', tail: '#6a2cff', spark: '#c89cff', halo: '#6a2cff', trail: 'twin', anim: 'void' },
-    { id: 'supernova', name: 'SUPERNOVA ★5', stars: 5, shape: 'delta', paper: '#ffb347', shade: '#ff5a1a', line: '#3a0800', glow: 0.9, head: '#ffffff', tail: '#ff4a10', spark: '#ffd27a', trail: 'comet', anim: 'fire' },
+    { id: 'nova', extra: ['canard', 'winglet'],     name: 'NOVA ★',      stars: 1, paper: '#fff4d6', shade: '#ffcf6b', line: '#5a1a00', glow: 0.85, head: '#ffffff', tail: '#ffb030', spark: '#fff2a8', trail: 'spark', anim: 'pulse' },
+    { id: 'nebula', extra: ['biplane', 'winglet'],   name: 'NEBULA ★★',  stars: 2, paper: '#c58bff', shade: '#7a3ad0', line: '#0e0520', glow: 0.55, head: '#ff9ae0', tail: '#6a5bff', spark: '#ffc0f0', trail: 'smoke', anim: 'drift' },
+    { id: 'quasar', extra: ['canard', 'fin', 'blade'], shape: 'delta',   name: 'QUASAR ★★★', stars: 3, paper: '#9ff6ff', shade: '#3ad0e0', line: '#001a20', glow: 0.75, head: '#ffffff', tail: '#2f8bff', spark: '#bff8ff', trail: 'pulse', anim: 'jet' },
+    { id: 'singularity', extra: ['canard', 'winglet', 'fin', 'blade'], name: 'SINGULARITY ★4', stars: 4, shape: 'delta', paper: '#0a0812', shade: '#000000', line: '#b06bff', glow: 0.15, head: '#d6b0ff', tail: '#6a2cff', spark: '#c89cff', halo: '#6a2cff', trail: 'twin', anim: 'void' },
+    { id: 'supernova', extra: ['canard', 'winglet', 'fin', 'biplane', 'blade'], name: 'SUPERNOVA ★5', stars: 5, shape: 'delta', paper: '#ffb347', shade: '#ff5a1a', line: '#3a0800', glow: 0.9, head: '#ffffff', tail: '#ff4a10', spark: '#ffd27a', trail: 'comet', anim: 'fire' },
     { id: 'fyst',     name: 'FYST · DEV GIFT', secret: true, shape: 'dart', paper: '#ffffff', shade: '#e6dcff', line: '#ffffff', glow: 0.6, head: '#ffffff', tail: '#ff9ad5', spark: '#ffffff', halo: '#ffb0e0', trail: 'holo', anim: 'holo' }
   ];
   // Test sayfasında gök cisimleri 4 kat sık geldiği için kilit puanları da 4'e bölünür
@@ -819,6 +884,15 @@ window.KK = window.KK || {};
       tris.push([[-11, 3.2, -13], [-15, 3.5, -16], [-14, 7, -15]]); cols.push(skin.paper);
       tris.push([[-11, 3.2, 13], [-14, 7, 15], [-15, 3.5, 16]]); cols.push(skin.paper);
     }
+    // v2.6: zor skinlere ek parçalar — canard (burunda küçük kanat), winglet (kanat ucu dikmesi), fin (kuyruk dikmesi),
+    // biplane (altta ikinci kanat çifti), blade (kanat üstünde ince bıçak çizgileri)
+    var X2 = skin.extra || [];
+    function mir(t, c) { tris.push(t); cols.push(c); tris.push(t.map(function (v) { return [v[0], v[1], -v[2]]; }).reverse()); cols.push(c); }
+    if (X2.indexOf('canard') >= 0) mir([[N[0] - 8, 0.6, 0], [N[0] - 15, 0.8, 0], [N[0] - 16, 1.6, -7]], skin.shade);
+    if (X2.indexOf('winglet') >= 0) mir([L, [L[0] + 5, L[1] + 0.4, L[2] * 0.9], [L[0] - 1, L[1] + 7, L[2] * 1.02]], skin.shade);
+    if (X2.indexOf('fin') >= 0) { tris.push([[C[0] + 6, 1, 0], [C[0] - 1, 1, 0], [C[0] - 3, 9, 0]]); cols.push(skin.shade); }
+    if (X2.indexOf('biplane') >= 0) mir([[N[0] - 9, -2.6, 0], [C[0] + 3, -2.2, 0], [L[0] + 3, -2.8, L[2] * 0.62]], skin.paper);
+    if (X2.indexOf('blade') >= 0) mir([[C[0] + 2, 1.2, L[2] * 0.35], [C[0] - 7, 1.4, L[2] * 0.55], [C[0] - 3, 1.3, L[2] * 0.75]], skin.line);
     var pos = [], col = [];
     tris.forEach(function (t, i) {
       var cc = color(cols[i]);
@@ -1023,7 +1097,7 @@ window.KK = window.KK || {};
 
   // ---- Saat kulesi (bir kapı = üst + alt kule) ----
   var TOP_VISIBLE = Y(-30);                    // üst kulenin görünen en üst noktası (pencere sınırı)
-  function buildGate(gate) {
+  function buildGate(gate, bodyIdx) {
     var g = new THREE.Group();
     var w = gate.w / S, d = w;
     var gy0 = gate.gapY0 != null ? gate.gapY0 : gate.gapY;
@@ -1032,12 +1106,12 @@ window.KK = window.KK || {};
     var skyTopY = Y(-300);                     // üst kule ekranın üstüne taşsın (hareket payıyla)
     var rnd = mulberry(gate.id * 9973 + 17);   // her kule kendi rastgeleliğiyle, ama kararlı
 
-    function addWindow(parent, face, along, yy) {
-      // face: 0 ön (+z), 1 sol (-x), 2 sağ (+x)
+    function addWindow(parent, face, along, yy, curved) {
+      // face: 0 ön (+z), 1 sol (-x), 2 sağ (+x). v2.6 curved: 1 = silindir (cam yüzeye oturur), 2 = altıgen (düz ön yüz 0.433·w'de)
       var lit = rnd() < 0.55;
       var win = new THREE.Mesh(shared.win, lit ? shared.winLit : shared.winDark);
       var out = 0.012;
-      if (face === 0) win.position.set(along, yy, d / 2 + out);
+      if (face === 0) win.position.set(along, yy, (curved === 1 ? Math.sqrt(Math.max(0, w * w / 4 - along * along)) : curved === 2 ? w * 0.433 : d / 2) + out);
       else {
         var sx = face === 1 ? -1 : 1;
         win.position.set(sx * (w / 2 + out), yy, along);
@@ -1060,19 +1134,101 @@ window.KK = window.KK || {};
       var capEdge = capAtBottom ? y0 : y1;
       if (capAtBottom) y0 += 0.1; else y1 -= 0.1;
       var h = y1 - y0, cy = (y0 + y1) / 2;
-      var body = new THREE.Mesh(shared.box, shared.towerMat);
+      var dir = capAtBottom ? 1 : -1;          // kuleye doğru yön
+      var st = style;
+      // Gövde: kutu (çoğu), silindir (Mars, Venüs), altıgen (Plüton, Orion)
+      var bodyGeo = (st === 'silo' || st === 'cloud') ? shared.round : (st === 'ice' || st === 'crystal') ? shared.hex : shared.box;
+      var body = new THREE.Mesh(bodyGeo, shared.towerMat);
       body.scale.set(w, h, d); body.position.y = cy;
+      if (bodyGeo === shared.hex) body.rotation.y = Math.PI / 6;   // düz yüz öne baksın (pencereler oturabilsin)
+      var busy = [];                                              // v2.6: süslerin kapladığı yükseklikler — pencere buralara konmaz
+      function band(y, hh) { busy.push([y, hh]); }
       body.castShadow = true; body.receiveShadow = true;
       parent.add(body);
-      [-1, 1].forEach(function (sx) {          // köşe pilastrları
+      if (bodyGeo === shared.box && st !== 'obelisk') [-1, 1].forEach(function (sx) {          // köşe pilastrları
         var p = new THREE.Mesh(shared.box, shared.edgeMat);
         p.scale.set(0.12, h - 0.05, 0.12); p.position.set(sx * (w / 2 - 0.02), cy, d / 2 - 0.02);
         parent.add(p);
       });
-      var dir = capAtBottom ? 1 : -1;          // kuleye doğru yön
-      var cap = new THREE.Mesh(shared.box, shared.capMat);
+      function part(geo, mat, sx, sy, sz, x, y, z) { var m = new THREE.Mesh(geo, mat); m.scale.set(sx, sy, sz); m.position.set(x || 0, y, z || 0); if (geo === shared.hex) m.rotation.y = Math.PI / 6; parent.add(m); return m; }
+      function along(k) { return capEdge + dir * k; }          // boşluk kenarından kuleye doğru k birim
+      function inside(k) { return capAtBottom ? along(k) < limitHi2 : along(k) > GROUND - 2; }
+      var limitHi2 = TOP_VISIBLE + 2;
+      // Kapak (boşluk kenarı): biçim gök cismine göre
+      var capGeo = (st === 'silo' || st === 'cloud') ? shared.round : (st === 'ice' || st === 'crystal') ? shared.hex : shared.box;
+      var cap = new THREE.Mesh(capGeo, shared.capMat);
       cap.scale.set(w * 1.18, 0.3, d * 1.18); cap.position.y = capEdge + dir * 0.15;
       cap.castShadow = true; parent.add(cap);
+      if (capGeo === shared.hex) cap.rotation.y = Math.PI / 6;
+      var i, kk;
+      if (st === 'lunar') {                                   // Ay: ince bant + yan anten ve ışık
+        part(shared.box, shared.edgeMat, w * 1.08, 0.12, d * 1.08, 0, along(0.95)); band(along(0.95), 0.06);
+        part(shared.box, shared.edgeMat, 0.06, 1.2, 0.06, w / 2 + 0.1, along(1.1));
+        part(shared.ball, shared.accentMat, 0.09, 0.09, 0.09, w / 2 + 0.1, along(1.75));
+      } else if (st === 'bunker') {                           // Merkür: basamaklı kapak + yanlarda soğutucu kanatlar
+        part(shared.box, shared.capMat, w * 1.04, 0.24, d * 1.04, 0, along(0.42)); band(along(0.42), 0.12);
+        for (i = 0; i < 3; i++) { kk = 1.3 + i * 2.2; if (!inside(kk)) break;
+          [-1, 1].forEach(function (sx) { part(shared.box, shared.edgeMat, 0.07, 1.2, d * 0.7, sx * (w / 2 + 0.06), along(kk)); }); }
+      } else if (st === 'ice') {                              // Plüton: altıgen buz sütun + yanlardan çıkan kristaller
+        [-1, 1].forEach(function (sx) {
+          var o = part(shared.octa, shared.accentMat, 0.16, 0.28, 0.16, sx * w * 0.56, along(0.75)); o.rotation.z = sx * 0.5;
+          part(shared.octa, shared.edgeMat, 0.11, 0.2, 0.11, sx * w * 0.5, along(1.45), 0.15);
+        });
+      } else if (st === 'silo') {                             // Mars: silindir silo + çember kaburgalar
+        for (i = 0; i < 4; i++) { kk = 0.85 + i * 1.5; if (!inside(kk)) break;
+          var rb = part(shared.torus, shared.edgeMat, w * 0.53, w * 0.53, 1.4, 0, along(kk)); rb.rotation.x = Math.PI / 2; band(along(kk), 0.08); }
+      } else if (st === 'cloud') {                            // Venüs: bulut şehri — geniş platform diski
+        part(shared.round, shared.capMat, w * 1.6, 0.1, d * 1.6, 0, along(1.6));
+        part(shared.round, shared.accentMat, w * 1.62, 0.03, d * 1.62, 0, along(1.68)); band(along(1.64), 0.12);
+      } else if (st === 'strips') {                           // Neptün: parlayan yatay şeritler
+        for (i = 0; i < 6; i++) { kk = 0.6 + i * 1.25; if (!inside(kk)) break; part(shared.box, shared.accentMat, w * 1.03, 0.06, d * 1.03, 0, along(kk)); band(along(kk), 0.04); }
+      } else if (st === 'bands') {                            // Jüpiter: kalın-ince bulut bantları
+        var bw = [0.45, 0.18, 0.36], pos = 0.6;              // v2.6: 3 kalın-ince bant (5 bant merdiven gibi duruyordu)
+        for (i = 0; i < bw.length; i++) { if (!inside(pos)) break; part(shared.box, i === 1 ? shared.accentMat : shared.edgeMat, w * 1.05, bw[i], d * 1.05, 0, along(pos + bw[i] / 2)); band(along(pos + bw[i] / 2), bw[i] / 2); pos += bw[i] + 0.9 + i * 0.5; }
+      } else if (st === 'ringed') {                           // Satürn: kulenin etrafında eğik halka
+        var rg = part(shared.torus, shared.accentMat, w * 0.85, w * 0.85, 1.2, 0, along(1.0)); rg.rotation.x = Math.PI / 2 - 0.35;
+        var rg2 = part(shared.torus, shared.edgeMat, w * 0.98, w * 0.98, 0.6, 0, along(1.0)); rg2.rotation.x = Math.PI / 2 - 0.35; band(along(1.0), 0.55);
+      } else if (st === 'tilted') {                           // Uranüs: dik duran halkalar (gezegen gibi yan yatık)
+        var t1 = part(shared.torus, shared.accentMat, w * 0.75, w * 0.75, 1.2, 0, along(1.3)); t1.rotation.y = Math.PI / 2; t1.rotation.x = 0.25;
+        var t2 = part(shared.torus, shared.edgeMat, w * 0.62, w * 0.62, 0.8, 0, along(1.3)); t2.rotation.y = Math.PI / 2; t2.rotation.x = 0.25;
+      } else if (st === 'flare') {                            // Güneş: kenarlardan taşan alev dilleri
+        for (i = 0; i < 4; i++) { kk = 0.7 + i * 1.6; if (!inside(kk)) break;
+          [-1, 1].forEach(function (sx) { var f = part(shared.cone, shared.accentMat, 0.12, 0.45, 0.12, sx * (w / 2 + 0.08), along(kk)); f.rotation.z = -sx * 0.9; }); }
+      } else if (st === 'twin') {                             // Alpha Centauri: çift kapak + iki yıldız küre
+        part(shared.box, shared.capMat, w * 0.5, 0.22, d * 1.1, -w * 0.3, along(0.45));
+        part(shared.box, shared.capMat, w * 0.5, 0.22, d * 1.1, w * 0.3, along(0.45)); band(along(0.45), 0.11);
+        part(shared.ball, shared.accentMat, 0.16, 0.16, 0.16, -w * 0.62, along(0.95));
+        part(shared.ball, shared.edgeMat, 0.11, 0.11, 0.11, w * 0.62, along(1.25));
+      } else if (st === 'shards') {                           // Oort: buz kırıntısı kümesi
+        var sh = [[-0.25, 0.35, 0.4, 0.5], [0.22, 0.55, 0.35, 1.1], [0.0, 0.95, 0.3, 2.0], [0.3, 1.3, 0.22, 2.6]];
+        sh.forEach(function (q) { var m = part(shared.octa, q[3] > 1.5 ? shared.accentMat : shared.edgeMat, w * q[2], w * q[2] * 0.7, w * q[2], w * q[0], along(q[1]), d * 0.35); m.rotation.set(q[3], q[3] * 0.7, 0.3); band(along(q[1]), w * q[2] * 0.6); });
+      } else if (st === 'crystal') {                          // Orion: altıgen kristal + kapakta parlayan kristal salkımı
+        [[-0.32, 0.55, 0.2], [0.05, 0.75, 0.26], [0.36, 0.5, 0.17]].forEach(function (q) { part(shared.octa, shared.accentMat, q[2], q[2] * 1.7, q[2], w * q[0], along(q[1]), d * 0.4); });
+        band(along(0.65), 0.5);
+        for (i = 0; i < 3; i++) { kk = 1.4 + i * 1.6; if (!inside(kk)) break; part(shared.hex, shared.edgeMat, w * 1.06, 0.07, d * 1.06, 0, along(kk)); band(along(kk), 0.05); }
+      } else if (st === 'hover') {                            // Andromeda: havada duran yüzük katmanlar (arada ışık)
+        part(shared.box, shared.capMat, w * 1.08, 0.18, d * 1.08, 0, along(0.62));
+        part(shared.box, shared.accentMat, w * 0.9, 0.05, d * 0.9, 0, along(0.4));
+        part(shared.box, shared.accentMat, w * 0.9, 0.05, d * 0.9, 0, along(0.84));
+        part(shared.box, shared.capMat, w * 1.02, 0.14, d * 1.02, 0, along(1.1)); band(along(0.75), 0.45);
+      } else if (st === 'obelisk') {                          // Samanyolu: köşelerinde yıldız ışığı akan dikilitaş
+        [-1, 1].forEach(function (sx) { [-1, 1].forEach(function (sz) { part(shared.box, shared.accentMat, 0.05, Math.min(h, 9), 0.05, sx * (w / 2 + 0.01), along(Math.min(h, 9) / 2 + 0.3), sz * (d / 2 + 0.01)); }); });
+        for (i = 0; i < 5; i++) part(shared.ball, shared.accentMat, 0.05, 0.05, 0.05, (i % 2 ? 1 : -1) * (w / 2 - 0.1), along(0.8 + i * 1.1), d / 2 + 0.03);   // köşelerde (pencerelerin dışında)
+      } else if (st === 'pylon') {                            // Pulsar: vuruşla parlayan yatay halkalar
+        for (i = 0; i < 3; i++) { var pr = part(shared.torus, shared.accentMat, w * 0.72, w * 0.72, 1.4, 0, along(0.65 + i * 0.75)); pr.rotation.x = Math.PI / 2; band(along(0.65 + i * 0.75), 0.08); }
+      } else if (st === 'clocktower') {                       // TON 618: saat kulesi — kadran müzikle parlar, akrep ve yelkovan zaman genişlemesiyle ağır ağır döner
+        var cY = along(1.25), cZ = d / 2 + 0.02;
+        part(shared.box, shared.capMat, w * 1.1, 1.35, 0.06, 0, cY, d / 2 - 0.01);
+        var face = part(shared.disc, shared.winLit, 0.88, 0.88, 1, 0, cY, cZ + 0.01);
+        var rim = part(shared.torus, shared.edgeMat, 0.55, 0.55, 1.5, 0, cY, cZ + 0.02);
+        for (i = 0; i < 12; i++) { var a12 = i * Math.PI / 6; part(shared.box, shared.towerMat, 0.035, i % 3 ? 0.06 : 0.11, 0.01, Math.sin(a12) * 0.44, cY + Math.cos(a12) * 0.44, cZ + 0.025).rotation.z = -a12; }
+        [[0.36, 0.035, 0.9], [0.24, 0.05, 0.075]].forEach(function (hd) {
+          var pv = new THREE.Group(); pv.position.set(0, cY, cZ + 0.035);
+          var hm = new THREE.Mesh(shared.box, shared.towerMat); hm.scale.set(hd[1], hd[0], 0.012); hm.position.y = hd[0] / 2 - 0.04; pv.add(hm);
+          pv.userData.speed = hd[2]; parent.add(pv); hands.push(pv);
+        });
+        band(cY, 0.72);
+      }
 
       // v1.6: saatler şimdilik kaldırıldı ("zaman" teması ileride ayrı bir bölüm olabilir)
       var r = 0;
@@ -1082,20 +1238,27 @@ window.KK = window.KK || {};
       var limitLo = capAtBottom ? y0 : GROUND + 0.5, limitHi = capAtBottom ? TOP_VISIBLE : y1 - 0.2;
       // v2.5: pencereler her yüzde 2 sabit yuvaya oturur (merkezler ±0.32 → aralarında 0.30 boşluk),
       // aynı kattaki pencereler aynı yükseklikte; böylece pencereler asla üst üste binmez.
+      // v2.6: yuvarlak/altıgen gövdede sadece ön yüze; kanat/alev/küre olan kulelerde yan yüzlere pencere yok; süslerin üstüne pencere yok
+      var curved = bodyGeo === shared.round ? 1 : bodyGeo === shared.hex ? 2 : 0;
+      var noSide = curved > 0 || st === 'bunker' || st === 'flare' || st === 'twin' || st === 'ice';
       while (yy > limitLo && yy < limitHi) {
         var n = 1 + (rnd() < 0.35 ? 1 : 0);    // bazen aynı katta iki pencere
         var used = {}, fy = yy + (rnd() - 0.5) * 0.12;
+        if (busy.some(function (b) { return Math.abs(fy - b[0]) < b[1] + 0.3; })) { yy += dir * 0.4; continue; }
+        if (curved === 2) { addWindow(parent, 0, 0, fy, 2); yy += dir * (0.9 + rnd() * 0.7); continue; }   // altıgen ön yüz dar: tek pencere
         for (var k = 0; k < n; k++) {
-          var face = rnd() < 0.5 ? 0 : (rnd() < 0.5 ? 1 : 2);
+          var face = noSide ? 0 : rnd() < 0.5 ? 0 : (rnd() < 0.5 ? 1 : 2);
           var slot = rnd() < 0.5 ? 0 : 1;
           if (used[face + '_' + slot]) slot = 1 - slot;
           if (used[face + '_' + slot]) continue;
           used[face + '_' + slot] = true;
-          addWindow(parent, face, (slot ? 0.32 : -0.32) + (rnd() - 0.5) * 0.08, fy);
+          addWindow(parent, face, (slot ? 1 : -1) * (curved ? 0.22 : 0.32) + (rnd() - 0.5) * 0.08, fy, curved);
         }
         yy += dir * (0.9 + rnd() * 0.7);
       }
     }
+    var hands = [];
+    var style = TOWER_STYLE[BODIES[Math.max(0, Math.min(BODIES.length - 1, bodyIdx | 0))].name] || 'clock';   // v2.6: kule, geçileceği gök cisminin biçiminde
     var top = new THREE.Group(), bot = new THREE.Group();
     tower(gapTop, skyTopY, true, top, 3);
     // Alt kule zeminin 3 birim içinden başlar: kapı yukarı oynadığında tabanı açıkta kalmasın.
@@ -1103,18 +1266,21 @@ window.KK = window.KK || {};
     var minVisible = Y(gy0 + amp + gate.gapH / 2) - GROUND;
     tower(GROUND - 3, gapBot, false, bot, minVisible);
     g.add(top); g.add(bot);
-    g.userData.top = top; g.userData.bot = bot; g.userData.gy0 = gy0;
+    g.userData.top = top; g.userData.bot = bot; g.userData.gy0 = gy0; g.userData.hands = hands;
     scene.add(g);
     return g;
   }
 
   function syncGates(state, dt) {
-    var alive = {};
+    var alive = {}, ahead = 0;
     for (var i = 0; i < state.gates.length; i++) {
       var gate = state.gates[i];
       alive[gate.id] = true;
-      var tg = towers[gate.id] || (towers[gate.id] = buildGate(gate));
+      if (!gate.passed) ahead++;
+      // v2.6: bu kule geçildiğinde skor ≈ şimdiki skor + önündeki geçilmemiş kule sayısı → o skorun gök cismine göre biçimlenir
+      var tg = towers[gate.id] || (towers[gate.id] = buildGate(gate, Math.floor(((state.score || 0) + (gate.passed ? 0 : ahead)) / PLANET_EVERY)));
       tg.position.x = X(gate.x + gate.w / 2);
+      for (var hi = 0; hi < tg.userData.hands.length; hi++) tg.userData.hands[hi].rotation.z = -state.t * tg.userData.hands[hi].userData.speed;
       // Giriş animasyonu konuma bağlı: x=W+170'te tamamen saklı, x=W-10'da yerinde
       var p = Math.min(1, Math.max(0, (KK.W + 170 - gate.x) / 180));
       var off = Math.pow(1 - p, 3) * 9;        // ease-out (sona doğru yavaşlar)
@@ -1126,6 +1292,11 @@ window.KK = window.KK || {};
         var k2 = br * br;
         tg.userData.top.position.y += k2 * 12; tg.userData.top.rotation.z = k2 * 0.5;
         tg.userData.bot.position.y -= k2 * 12; tg.userData.bot.rotation.z = -k2 * 0.15;
+      }
+      // v2.6: FİNAL — kuleler kara deliğin önünü kapatmasın: 0.7 sn'de üsttekiler yukarı, alttakiler yere çekilir (16 birim)
+      if (state.mode === 'finale') {
+        var fq = Math.min(1, state.modeTime / 0.7), f2 = fq * fq * 16;
+        tg.userData.top.position.y += f2; tg.userData.bot.position.y -= f2;
       }
     }
     for (var id in towers) {
@@ -1305,7 +1476,7 @@ window.KK = window.KK || {};
     fire.burst = 0;
   }
   var FIRE_SCALE = [0, 0.75, 1.0, 1.35];                      // alev boyu çarpanı
-  var FIRE_RATE = [0, 45, 80, 130];                         // saniyede doğan alev parçacığı
+  var FIRE_RATE = [0, 32, 55, 85];                          // saniyede doğan alev parçacığı (v2.6: 45/80/130 → 32/55/85, parçacıklar %25 iri)
   var fire = { cv: null, ctx: null, w: 300, h: 240, dpr: 1, parts: [], smoke: [], sprites: {}, acc: 0, burst: 0, color: null, font: 60 };
   function fireSprite(col) {
     if (fire.sprites[col]) return fire.sprites[col];
@@ -1327,7 +1498,8 @@ window.KK = window.KK || {};
     window.addEventListener('resize', sizeFire);
   }
   function sizeFire() {
-    fire.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    fire.dpr = 1;   // v2.6: yumuşak alev için 1x yeterli (2x'te 4 kat piksel boyanıyordu)
+    fire.layoutDigits = -1;
     fire.font = parseFloat(getComputedStyle(hudScore).fontSize) || 60;
     fire.w = Math.round(fire.font * 5.2); fire.h = Math.round(fire.font * 4);
     fire.cv.width = fire.w * fire.dpr; fire.cv.height = fire.h * fire.dpr;
@@ -1336,22 +1508,29 @@ window.KK = window.KK || {};
   function updateFire(state, dt) {
     var lvl = state.mode === 'playing' ? (state.fireLvl || 0) : 0;
     if (state.mode !== 'playing') fire.smoke.length = 0;
-    if (!lvl && !fire.parts.length && !fire.smoke.length) { fire.cv.style.display = 'none'; hudScore.style.textShadow = ''; return; }
-    fire.cv.style.display = '';
-    // Tuvali rakamların üstüne ortala; alevin tabanı rakamların alt kenarının biraz altında
-    var cx = hudScore.offsetLeft + hudScore.offsetWidth / 2;
-    var base = hudScore.offsetTop + hudScore.offsetHeight * 0.92;
-    fire.cv.style.left = (cx - fire.w / 2) + 'px';
-    fire.cv.style.top = (base - fire.h * 0.86) + 'px';
+    if (!lvl && !fire.parts.length && !fire.smoke.length) {
+      if (fire.shown) { fire.cv.style.display = 'none'; hudScore.style.textShadow = ''; fire.shown = false; fire.shadow = ''; }
+      return;
+    }
+    if (!fire.shown) { fire.cv.style.display = ''; fire.shown = true; }
+    var digits = String(state.score).length;
+    // v2.6: konum her karede DOM'dan okunmuyor (her okuma tarayıcıya sayfa düzenini yeniden hesaplatıyordu);
+    // sadece basamak sayısı değişince ya da ekran boyutu değişince bir kez ölçülür
+    if (fire.layoutDigits !== digits) {
+      fire.layoutDigits = digits;
+      var cx = hudScore.offsetLeft + hudScore.offsetWidth / 2;
+      var base = hudScore.offsetTop + hudScore.offsetHeight * 0.92;
+      fire.cv.style.left = Math.round(cx - fire.w / 2) + 'px';
+      fire.cv.style.top = Math.round(base - fire.h * 0.86) + 'px';
+    }
     var col = fireColor(state.score);
     fire.burst = Math.max(0, fire.burst - dt * 1.6);
     var sc = FIRE_SCALE[lvl] * (1 + fire.burst * 0.6);
-    var digits = String(state.score).length;
     var baseW = fire.font * 0.62 * digits;                     // rakamların genişliği kadar taban
     // Parçacık doğur
     if (lvl) {
       fire.acc += dt * FIRE_RATE[lvl] * (1 + fire.burst * 3);
-      while (fire.acc >= 1 && fire.parts.length < 260) {
+      while (fire.acc >= 1 && fire.parts.length < 120) {
         fire.acc -= 1;
         var life = 0.45 + Math.random() * 0.45;
         fire.parts.push({
@@ -1359,7 +1538,7 @@ window.KK = window.KK || {};
           y: fire.h * 0.86 + Math.random() * 6,
           vx: (Math.random() - 0.5) * 30,
           vy: -(70 + Math.random() * 90) * sc,
-          size: (20 + Math.random() * 18) * sc * (fire.font / 60),
+          size: (25 + Math.random() * 22) * sc * (fire.font / 60),
           life: life, max: life, ph: Math.random() * 6.28, col: col
         });
       }
@@ -1372,7 +1551,7 @@ window.KK = window.KK || {};
     for (var i = fire.parts.length - 1; i >= 0; i--) {
       var p = fire.parts[i];
       p.life -= dt;
-      if (p.life <= 0) { fire.parts.splice(i, 1); continue; }
+      if (p.life <= 0) { fire.parts[i] = fire.parts[fire.parts.length - 1]; fire.parts.pop(); continue; }   // v2.6: splice yerine sondakiyle değiştir
       var k = p.life / p.max;                                  // 1 doğum → 0 ölüm
       p.ph += dt * 9;
       p.x += (p.vx + Math.sin(p.ph) * 22) * dt;
@@ -1396,7 +1575,9 @@ window.KK = window.KK || {};
     }
     c.globalAlpha = 1;
     // Rakamlar alev rengiyle parlasın; tutuşma anında sayaç bir an büyüsün
-    hudScore.style.textShadow = lvl ? '0 3px 0 #1b1838, 0 0 ' + Math.round(14 + 18 * sc) + 'px ' + col : '';
+    // v2.6: gölge sadece değişince yazılır (bulanık metin gölgesi her karede yeniden boyanıyordu); 4 px adımlarla
+    var shadow = lvl ? '0 3px 0 #1b1838, 0 0 ' + (Math.round((14 + 18 * sc) / 4) * 4) + 'px ' + col : '';
+    if (shadow !== fire.shadow) { hudScore.style.textShadow = shadow; fire.shadow = shadow; }
   }
   function igniteFire() { fire.burst = 1; }
   // v2.5: kalkan patlaması — uçağın etrafında alev renginde büyüyüp sönen ateş topu
@@ -1509,11 +1690,18 @@ window.KK = window.KK || {};
       shared.bit = new THREE.PlaneGeometry(0.16, 0.11);
       shared.dome = new THREE.SphereGeometry(1, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2);   // yarım küre
       shared.cyl = new THREE.CylinderGeometry(1, 1, 1, 14);
+      // v2.6: gök cismine özel kule parçaları
+      shared.hex = new THREE.CylinderGeometry(0.5, 0.5, 1, 6);
+      shared.round = new THREE.CylinderGeometry(0.5, 0.5, 1, 16);
+      shared.torus = new THREE.TorusGeometry(1, 0.05, 6, 28);
+      shared.octa = new THREE.OctahedronGeometry(1);
+      shared.ball = new THREE.SphereGeometry(1, 12, 8);
       shared.cityWin = new THREE.PlaneGeometry(0.22, 0.3);
       shared.towerMat = new THREE.MeshLambertMaterial({ color: color(P.tower) });
       shared.edgeMat = new THREE.MeshLambertMaterial({ color: color(P.towerEdge) });
       shared.capMat = new THREE.MeshLambertMaterial({ color: color(P.towerEdge), polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
       shared.winLit = new THREE.MeshBasicMaterial({ map: windowTexture(), color: color('#ffd38a') });
+      shared.accentMat = new THREE.MeshBasicMaterial({ color: color(P.towerEdge) });   // v2.6: müzikle nabız atan süs (halkalar, şeritler)
       shared.lampLit = new THREE.MeshBasicMaterial({ color: color('#ffd98a') });
       shared.glowMat = new THREE.SpriteMaterial({ map: glowTexture(), color: color('#ffc070'), transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false });
       shared.winGlowMat = new THREE.SpriteMaterial({ map: shared.glowMat.map, color: color('#ffb860'), transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false });
@@ -1532,14 +1720,17 @@ window.KK = window.KK || {};
       // v1.6: gök cisimlerinin yeri — ekranın sol kenarı, yukarı-orta yükseklik, z = -46 düzlemi.
       // Kameradan o ekran noktasına ışın atıp düzlemle kesiştiriyoruz (en/boy değişse de doğru kalır).
       camera.updateMatrixWorld();
-      var ray = new THREE.Vector3(-1.0, 0.36, 0.5).unproject(camera).sub(camera.position).normalize();
+      // v2.6: sağ üst. Gök cisimleri ortaya daha yakın (x = 0.70), TON 618 kenarda (x = 1.0) kalır
+      var ray = new THREE.Vector3(1.0, 0.58, 0.5).unproject(camera).sub(camera.position).normalize();
+      anchorBH = camera.position.clone().addScaledVector(ray, (-46 - camera.position.z) / ray.z);
+      ray = new THREE.Vector3(0.70, 0.58, 0.5).unproject(camera).sub(camera.position).normalize();
       anchor = camera.position.clone().addScaledVector(ray, (-46 - camera.position.z) / ray.z);
-      bh.position.copy(anchor);
+      bh.position.copy(anchorBH);
       bh.rotation.z = -0.06;                   // diske hafif bir eğim
       scene.add(bh);
       KK.__bh = bh;                            // test kancası
       sunGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: color('#ff8a5c'), transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
-      sunGlow.position.set(anchor.x + 2, anchor.y, -47);
+      sunGlow.position.set(anchor.x - 2, anchor.y, -47);
       sunGlow.scale.set(52, 52, 1);
       scene.add(sunGlow);
       buildPlanets(bh);                          // v1.6: Dünya'dan TON 618'e 12 gök cismi
@@ -1657,8 +1848,13 @@ window.KK = window.KK || {};
         var bhp = planets[planets.length - 1].mesh.position;
         var fu = Math.min(1, state.modeTime / ((KK.Game.config && KK.Game.config.FINALE_DUR) || 3.4)), fe = fu * fu;
         var fx0 = X(state.finaleFrom.x) - bhp.x, fy0 = Y(state.finaleFrom.y) - bhp.y;
-        var fr = Math.sqrt(fx0 * fx0 + fy0 * fy0) * (1 - fe), fa = Math.atan2(fy0, fx0) + fe * Math.PI * 4;
-        planeGroup.position.set(bhp.x + fr * Math.cos(fa), bhp.y + fr * Math.sin(fa) * 0.55, bhp.z * Math.pow(fe, 1.3));
+        // v2.6: dönüş ekranda kalsın — sarmal yarıçapı en fazla 7 birim (eskiden uçağın kara deliğe uzaklığı ≈ 25+ birimdi, ekrandan taşıyordu);
+        // ilk %25'te uçak bulunduğu yerden sarmala yumuşakça katılır
+        // v2.6: merkezde daha çok dönsün — yarıçap (1−u)^1.6 ile erken küçülür, açı 2π·(1.25u + 2.5u³): toplam 3.75 tur, çoğu merkezde
+        var d0 = Math.sqrt(fx0 * fx0 + fy0 * fy0), fr = Math.min(d0, 7) * Math.pow(1 - fu, 1.6), fa = Math.atan2(fy0, fx0) + Math.PI * 2 * (1.25 * fu + 2.5 * fu * fu * fu);
+        var jw = 1 - Math.min(1, fu / 0.25); jw = jw * jw * (3 - 2 * jw);
+        planeGroup.position.set(bhp.x + fr * Math.cos(fa) + jw * (fx0 - Math.min(d0, 7) * Math.cos(fa)),
+                                bhp.y + fr * Math.sin(fa) * 0.55 + jw * (fy0 - Math.min(d0, 7) * Math.sin(fa) * 0.55), bhp.z * Math.pow(fe, 1.3));
         planeGroup.rotation.set(0, 0, fa + Math.PI / 2);
         planeGroup.scale.set(1 + 2 * fe * fe, 1 - 0.7 * fe, 1 - 0.7 * fe);
         planeGroup.visible = fu < 1;
@@ -1685,14 +1881,16 @@ window.KK = window.KK || {};
       // Pencere ışıkları hafifçe nefes alır
       // v2.5: müzik nabzı (ui.js): pencereler, hareler ve sokak pusu vuruşla birlikte parlar
       var beat = KK.musicPulse ? KK.musicPulse() : 0;
-      shared.glowMat.opacity = 0.5 + Math.sin(state.t * 2.3) * 0.06 + 0.18 * beat;
-      shared.winGlowMat.opacity = 0.33 + Math.sin(state.t * 1.7) * 0.04 + 0.4 * beat;
+      // v2.6: vuruş hissedilsin diye taban kısıldı, vuruş payı büyütüldü: pencere parıltısı 0.33+0.4·b → 0.16+0.95·b (vuruşta ~6 kat)
+      shared.glowMat.opacity = 0.34 + Math.sin(state.t * 2.3) * 0.04 + 0.6 * beat;
+      shared.winGlowMat.opacity = 0.16 + Math.sin(state.t * 1.7) * 0.03 + 0.95 * beat;
       sunGlow.material.opacity = 0.33 + Math.sin(state.t * 0.8) * 0.05;  // kara delik hafifçe nabız atar
       bhMat.uniforms.uTime.value = state.t;          // disk ve halkalar akar
       updatePlanets(state, dt);
-      shared.winLit.color.copy(curTheme.win).multiplyScalar(0.82 + 0.5 * beat);
-      for (var hz = 0; hz < hazeMats.length; hz++) hazeMats[hz].opacity = hazeMats[hz].userData.base * (0.8 + 0.75 * beat);
-      for (var ci = 0; ci < activeCities.length; ci++) activeCities[ci].layers.forEach(function (L) { var wm = L.userData.winMat; if (wm) wm.opacity = wm.userData.base * (0.8 + 0.6 * beat); });
+      shared.winLit.color.copy(curTheme.win).multiplyScalar(0.55 + 1.15 * beat);
+      shared.accentMat.color.copy(curTheme.edge).multiplyScalar(0.75 + 1.1 * beat);
+      for (var hz = 0; hz < hazeMats.length; hz++) hazeMats[hz].opacity = hazeMats[hz].userData.base * (0.45 + 1.6 * beat);
+      for (var ci = 0; ci < activeCities.length; ci++) activeCities[ci].layers.forEach(function (L) { var wm = L.userData.winMat; if (wm) wm.opacity = wm.userData.base * (0.45 + 1.4 * beat); });
       // Kamera: hazırda yavaş salınım, çarpınca sarsıntı
       // v2.1: hız katsayısıyla kamera geri çekilir ve görüş açısı genişler (hız hissi):
       //   geri çekilme = 2.6·(k−1) birim, FOV = 46° + 7°·(k−1)  → ×2.0'da +2.6 birim, 53°

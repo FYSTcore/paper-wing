@@ -86,7 +86,7 @@
       <button class="play" id="play" aria-label="Çal">▶</button>
       <div class="grow">
         <label for="mult">Hız katsayısı (oyundaki gibi) — <span class="val" id="multV">×1.50</span> · <span class="val" id="bpmV">91 BPM</span></label>
-        <input type="range" id="mult" min="1" max="2.2" step="0.05" value="1.5">
+        <input type="range" id="mult" min="1" max="2.6" step="0.05" value="1.5">
         <div class="pills" id="pills"></div>
       </div>
     </div>
@@ -121,6 +121,7 @@
       <div><label for="oct">Melodi oktavı</label><select id="oct"><option value="0">Kök oktav</option><option value="12">+1 oktav</option><option value="24">+2 oktav</option><option value="36">+3 oktav</option></select></div>
       <div><label for="cut">Pad parlaklığı — <span class="val" id="cutV"></span></label><input type="range" id="cut" min="300" max="3000" step="50"></div>
       <div><label for="rev">Yankı — <span class="val" id="revV"></span></label><input type="range" id="rev" min="0" max="0.9" step="0.05"></div>
+      <div><label for="tempo">Tempo — <span class="val" id="tempoV"></span></label><input type="range" id="tempo" min="0.6" max="1.6" step="0.05"></div>
     </div>
   </section>
 
@@ -149,8 +150,9 @@
 (function () {
   'use strict';
   var Mu = KK.Music, $ = function (id) { return document.getElementById(id); };
-  var NAMES = ['Dünya', 'Ay', 'Venüs', 'Merkür', 'Güneş', 'Mars', 'Jüpiter', 'Satürn', 'Uranüs', 'Neptün', 'Plüton',
-               'Oort', 'Alpha Centauri', 'Orion', 'Pulsar', 'Andromeda', 'TON 618'];
+  // v2.6: oyundaki yeni sıra (render3d.js ORDER ile aynı)
+  var NAMES = ['Dünya', 'Ay', 'Merkür', 'Plüton', 'Mars', 'Venüs', 'Neptün', 'Jüpiter', 'Satürn', 'Uranüs', 'Güneş',
+               'Alpha Centauri', 'Oort', 'Orion', 'Andromeda', 'Samanyolu', 'Pulsar', 'TON 618'];
   var themes, cur = 0, ctx = null, engine = null, playing = false;
 
   // ---- Kayıt ----
@@ -171,8 +173,8 @@
     var AC = window.AudioContext || window.webkitAudioContext;
     ctx = new AC();
     var master = ctx.createGain(), pre = ctx.createGain(), drive = ctx.createWaveShaper(), lim = ctx.createDynamicsCompressor();
-    pre.gain.value = 1.7;
-    var n = 1024, curve = new Float32Array(n), k = 2.2;
+    pre.gain.value = 1.6;   // v2.6: oyundaki yumuşatılmış sürüşle aynı (1.6 · tanh 1.2)
+    var n = 1024, curve = new Float32Array(n), k = 1.2;
     for (var i = 0; i < n; i++) { var x = i / (n - 1) * 2 - 1; curve[i] = Math.tanh(k * x) / Math.tanh(k); }
     drive.curve = curve; drive.oversample = '2x';
     lim.threshold.value = -9; lim.knee.value = 4; lim.ratio.value = 16; lim.attack.value = 0.002; lim.release.value = 0.18;
@@ -280,6 +282,7 @@
     $('oct').value = String(T.oct);
     $('cut').value = T.cut; $('cutV').textContent = T.cut + ' Hz';
     $('rev').value = T.rev; $('revV').textContent = Math.round(T.rev * 100) + '%';
+    $('tempo').value = T.tempo || 1; showTempo();
     var mix = $('mix'); mix.innerHTML = '';
     [['pad', 'Pad'], ['arp', 'Melodi'], ['bass', 'Bas'], ['drums', 'Davul']].forEach(function (p) {
       var w = document.createElement('div');
@@ -301,10 +304,18 @@
   $('cut').onchange = save;
   $('rev').oninput = function () { themes[cur].rev = +$('rev').value; $('revV').textContent = Math.round($('rev').value * 100) + '%'; };
   $('rev').onchange = save;
+  // v2.6: tema temposu (çarpan). Oyunda BPM = (72 + 38·(hız − 1)) · tempo
+  function showTempo() {
+    var tp = themes[cur].tempo || 1, k = +$('mult').value;
+    $('tempoV').textContent = '×' + tp.toFixed(2);
+    $('bpmV').textContent = Math.round((72 + 38 * (k - 1)) * tp) + ' BPM';
+  }
+  $('tempo').oninput = function () { themes[cur].tempo = +$('tempo').value; showTempo(); };
+  $('tempo').onchange = save;
 
   function renderPills() {
     var k = +$('mult').value;
-    $('multV').textContent = '×' + k.toFixed(2); $('bpmV').textContent = Math.round(72 + 38 * (k - 1)) + ' BPM';
+    $('multV').textContent = '×' + k.toFixed(2); $('bpmV').textContent = Math.round((72 + 38 * (k - 1)) * ((themes && themes[cur] && themes[cur].tempo) || 1)) + ' BPM';
     $('pills').innerHTML = [['Pad', 1], ['Melodi', 1], ['Bas', 1.2], ['Kick + hi-hat', 1.45], ['Trampet + 16\'lık', 1.75]].map(function (p) {
       return '<span class="pill' + (k >= p[1] ? ' on' : '') + '">' + p[0] + '</span>';
     }).join('');
@@ -324,8 +335,17 @@
   // ---- Dışa / içe aktarma, sıfırlama ----
   $('export').onclick = function () {
     var blob = new Blob([JSON.stringify({ version: 1, themes: themes }, null, 1)], { type: 'application/json' });
-    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'music.json';
-    document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    var plain = function () {
+      var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'music.json';
+      document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+    };
+    // Claude içinde açıldıysa indirme izni ile, değilse normal indirme
+    if (window.claude && window.claude.use) {
+      window.claude.use('downloads').then(function (ns) {
+        if (!ns) return plain();
+        ns.save({ filename: 'music.json', data: blob }).then(function () { $('status').textContent = 'music.json kaydedildi ✓'; $('status').className = 'status ok'; }, function () {});
+      }, plain);
+    } else plain();
   };
   $('importBtn').onclick = function () { $('importFile').click(); };
   $('importFile').onchange = function () {
@@ -335,14 +355,16 @@
       $('status').textContent = 'İçe aktarıldı ✓';
     }).catch(function () { $('status').textContent = 'Dosya okunamadı'; $('status').className = 'status'; });
   };
-  $('resetOne').onclick = function () {
-    if (!confirm(NAMES[cur] + ' temasını varsayılana döndür?')) return;
-    themes[cur] = Mu.normalize(Mu.DEFAULTS[cur], cur); save(); renderAll();
-  };
-  $('resetAll').onclick = function () {
-    if (!confirm('Bütün temalar varsayılana dönsün mü?')) return;
-    themes = Mu.normalizeAll(null); save(); renderAll();
-  };
+  // v2.6: onay penceresi yerine iki kez basma (bazı ortamlarda confirm() hiç açılmıyor)
+  function twice(btn, fn) {
+    var label = btn.textContent, armed = false, tm = 0;
+    btn.onclick = function () {
+      if (!armed) { armed = true; btn.textContent = 'Emin misin? Tekrar bas'; tm = setTimeout(function () { armed = false; btn.textContent = label; }, 3000); return; }
+      clearTimeout(tm); armed = false; btn.textContent = label; fn();
+    };
+  }
+  twice($('resetOne'), function () { themes[cur] = Mu.normalize(Mu.DEFAULTS[cur], cur); save(); renderAll(); });
+  twice($('resetAll'), function () { themes = Mu.normalizeAll(null); save(); renderAll(); });
   $('use').onchange = function () { try { localStorage.setItem(Mu.USE_KEY, $('use').checked ? '1' : '0'); } catch (e) {} };
 
   function renderAll() { renderChips(); renderChords(); renderMelody(); renderDrums(); renderSound(); renderPills(); }

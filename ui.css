@@ -625,5 +625,13 @@
 .kk-nameform { display: flex; flex-direction: column; gap: 8px; }
 .kk-nameform[hidden] { display: none; }
 .kk-nameinput { text-transform: none; letter-spacing: .02em; }
-.kk-board-me { align-self: center; min-height: 32px; padding: 4px 10px; border: 0; background: transparent; color: var(--dusk); font: 700 12px/1 var(--font-body); text-decoration: underline; text-underline-offset: 3px; opacity: .8; }
+.kk-board-me { align-self: center; min-height: 32px; padding: 4px 10px; border: 0; background: transparent; color: var(--dusk); font: 700 12px/1.35 var(--font-body); white-space: pre-line; text-decoration: underline; text-underline-offset: 3px; opacity: .8; }
 .kk-board-me[hidden] { display: none; }
+
+/* v2.6: kayıt kodu (ilerlemeyi taşı) */
+.kk-xfer { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.kk-xfer[hidden] { display: none; }
+.kk-xrow { display: flex; gap: 8px; }
+.kk-xrow .kk-btn { flex: 1; min-width: 0; }
+.kk-xtext { text-transform: none; letter-spacing: 0; text-align: left; font: 600 11px/1.35 ui-monospace, Menlo, Consolas, monospace; min-height: 64px; resize: none; word-break: break-all; }
+.kk-xtext[hidden], .kk-xfer .kk-btn[hidden] { display: none; }

@@ -14,7 +14,7 @@ window.KK = window.KK || {};
 
   // Test sürümü ayrı koleksiyonlara yazar (gerçek tabloyu kirletmesin)
   var PFX = KK.TEST_BUILD ? 'test_' : '';
-  var LS = { auth: 'kk.fb.auth', name: 'kk.name', best: 'kk.fb.best', week: 'kk.fb.week', queue: 'kk.fb.queue' };
+  var LS = { auth: 'kk.fb.auth', name: 'kk.name', best: 'kk.fb.best', week: 'kk.fb.week', queue: 'kk.fb.queue', status: 'kk.fb.status' };
   function get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function set(k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { /* yoksay */ } }
   function getJ(k) { try { return JSON.parse(get(k) || 'null'); } catch (e) { return null; } }
@@ -31,9 +31,15 @@ window.KK = window.KK || {};
   }
 
   // ---- Anonim giriş: kimlik telefonda saklanır (refreshToken), idToken 1 saat geçerli ----
-  var tok = null, tokExp = 0;
+  var tok = null, tokExp = 0, authP = null;
+  // v2.5.1: aynı anda iki istek gelirse ikisi de ayrı hesap açıyordu (aynı oyuncu tabloda iki kez) → tek ortak istek
   function authed() {
     if (tok && Date.now() < tokExp - 60000) return Promise.resolve(tok);
+    if (authP) return authP;
+    authP = authFetch().then(function (t) { authP = null; return t; }, function (e) { authP = null; throw e; });
+    return authP;
+  }
+  function authFetch() {
     var a = getJ(LS.auth);
     var req = a && a.refresh
       ? fetch('https://securetoken.googleapis.com/v1/token?key=' + CFG.apiKey, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -61,23 +67,32 @@ window.KK = window.KK || {};
 
   // ---- Skor gönder: sadece kendi tüm zamanlar / haftalık rekorunu kırınca. Başarısızsa kuyrukta bekler. ----
   // e = { score, run, secs, stars, skin }
+  // v2.5.1: son gönderimin sonucu telefonda saklanır, tabloda görünür → bir oyuncu listede yoksa sebebi ekranda okunur
+  function note(ok, err, score) { set(LS.status, JSON.stringify({ ok: ok, err: err ? String(err.message || err).slice(0, 40) : '', score: score | 0, t: Date.now() })); }
   function submit(e) {
     if (!enabled() || !(e.score > 0) || !(e.run > 0)) return Promise.resolve(false);
-    var name = get(LS.name); if (!name) { queueBest(e); return Promise.resolve(false); }
+    var name = get(LS.name); if (!name) { queueBest(e); note(false, 'no name', e.score); return Promise.resolve(false); }
     e.name = name;
     var wk = weekId(), best = +get(LS.best) || 0, w = getJ(LS.week) || {};
     var doAll = e.score > best, doWeek = !(w.id === wk && w.best >= e.score);
-    if (!doAll && !doWeek) return Promise.resolve(false);
+    if (!doAll && !doWeek) return Promise.resolve(false);   // rekor değil: gönderilecek bir şey yok
     return authed().then(function (t) {
       var jobs = [];
       if (doAll) jobs.push(put(PFX + 'alltime/' + t.uid, e, t).then(function () { set(LS.best, String(e.score)); }));
       if (doWeek) jobs.push(put(PFX + 'weekly/' + wk + '/scores/' + t.uid, e, t).then(function () { set(LS.week, JSON.stringify({ id: wk, best: e.score })); }));
       return Promise.all(jobs);
-    }).then(function () { clearQueue(e); return true; }, function () { queueBest(e); return false; });
+    }).then(function () { clearQueue(e); note(true, '', e.score); return true; }, function (err) { queueBest(e); note(false, err, e.score); return false; });
   }
   function queueBest(e) { var q = getJ(LS.queue); if (!q || e.score > q.score) set(LS.queue, JSON.stringify({ score: e.score, run: e.run, secs: e.secs, stars: e.stars, skin: e.skin, wk: weekId() })); }
   function clearQueue(e) { var q = getJ(LS.queue); if (q && q.score <= e.score) set(LS.queue, null); }
-  function flush() { var q = getJ(LS.queue); if (q && get(LS.name)) { if (q.wk !== weekId()) set(LS.week, null); return submit(q); } return Promise.resolve(false); }
+  var flushP = null;   // v2.5.1: üst üste çağrılırsa aynı gönderim paylaşılır
+  function flush() {
+    if (flushP) return flushP;
+    var q = getJ(LS.queue); if (!(q && get(LS.name))) return Promise.resolve(false);
+    if (q.wk !== weekId()) set(LS.week, null);
+    flushP = submit(q).then(function (ok) { flushP = null; return ok; }, function () { flushP = null; return false; });
+    return flushP;
+  }
 
   // İsim değişince: kayıtlı rekorlar yeni isimle yeniden yazılır (kurallar aynı skorla isim değişikliğine izin verir)
   function setName(n) {
@@ -114,5 +129,5 @@ window.KK = window.KK || {};
   }
 
   KK.Online = { enabled: enabled, submit: submit, flush: flush, top: top, setName: setName, name: function () { return get(LS.name); },
-    weekId: weekId, config: CFG };
+    weekId: weekId, config: CFG, pending: function () { return getJ(LS.queue); }, status: function () { return getJ(LS.status); } };
 })();

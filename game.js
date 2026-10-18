@@ -20,7 +20,7 @@
     GAP_MIN: 150,         // en dar boşluk (v1.4: 118 → 150; 1000'e ulaşılabilsin diye)
     SPEED_START: 180,     // başlangıç yatay hız (katsayı 1.00) — v1.9: 165 → 180
     SPEED_STEP: 0.02,     // v1.5: her geçilen kulede hız katsayısı +0.02
-    SPEED_MULT_MAX: 2.0,  // katsayı tavanı (v1.9: 1.5 → 2.0): 180 · 2 = 360 birim/sn, 50 kulede dolar
+    SPEED_MULT_MAX: 2.5,  // katsayı tavanı (v2.6: 2.0 → 2.5): 180 · 2.5 = 450 birim/sn, 75 kulede dolar
     SPACING_PER_SPEED: 0.6, // v1.9: hızdaki her +1 birim/sn için kule mesafesi +0.6 birim
     ACCEL: 150,           // çarpmadan sonra 0'dan hızlanma (birim/sn²) → 165'e ~1.1 sn
     LIVES: 2,             // v1.5: tur başına 2 çarpma hakkı; 3. çarpma oyunu bitirir
@@ -37,7 +37,8 @@
     CHECKPOINT_EVERY: KK.TEST_BUILD ? 20 : 400,   // her 2 gök cisminde bir checkpoint (test sayfasında gök cisimleri 10'da bir)
     REBIRTH_HARD: 0.1,      // her ★ bir sonraki turu bu kadar zorlaştırır
     HARD_CAP: 1.3,
-    HARD_GAP: 12, HARD_AMP: 14, HARD_SHIFT: 20, HARD_SPEED: 0.2,   // h başına artışlar (ayar için)
+    // v2.6: son bölümler uçurum gibiydi (iyi oyuncu botu son bölümde %12). Artışlar yumuşatıldı → simülasyonda %68
+    HARD_GAP: 7, HARD_AMP: 9, HARD_SHIFT: 12, HARD_SPEED: 0.1,   // h başına artışlar (ayar için)
     LIFE_REFILL: KK.TEST_BUILD ? 10 : 200,   // v2.2: her yeni gök cisminde kayıp bir çarpma hakkı geri gelir (0 = kapalı)
     INVULN: 1.6,          // çarpmadan sonra dokunulmazlık (sn): bu sürede değdiğin kule yıkılır
     RAMP_SCORE: 50,       // zorluk eğrisi: k = 1 - e^(-skor/50) (v1.4: 32 → 50, daha yavaş artar)
@@ -71,7 +72,7 @@
   // v1.9: hız katsayısı arttıkça kuleler arası mesafe de açılır → oyun hızlı görünür ama
   // iki kule arasındaki SÜRE çok kısalmaz (adil ritim). mesafe = 290 + SPACING_PER_SPEED · (hedef hız − başlangıç hızı)
   // v2.2: yolculuğun sonu (render3d gök cismi sayısından hesaplar; yoksa 2400)
-  function journeyEnd() { return KK.JOURNEY_END || 2400; }
+  function journeyEnd() { return KK.JOURNEY_END || 3600; }
   // Bölüm zorluğu h: her checkpoint'te bir basamak artar, her rebirth (★) +0.25 ekler
   function hard(s) {
     var chapters = Math.max(1, Math.ceil(journeyEnd() / CFG.CHECKPOINT_EVERY) - 1);
@@ -105,7 +106,7 @@
     s.hitsLeft = CFG.LIVES;  // v1.5: kalan çarpma hakkı (HUD gösterir)
     s.invuln = 0;            // dokunulmazlık süresi (sn); > 0 iken uçak yanıp söner
     s.streak = 0;            // son çarpmadan beri geçilen kule sayısı
-    s.mult = 1;              // hız katsayısı = 1 + 0.02 · streak (tavan 1.5)
+    s.mult = 1;              // hız katsayısı = 1 + 0.02 · streak (v2.6 tavan 2.5 + 0.1·h)
     s.runTime = 0;           // v2.5: bu turun uçuş süresi (sn) — çevrimiçi tablo hile kontrolü için
     s.completed = false;     // v2.5 düzeltme: rebirth'ten sonra yeni yolculuk da bitebilsin (eskiden true kalıyordu)
     s.finaleDone = false;

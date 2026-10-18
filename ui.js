@@ -41,16 +41,19 @@
     if (!A.ctx) {
       var AC = window.AudioContext || window.webkitAudioContext;
       if (!AC) return;
-      try { A.ctx = new AC(); } catch (e) { return; }
+      // v2.5.1: telefonda "bitli/cızırtılı" ses = ses iş parçacığının yetişememesi (underrun). Varsayılan 'interactive'
+      // tampon Android'de ~256 örnek ≈ 5 ms; 30 ms tampon 6 kat pay bırakır, dokunuş gecikmesi fark edilmez.
+      try { A.ctx = new AC({ latencyHint: 0.03 }); } catch (e) { try { A.ctx = new AC(); } catch (e2) { return; } }
       A.master = A.ctx.createGain();
       A.master.gain.value = muted ? 0 : MASTER_VOL;
       // Telefon hoparlörleri ~200 Hz altını çalamaz; bizim tok seslerin gövdesi 22-165 Hz.
       // Hafif saturasyon harmonik ekler (70 Hz → 140, 210, 280 Hz...), beyin temeli kendisi tamamlar.
-      var pre = A.ctx.createGain(); pre.gain.value = 1.7;
+      // v2.5.1: sürüş yumuşatıldı (1.7·tanh 2.2 → 1.6·tanh 1.2): tam hızda müzikte bozulma payı −28 dB → −38 dB (≈ %4 → %1.2)
+      var pre = A.ctx.createGain(); pre.gain.value = 1.6;
       var drive = A.ctx.createWaveShaper();
-      var n = 1024, curve = new Float32Array(n), k = 2.2;
+      var n = 1024, curve = new Float32Array(n), k = 1.2;
       for (var i = 0; i < n; i++) { var x = i / (n - 1) * 2 - 1; curve[i] = Math.tanh(k * x) / Math.tanh(k); }
-      drive.curve = curve; drive.oversample = '2x';
+      drive.curve = curve; drive.oversample = 'none';
       // Limiter: tepeleri kırpar, genel sesi yüksek tutar
       var lim = A.ctx.createDynamicsCompressor();
       lim.threshold.value = -9; lim.knee.value = 4; lim.ratio.value = 16; lim.attack.value = 0.002; lim.release.value = 0.18;
@@ -175,12 +178,12 @@
     n.start(t, Math.random() * 0.5); n.stop(t + 0.12);
   }
 
-  // Sentetik yankı: üstel sönen gürültüden üretilmiş 3 sn'lik "salon" yankısı (dosya gerekmez)
+  // Sentetik yankı: üstel sönen gürültüden üretilmiş 2 sn'lik "salon" yankısı (v2.5.1: 3 → 2 sn, telefonda %33 daha az iş)
   function getReverb(dest) {
     dest = dest || A.sfx;
     var key = dest === A.mus ? 'reverbM' : 'reverb';
     if (A[key]) return A[key];
-    var c = A.ctx, len = Math.floor(c.sampleRate * 3), ir = c.createBuffer(2, len, c.sampleRate);
+    var c = A.ctx, len = Math.floor(c.sampleRate * 2), ir = c.createBuffer(2, len, c.sampleRate);
     for (var ch = 0; ch < 2; ch++) {
       var d = ir.getChannelData(ch);
       for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
@@ -377,7 +380,8 @@
     if (!A.ctx || !music || muted || volMus <= 0 || paused) { beats.length = 0; return 0; }
     var now = A.ctx.currentTime, v = 0;
     while (beats.length && now - beats[0].t > 1) beats.shift();
-    for (var i = 0; i < beats.length; i++) { var d = now - beats[i].t; if (d >= 0) v = Math.max(v, beats[i].a * Math.exp(-7 * d)); }
+    // v2.6: sönüm e^(−7t) → e^(−5t): yarılanma 0.10 sn → 0.14 sn (göz daha rahat yakalar)
+    for (var i = 0; i < beats.length; i++) { var d = now - beats[i].t; if (d >= 0) v = Math.max(v, beats[i].a * Math.exp(-5 * d)); }
     return v;
   };
   function musicUpdate(s) {
@@ -388,7 +392,8 @@
       music = KK.Music.create({ ctx: A.ctx, out: A.mus, noise: A.noise, reverb: getReverb(A.mus), vol: MUSIC_VOL, themes: musicThemes });
       music.jump(want); music.start();
       // v2.5: müzik nabzı — her dörtlükte bir vuruş (ölçü başı tam, diğerleri %65); ışıklar bunu okur
-      music.onStep = function (b, chord, t) { if (b % 4 === 0) beats.push({ t: t, a: b === 0 ? 1 : 0.65 }); };
+      // v2.6: ölçü başı 1.0, 3. vuruş 0.7, diğerleri 0.45 → "güm . tak ." vurgusu daha belirgin
+      music.onStep = function (b, chord, t) { if (b % 4 === 0) beats.push({ t: t, a: b === 0 ? 1 : b === 8 ? 0.7 : 0.45 }); };
     }
     if (s.mode === 'ready' && musicLastMode !== 'ready') music.jump(want);   // yeni tur checkpoint temasından başlar
     musicLastMode = s.mode;
@@ -422,7 +427,7 @@
   // v2.2: ilerleme — son checkpoint (skor) ve bitiş yıldızları (rebirth sayısı)
   var CP_KEY = 'kk.cp', STAR_KEY = 'kk.stars';
   // ---- v2.5: Skor tablosu (bu cihazdaki en iyi 10 tur) ----
-  var SCORES_KEY = 'kk.scores', BOARD_N = 10;
+  var SCORES_KEY = 'kk.scores', BOARD_N = 10, NAME_ASKED_KEY = 'kk.nameAsked';
   function readScores() {
     try { var a = JSON.parse(readStore(SCORES_KEY) || '[]'); return Array.isArray(a) ? a.filter(function (x) { return x && x.s > 0; }) : []; } catch (e) { return []; }
   }
@@ -445,6 +450,7 @@
     el.tabs.hidden = !on;
     Object.keys(el.tabBtns).forEach(function (k) { var b = el.tabBtns[k]; b.classList.toggle('is-on', k === boardTab); b.setAttribute('aria-selected', k === boardTab ? 'true' : 'false'); });
     el.nameForm.hidden = true; el.boardMe.hidden = true;
+    el.xfer.hidden = !(boardTab === 'local' || !on);
     if (boardTab !== 'local' && on) return renderOnline(boardTab);
     renderLocal();
   }
@@ -456,7 +462,11 @@
       ol.appendChild(h('li', 'kk-board-empty', 'Pick a name to join the scoreboard. Your best run goes up automatically.'));
       return;
     }
-    el.boardMe.hidden = false; el.boardMe.textContent = 'You: ' + KK.Online.name() + ' \u00b7 change';
+    // v2.5.1: son gönderim başarısızsa sebebi görünsün (ör. "write 403", "Load failed") ve bekleyen skor yeniden denensin
+    var st = KK.Online.status(), pend = KK.Online.pending();
+    el.boardMe.hidden = false;
+    el.boardMe.textContent = 'You: ' + KK.Online.name() + ' \u00b7 change' + (pend ? '\n\u26a0 ' + pend.score + ' not sent yet' + (st && !st.ok && st.err ? ' (' + st.err + ')' : '') : '');
+    if (pend) KK.Online.flush().then(function (ok) { if (ok && req === boardReq) renderOnline(which); }, noop);
     ol.appendChild(h('li', 'kk-board-empty', 'Loading\u2026'));
     KK.Online.top(which === 'week' ? 'week' : 'alltime', 20).then(function (rows) {
       if (req !== boardReq) return;
@@ -496,7 +506,43 @@
     if (run <= 0) return;
     try { KK.Online.submit({ score: s.score | 0, run: run, secs: s.runTime || 0, stars: stars, skin: skinSel }); } catch (e) { /* yoksay */ }
   }
+  // ---- v2.6: kayıt kodu ----
+  var SAVE_KEYS = ['kk.best', 'kk.cp', 'kk.stars', 'kk.scores', 'kk.skin', 'kk.dev', 'kk.music', 'kk.muted', 'kk.vol.mus', 'kk.vol.sfx',
+    'kk.name', 'kk.nameAsked', 'kk.ioshint', 'kk.fb.auth', 'kk.fb.best', 'kk.fb.week', 'kk.fb.queue'];
+  function saveCode() {
+    var o = {}; SAVE_KEYS.forEach(function (k) { var v = readStore(k); if (v != null) o[k] = v; });
+    return 'PW1:' + btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+  }
+  function readCode(code) {
+    code = String(code || '').replace(/\s+/g, '');
+    if (code.indexOf('PW1:') !== 0) return null;
+    try { var o = JSON.parse(decodeURIComponent(escape(atob(code.slice(4))))); return o && typeof o === 'object' ? o : null; } catch (e) { return null; }
+  }
+  var xferWarned = false;
+  function copySave() {
+    var code = saveCode();
+    var shown = function () { el.xText.hidden = false; el.xText.value = code; el.xLoad.hidden = true; try { el.xText.focus(); el.xText.select(); } catch (e) { /* yoksay */ } };
+    var ok = function () { el.xMsg.textContent = 'Copied. Send it to yourself, then paste it in the new app.'; };
+    try { navigator.clipboard.writeText(code).then(ok, function () { shown(); el.xMsg.textContent = 'Copy the code above and send it to yourself.'; }); }
+    catch (e) { shown(); el.xMsg.textContent = 'Copy the code above and send it to yourself.'; }
+  }
+  function loadSave() {
+    var o = readCode(el.xText.value);
+    if (!o) { el.xMsg.textContent = 'That is not a Paper Wing save code.'; return; }
+    var theirs = parseInt(o['kk.best'], 10) || 0;
+    if (theirs < best && !xferWarned) { xferWarned = true; el.xMsg.textContent = 'This save\u2019s best is ' + theirs + ', lower than this phone\u2019s ' + best + '. Tap Load again to replace it.'; return; }
+    SAVE_KEYS.forEach(function (k) { try { if (o[k] == null) window.localStorage.removeItem(k); else writeStore(k, o[k]); } catch (e) { /* yoksay */ } });
+    el.xMsg.textContent = 'Progress loaded. Restarting\u2026';
+    setTimeout(function () { location.reload(); }, 900);
+  }
   function openBoard() { renderBoard(); toggle(el.board, 'board', true); }
+  // v2.5.1: isim girmeyen oyuncunun skoru hiç gönderilmiyordu (tabloyu hiç açmayan = tabloda yok).
+  // İlk düşüşte isim kutusu bir kez kendiliğinden açılır; skor bekler, isim kaydedilince gönderilir.
+  function askNameOnce(score) {
+    if (!online() || KK.Online.name() || !(score > 0) || readStore(NAME_ASKED_KEY)) return;
+    writeStore(NAME_ASKED_KEY, '1');
+    setTimeout(function () { if (cfg.getState() && cfg.getState().mode === 'dead' && !shown.board) { boardTab = 'week'; openBoard(); } }, 1100);
+  }
   function closeBoard() { toggle(el.board, 'board', false); }
   var checkpoint = parseInt(readStore(CP_KEY), 10) || 0;
   var stars = parseInt(readStore(STAR_KEY), 10) || 0;
@@ -758,7 +804,16 @@
     var boardList = h('ol', 'kk-board-list');
     var boardMe = h('button', 'kk-btn kk-board-me'); boardMe.type = 'button';
     var boardClose = h('button', 'kk-btn kk-ghost', 'Close'); boardClose.type = 'button';
-    bcard.appendChild(boardList); bcard.appendChild(boardMe); bcard.appendChild(boardClose);
+    // v2.6: ilerlemeyi taşı (yeni uygulamaya / başka telefona). Kayıt kodu = tüm kk.* ayarlarının base64'ü
+    var xfer = h('div', 'kk-xfer'); xfer.hidden = true;
+    var xRow = h('div', 'kk-xrow'), xCopy = h('button', 'kk-btn kk-ghost', 'Copy save code'), xPaste = h('button', 'kk-btn kk-ghost', 'Paste save code');
+    xCopy.type = xPaste.type = 'button'; xRow.appendChild(xCopy); xRow.appendChild(xPaste);
+    var xText = h('textarea', 'kk-input kk-xtext'); xText.rows = 3; xText.hidden = true; xText.placeholder = 'Paste your save code here'; xText.setAttribute('aria-label', 'Save code');
+    var xLoad = h('button', 'kk-btn kk-again', 'Load progress'); xLoad.type = 'button'; xLoad.hidden = true;
+    var xMsg = h('p', 'kk-code-msg', '');
+    xfer.appendChild(h('p', 'kk-label', 'Move your progress to another phone or the new app'));
+    xfer.appendChild(xRow); xfer.appendChild(xText); xfer.appendChild(xLoad); xfer.appendChild(xMsg);
+    bcard.appendChild(boardList); bcard.appendChild(boardMe); bcard.appendChild(xfer); bcard.appendChild(boardClose);
     boardL.appendChild(bcard);
 
     // Ekran okuyucu duyurusu
@@ -788,7 +843,8 @@
       progress: progress, starBadge: starBadge, finish: finL, finStars: finStars, finGift: finGift, rebirthBtn: rebirthBtn,
       code: codeL, codeCard: ccard, codeInput: codeInput, codeMsg: codeMsg, codeCancel: codeCancel,
       board: boardL, boardBtn: boardBtn, boardList: boardList, boardClose: boardClose,
-      tabs: tabs, tabBtns: tabBtns, nameForm: nameForm, nameInput: nameInput, boardMe: boardMe
+      tabs: tabs, tabBtns: tabBtns, nameForm: nameForm, nameInput: nameInput, boardMe: boardMe,
+      xfer: xfer, xCopy: xCopy, xPaste: xPaste, xText: xText, xLoad: xLoad, xMsg: xMsg
     };
   }
 
@@ -841,7 +897,7 @@
 
   function onKeyDown(e) {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
-    if (e.target && e.target.tagName === 'INPUT') { if (e.key === 'Escape') closeCode(); return; }  // kod yazılırken oyun tuşları kapalı
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) { if (e.key === 'Escape') closeCode(); return; }  // kod yazılırken oyun tuşları kapalı
     var code = e.code || '';
     var key = e.key || '';
     if (shown.board) { if (code === 'Escape' || key === 'Escape') { e.preventDefault(); closeBoard(); } return; }
@@ -906,6 +962,9 @@
     el.pauseBtn.addEventListener('click', function (e) { unlockAudio(); releaseFocus(e, el.pauseBtn); pause(); });
     el.boardBtn.addEventListener('click', function (e) { releaseFocus(e, el.boardBtn); openBoard(); });
     el.boardClose.addEventListener('click', function (e) { releaseFocus(e, el.boardClose); closeBoard(); });
+    el.xCopy.addEventListener('click', function (e) { releaseFocus(e, el.xCopy); copySave(); });
+    el.xPaste.addEventListener('click', function (e) { releaseFocus(e, el.xPaste); el.xText.hidden = false; el.xLoad.hidden = false; el.xText.value = ''; el.xMsg.textContent = ''; xferWarned = false; try { el.xText.focus(); } catch (er) { /* yoksay */ } });
+    el.xLoad.addEventListener('click', function (e) { releaseFocus(e, el.xLoad); loadSave(); });
     el.board.addEventListener('pointerdown', function (e) { if (e.target === el.board) { e.stopPropagation(); closeBoard(); } });
     Object.keys(el.tabBtns).forEach(function (k) { el.tabBtns[k].addEventListener('click', function (e) { releaseFocus(e, el.tabBtns[k]); boardTab = k; renderBoard(); }); });
     el.nameForm.addEventListener('submit', function (e) {
@@ -967,6 +1026,7 @@
       el.scoreVal.textContent = String(score);
       var rank = finishing ? -1 : addScore(score);   // v2.5: skor tablosu (yolculuk bitişi kendi kaydını yapar)
       if (!finishing) submitOnline(s);
+      askNameOnce(score);
       // v2.0: bu turda açılan skinler
       var fresh = skinList().filter(function (k) { return !k.secret && k.req > oldBest && k.req <= best; }).map(function (k) { return k.name; });
       el.deadBest.textContent = 'Best: ' + best + (fresh.length ? '  \u00b7  New skin: ' + fresh.join(', ') : '') + (checkpoint ? ' · next flight from ' + checkpoint : '') + (rank >= 0 ? ' \u00b7 #' + (rank + 1) + ' on your board' : '');
