@@ -580,6 +580,12 @@
   border-radius: 12px;
 }
 .kk-ghost:active { transform: scale(.97); }
+/* v3.2.1: skor tablosunun altında küçük "Have a code?" bağlantısı */
+.kk-codelink {
+  display: block; margin: 10px auto 0; padding: 6px 10px; min-height: 32px;
+  font: 600 12px/1 var(--font-body); letter-spacing: .06em; color: var(--dusk);
+  background: none; border: 0; text-decoration: underline; text-underline-offset: 3px; opacity: .85;
+}
 .kk-count {
   position: absolute;
   inset: 0;
@@ -1004,7 +1010,7 @@ if (document.readyState === 'complete') go(); else window.addEventListener('load
 <script>
   window.KK = window.KK || {};
   // Her güncellemede bunu ve sw.js'deki VERSION'ı birlikte artır
-  KK.APP_VERSION = '3.2.0';
+  KK.APP_VERSION = '3.2.1';
   KK.W = 360; KK.H = 640; KK.GROUND_Y = 584;
   KK.PALETTE = { skyTop:'#1b1838', skyMid:'#5a3a6e', skyLow:'#e9825a', sun:'#ffcf6b', cityFar:'#3a2f5c', cityNear:'#26203f', tower:'#2e2852', towerEdge:'#4a3f7a', clockFace:'#f3ead8', clockInk:'#1b1838', paper:'#fbf7ef', paperShade:'#d9d0c0', ground:'#171430', groundTop:'#3d335f', glow:'#ffcf6b', text:'#fbf7ef' };
 </script>
@@ -5050,7 +5056,10 @@ KK.SFX_BURGER = 'data:audio/wav;base64,UklGRnhVAABXQVZFZm10IBAAAAABAAEAwF0AAIC7A
     var boardList = h('ol', 'kk-board-list');
     var boardMe = h('button', 'kk-btn kk-board-me'); boardMe.type = 'button';
     var boardClose = h('button', 'kk-btn kk-ghost', 'Close'); boardClose.type = 'button';
-    bcard.appendChild(boardList); bcard.appendChild(boardMe); bcard.appendChild(boardClose);
+    // v3.2.1: kod girişi skor tablosunun altında da var (alttaki sürüm yazısına bazı telefonlarda dokunulamıyordu —
+    // ekranın en altı Android'in hareket çubuğuna denk geliyor)
+    var codeLink = h('button', 'kk-btn kk-codelink', 'Have a code?'); codeLink.type = 'button';
+    bcard.appendChild(boardList); bcard.appendChild(boardMe); bcard.appendChild(boardClose); bcard.appendChild(codeLink);
     boardL.appendChild(bcard);
 
     // Ekran okuyucu duyurusu
@@ -5079,7 +5088,7 @@ KK.SFX_BURGER = 'data:audio/wav;base64,UklGRnhVAABXQVZFZm10IBAAAAABAAEAwF0AAIC7A
       volMus: vm.inp, volSfx: vs.inp, volMusOut: vm.out, volSfxOut: vs.out,
       progress: progress, starBadge: starBadge, finish: finL, finStars: finStars, finGift: finGift, rebirthBtn: rebirthBtn,
       code: codeL, codeCard: ccard, codeInput: codeInput, codeMsg: codeMsg, codeCancel: codeCancel,
-      board: boardL, boardBtn: boardBtn, boardList: boardList, boardClose: boardClose,
+      board: boardL, boardBtn: boardBtn, boardList: boardList, boardClose: boardClose, codeLink: codeLink,
       tabs: tabs, tabBtns: tabBtns, nameForm: nameForm, nameInput: nameInput, boardMe: boardMe
     };
   }
@@ -5200,6 +5209,7 @@ KK.SFX_BURGER = 'data:audio/wav;base64,UklGRnhVAABXQVZFZm10IBAAAAABAAEAwF0AAIC7A
     el.pauseBtn.addEventListener('click', function (e) { unlockAudio(); releaseFocus(e, el.pauseBtn); pause(); });
     el.boardBtn.addEventListener('click', function (e) { releaseFocus(e, el.boardBtn); openBoard(); });
     el.boardClose.addEventListener('click', function (e) { releaseFocus(e, el.boardClose); closeBoard(); });
+    el.codeLink.addEventListener('click', function (e) { releaseFocus(e, el.codeLink); closeBoard(); openCode(); });
     el.board.addEventListener('pointerdown', function (e) { if (e.target === el.board) { e.stopPropagation(); closeBoard(); } });
     Object.keys(el.tabBtns).forEach(function (k) { el.tabBtns[k].addEventListener('click', function (e) { releaseFocus(e, el.tabBtns[k]); boardTab = k; renderBoard(); }); });
     el.nameForm.addEventListener('submit', function (e) {

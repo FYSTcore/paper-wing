@@ -518,6 +518,12 @@
   border-radius: 12px;
 }
 .kk-ghost:active { transform: scale(.97); }
+/* v3.2.1: skor tablosunun altında küçük "Have a code?" bağlantısı */
+.kk-codelink {
+  display: block; margin: 10px auto 0; padding: 6px 10px; min-height: 32px;
+  font: 600 12px/1 var(--font-body); letter-spacing: .06em; color: var(--dusk);
+  background: none; border: 0; text-decoration: underline; text-underline-offset: 3px; opacity: .85;
+}
 .kk-count {
   position: absolute;
   inset: 0;

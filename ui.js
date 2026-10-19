@@ -908,7 +908,10 @@
     var boardList = h('ol', 'kk-board-list');
     var boardMe = h('button', 'kk-btn kk-board-me'); boardMe.type = 'button';
     var boardClose = h('button', 'kk-btn kk-ghost', 'Close'); boardClose.type = 'button';
-    bcard.appendChild(boardList); bcard.appendChild(boardMe); bcard.appendChild(boardClose);
+    // v3.2.1: kod girişi skor tablosunun altında da var (alttaki sürüm yazısına bazı telefonlarda dokunulamıyordu —
+    // ekranın en altı Android'in hareket çubuğuna denk geliyor)
+    var codeLink = h('button', 'kk-btn kk-codelink', 'Have a code?'); codeLink.type = 'button';
+    bcard.appendChild(boardList); bcard.appendChild(boardMe); bcard.appendChild(boardClose); bcard.appendChild(codeLink);
     boardL.appendChild(bcard);
 
     // Ekran okuyucu duyurusu
@@ -937,7 +940,7 @@
       volMus: vm.inp, volSfx: vs.inp, volMusOut: vm.out, volSfxOut: vs.out,
       progress: progress, starBadge: starBadge, finish: finL, finStars: finStars, finGift: finGift, rebirthBtn: rebirthBtn,
       code: codeL, codeCard: ccard, codeInput: codeInput, codeMsg: codeMsg, codeCancel: codeCancel,
-      board: boardL, boardBtn: boardBtn, boardList: boardList, boardClose: boardClose,
+      board: boardL, boardBtn: boardBtn, boardList: boardList, boardClose: boardClose, codeLink: codeLink,
       tabs: tabs, tabBtns: tabBtns, nameForm: nameForm, nameInput: nameInput, boardMe: boardMe
     };
   }
@@ -1058,6 +1061,7 @@
     el.pauseBtn.addEventListener('click', function (e) { unlockAudio(); releaseFocus(e, el.pauseBtn); pause(); });
     el.boardBtn.addEventListener('click', function (e) { releaseFocus(e, el.boardBtn); openBoard(); });
     el.boardClose.addEventListener('click', function (e) { releaseFocus(e, el.boardClose); closeBoard(); });
+    el.codeLink.addEventListener('click', function (e) { releaseFocus(e, el.codeLink); closeBoard(); openCode(); });
     el.board.addEventListener('pointerdown', function (e) { if (e.target === el.board) { e.stopPropagation(); closeBoard(); } });
     Object.keys(el.tabBtns).forEach(function (k) { el.tabBtns[k].addEventListener('click', function (e) { releaseFocus(e, el.tabBtns[k]); boardTab = k; renderBoard(); }); });
     el.nameForm.addEventListener('submit', function (e) {
