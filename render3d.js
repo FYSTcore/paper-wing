@@ -895,7 +895,8 @@ window.KK = window.KK || {};
         scene.add(mesh);
       }
       mesh.position.copy(def.kind === 'bh' ? anchorBH : anchor); mesh.position.x += def.dx || 0;
-      mesh.layers.set(BODY_LAYER);                         // v3.1.1: gök cisimleri ayrı katmanda, yarım çözünürlükte çizilir
+      // v3.1.1: gök cisimleri ayrı katmanda, yarım çözünürlükte çizilir. v3.1.5: TON 618 HARİÇ — kara delik tam çözünürlükte (ince foton halkası keskin kalsın)
+      if (def.kind !== 'bh') mesh.layers.set(BODY_LAYER);
       if (def.kind !== 'bh') mesh.scale.setScalar(BODY_SCALE);
       // v2.6: derin uzay cisimlerinin görsel merkezi (vc, yarıçap biriminde) dörtgenin ortasında değil → vc tam çapaya (sağ üst) otursun
       // oyun sırasında kamera biraz kayar: görsel merkez ölçümde ~(+0.25R, −0.3R) kadar sağ-aşağıda kaldı → o kadar düzeltilir
