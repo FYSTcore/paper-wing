@@ -312,7 +312,7 @@ window.KK = window.KK || {};
     'NEPTUNE': 'strips', 'JUPITER': 'bands', 'SATURN': 'ringed', 'URANUS': 'tilted', 'THE SUN': 'flare', 'ALPHA CENTAURI': 'twin',
     'OORT CLOUD': 'shards', 'ORION NEBULA': 'crystal', 'ANDROMEDA': 'hover', 'MILKY WAY': 'obelisk', 'PULSAR': 'pylon', 'TON 618': 'clocktower',
     'EUROPA': 'lineae', 'IO': 'volcano', 'TITAN': 'refinery', 'BETELGEUSE': 'giant', 'CRAB NEBULA': 'web', 'PILLARS OF CREATION': 'pillar' };
-  var PLANET_EVERY = KK.PLANET_EVERY = KK.TEST_BUILD ? 10 : KK.TOUR ? 20 : 200;   // v3.1.3: tanıtım turunda 20'de bir   // v2.5: test sayfasında hızlı geçiş
+  var PLANET_EVERY = KK.PLANET_EVERY = KK.TEST_BUILD ? 10 : KK.TOUR ? 10 : 200;   // v3.1.3: tanıtım turunda 10'da bir   // v2.5: test sayfasında hızlı geçiş
   KK.JOURNEY_END = BODIES.length * PLANET_EVERY;           // v2.2: son gök cisminde de 200 puan uçunca yolculuk biter
   KK.BODY_NAMES = BODIES.map(function (b) { return b.name; });                                   // kaç puanda bir gök cismi değişir (v2.0: tekrar 200)
   var PL_HX = 2.6, PL_HY = 1.6, PL_DEEP = 3.4;   // dörtgenin yarı boyu (yarıçap biriminde); v2.5: derin uzay cisimleri kare (3.4R)

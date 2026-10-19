@@ -982,7 +982,7 @@ if (document.readyState === 'complete') go(); else window.addEventListener('load
 <script>
   window.KK = window.KK || {};
   // Her güncellemede bunu ve sw.js'deki VERSION'ı birlikte artır
-  KK.APP_VERSION = '3.1.3';
+  KK.APP_VERSION = '3.1.4';
   KK.W = 360; KK.H = 640; KK.GROUND_Y = 584;
   KK.PALETTE = { skyTop:'#1b1838', skyMid:'#5a3a6e', skyLow:'#e9825a', sun:'#ffcf6b', cityFar:'#3a2f5c', cityNear:'#26203f', tower:'#2e2852', towerEdge:'#4a3f7a', clockFace:'#f3ead8', clockInk:'#1b1838', paper:'#fbf7ef', paperShade:'#d9d0c0', ground:'#171430', groundTop:'#3d335f', glow:'#ffcf6b', text:'#fbf7ef' };
 </script>
@@ -1018,19 +1018,19 @@ if (document.readyState === 'complete') go(); else window.addEventListener('load
     FIRE_LEVELS: [10, 50, 100],  // seri bu sayılara ulaşınca ateş 1 / 2 / 3. seviyeye çıkar
     // v2.5: KALKAN — ayrı bir ek. Hazırken çarparsan can gitmez, hız düşmez; kalkan patlar, kule yıkılır.
     SHIELD: true,
-    SHIELD_FIRST: KK.TEST_BUILD ? 5 : KK.TOUR ? 10 : 20,      // turdaki ilk kalkan bu kadar kulede dolar (test sayfasında kısa)
-    SHIELD_RECHARGE: KK.TEST_BUILD ? 20 : KK.TOUR ? 40 : 200, // kullanıldıktan sonra bir sonraki kalkan için gereken kule (çarpmalar sayacı sıfırlamaz)
+    SHIELD_FIRST: KK.TEST_BUILD ? 5 : KK.TOUR ? 5 : 20,      // turdaki ilk kalkan bu kadar kulede dolar (test sayfasında kısa)
+    SHIELD_RECHARGE: KK.TEST_BUILD ? 20 : KK.TOUR ? 20 : 200, // kullanıldıktan sonra bir sonraki kalkan için gereken kule (çarpmalar sayacı sıfırlamaz)
     SHIELD_INVULN: 0.5,          // kalkan patlayınca kısa dokunulmazlık (sn): aynı kuleye iki kez çarpılmasın
     // v2.2: Bölüm zorluğu. h = bölüm/(son bölüm) + REBIRTH_HARD·★  (en fazla HARD_CAP)
     //   en dar boşluk = GAP_MIN − 22·h,  hareket genliği = MOVE_AMP_MAX + 22·h,
     //   sapma = GAP_SHIFT_MAX + 30·h,  hız tavanı = SPEED_MULT_MAX + 0.3·h
-    CHECKPOINT_EVERY: KK.TEST_BUILD ? 20 : KK.TOUR ? 40 : 400,   // her 2 gök cisminde bir checkpoint (test sayfasında gök cisimleri 10'da bir)
+    CHECKPOINT_EVERY: KK.TEST_BUILD ? 20 : KK.TOUR ? 20 : 400,   // her 2 gök cisminde bir checkpoint (test sayfasında gök cisimleri 10'da bir)
     // v3.0: her ★ daha belirgin zorlaşır (0.1 → 0.15), tavan 1.3 → 1.6 (★4'te dolar).
     // İyi oyuncu botu, son bölüm (3200→3600) geçme oranı: ★0 %73→%57, ★1 %54→%35, ★3 %35→%10
     REBIRTH_HARD: 0.15,     // her ★ bir sonraki turu bu kadar zorlaştırır
     HARD_CAP: 1.6,
     HARD_GAP: 7.5, HARD_AMP: 10, HARD_SHIFT: 13, HARD_SPEED: 0.1,   // h başına artışlar (v3.0: 7/9/12 → 7.5/10/13, bir tık zor)
-    LIFE_REFILL: KK.TEST_BUILD ? 10 : KK.TOUR ? 20 : 200,   // v2.2: her yeni gök cisminde kayıp bir çarpma hakkı geri gelir (0 = kapalı)
+    LIFE_REFILL: KK.TEST_BUILD ? 10 : KK.TOUR ? 10 : 200,   // v2.2: her yeni gök cisminde kayıp bir çarpma hakkı geri gelir (0 = kapalı)
     INVULN: 1.6,          // çarpmadan sonra dokunulmazlık (sn): bu sürede değdiğin kule yıkılır
     RAMP_SCORE: 50,       // zorluk eğrisi: k = 1 - e^(-skor/50) (v1.4: 32 → 50, daha yavaş artar)
     SPACING_MIN: 290,     // v1.5: kuleler arası mesafe sabit 290
@@ -1696,7 +1696,7 @@ window.KK = window.KK || {};
     'NEPTUNE': 'strips', 'JUPITER': 'bands', 'SATURN': 'ringed', 'URANUS': 'tilted', 'THE SUN': 'flare', 'ALPHA CENTAURI': 'twin',
     'OORT CLOUD': 'shards', 'ORION NEBULA': 'crystal', 'ANDROMEDA': 'hover', 'MILKY WAY': 'obelisk', 'PULSAR': 'pylon', 'TON 618': 'clocktower',
     'EUROPA': 'lineae', 'IO': 'volcano', 'TITAN': 'refinery', 'BETELGEUSE': 'giant', 'CRAB NEBULA': 'web', 'PILLARS OF CREATION': 'pillar' };
-  var PLANET_EVERY = KK.PLANET_EVERY = KK.TEST_BUILD ? 10 : KK.TOUR ? 20 : 200;   // v3.1.3: tanıtım turunda 20'de bir   // v2.5: test sayfasında hızlı geçiş
+  var PLANET_EVERY = KK.PLANET_EVERY = KK.TEST_BUILD ? 10 : KK.TOUR ? 10 : 200;   // v3.1.3: tanıtım turunda 10'da bir   // v2.5: test sayfasında hızlı geçiş
   KK.JOURNEY_END = BODIES.length * PLANET_EVERY;           // v2.2: son gök cisminde de 200 puan uçunca yolculuk biter
   KK.BODY_NAMES = BODIES.map(function (b) { return b.name; });                                   // kaç puanda bir gök cismi değişir (v2.0: tekrar 200)
   var PL_HX = 2.6, PL_HY = 1.6, PL_DEEP = 3.4;   // dörtgenin yarı boyu (yarıçap biriminde); v2.5: derin uzay cisimleri kare (3.4R)
