@@ -508,6 +508,7 @@ window.KK = window.KK || {};
     '#endif',
     '}',
     // ---- v2.3: Derin uzay (KIND 11..15) — küre yerine kendi biçimleri ----
+    'float seg(vec2 p, vec3 a, vec3 b){ vec2 pa = p - a.xy, ba = b.xy - a.xy; float h = clamp(dot(pa, ba)/dot(ba, ba), 0.0, 1.0); return length(pa - ba*h) - mix(a.z, b.z, h); }',   // v3.1.2: konik kapsül uzaklığı
     'vec3 glowStar(vec2 p, vec2 c, float r, vec3 col, float k){ float d = length(p - c); return col * (exp(-max(d - r, 0.0)*k) * 0.9 + exp(-d*d/(r*r)) ); }',
     'vec4 deep(vec2 p, float quad){',
     '  vec3 C = vec3(0.0); float A = 0.0; float t = uTime;',
@@ -642,51 +643,58 @@ window.KK = window.KK || {};
     '  float pr = length(p), blink = pow(abs(sin(t*9.0)), 18.0);',                                  // pulsar: saniyede ~3 çakma
     '  C += vec3(0.9, 0.95, 1.0) * (exp(-pr*pr*2500.0)*(1.0 + 2.0*blink) + exp(-pr*22.0)*0.5*blink);',
     '  A = clamp((fil*0.5 + syn*0.3) * mask, 0.0, 0.6) * quad;',
-    '#elif KIND == 22',                                   // v3.1.1 YARATILIŞ SÜTUNLARI (yeniden): Hubble renkleri, yanan uçlar, buharlaşan gaz
-    '  p *= 2.0;',                                        // derin uzay cisminde 1 birim ≈ yarım ekran → sütunlar yarı boyda
-    '  vec3 g3 = vec3(p*0.8, t*0.02);',
-    '  float gn = fbm(g3 + 0.6*vec3(fbm(g3*1.3 + 3.0), fbm(g3*1.3 + 7.0), 0.0));',
-    '  float gn2 = fbm(vec3(p*2.6, 4.0 + t*0.03));',
-    // arka gaz: altta koyu deniz yeşili, yukarıda ve uçların çevresinde altın-turuncu (iyonlaşmış gaz)
-    '  vec3 gas = mix(vec3(0.05, 0.30, 0.34), vec3(0.20, 0.60, 0.55), smoothstep(0.3, 0.8, gn));',
-    '  gas = mix(gas, vec3(1.0, 0.70, 0.35), smoothstep(0.45, 0.85, gn2*0.6 + gn*0.4 + p.y*0.15)*0.75);',
-    '  gas *= (0.5 + 0.8*gn) * exp(-length(p - vec2(0.0, 0.3))*0.5);',
-    '  float dust = 0.0, rim = 0.0, tipGlow = 0.0, stream = 0.0;',
-    '  vec4 P0 = vec4(-0.55, 0.14, 0.30, 1.05), P1 = vec4(0.30, -0.04, 0.22, 0.35), P2 = vec4(0.95, 0.08, 0.16, -0.05);',
-    '  for (int i = 0; i < 3; i++) {',
-    '    vec4 c = i == 0 ? P0 : (i == 1 ? P1 : P2); float fi = float(i);',
-    '    float cx = c.x + c.y*(p.y + 1.6);',
-    '    float wd = c.z * (1.0 + 0.3*smoothstep(0.0, -1.6, p.y)) * (0.7 + 0.6*fbm(vec3(p*3.0, fi*5.0)));',
-    '    float dx = abs(p.x - cx + 0.06*(fbm(vec3(p*11.0, fi)) - 0.5)) / wd;',
-    '    float top = c.w + 0.12*(fbm(vec3(p.x*5.0, fi, 2.0)) - 0.5);',
-    '    float dy = (p.y - top) / (wd*0.9);',
-    '    float shape = dy > 0.0 ? length(vec2(dx, dy)) : dx;',
-    '    shape -= 0.25*smoothstep(0.75, 0.95, fbm(vec3(p*9.0, fi + 9.0))) * smoothstep(top - 0.5, top, p.y);',   // uçta parmak gibi çıkıntılar
-    '    dust = max(dust, smoothstep(1.05, 0.75, shape));',
-    '    rim = max(rim, smoothstep(0.62, 0.98, shape) * smoothstep(1.2, 0.98, shape) * smoothstep(top - 1.2, top + 0.1, p.y));',
-    '    vec2 tp = vec2(c.x + c.y*(top + 1.6), top);',
-    '    tipGlow += exp(-length(p - tp)*3.2);',
-    '    float up = p.y - top, sx = p.x - tp.x;',                                                      // uçtan yukarı buharlaşan ışık telleri
-    '    float upp = max(up, 0.0);',                                                                   // (negatifte payda sıfıra iniyordu → NaN kama lekeleri)
-    '    stream += step(0.0, up) * exp(-upp*1.6) * exp(-sx*sx/(0.02 + upp*0.05)) * (0.5 + 0.5*n3(vec3(sx*30.0, upp*4.0 - t*0.4, fi)));',
-    '  }',
-    '  dust *= smoothstep(-2.0, -0.9, p.y);',
-    '  vec3 dc = mix(vec3(0.12, 0.05, 0.03), vec3(0.55, 0.28, 0.13), fbm(vec3(p*6.0, 3.0)));',
-    '  dc *= (0.45 + 0.7*smoothstep(-1.5, 1.2, p.y)) * (0.8 + 0.4*fbm(vec3(p*14.0, 1.0)));',                  // üstten aydınlanır, ince doku
-    '  C = gas*(1.0 - dust) + dc*dust;',
-    '  C += vec3(1.0, 0.86, 0.6) * rim * 1.5;',
-    '  C += vec3(1.0, 0.75, 0.45) * tipGlow * 0.35 * (1.0 - dust*0.6);',
-    '  C += vec3(0.75, 0.95, 0.9) * stream * 0.35 * (1.0 - dust);',
-    '  C *= quad;',
-    // JWST gibi 6 dikenli parlak yıldızlar (renkleri farklı)
-    '  for (int i = 0; i < 6; i++) {',
+    '#elif KIND == 22',                                   // v3.1.2 YARATILIŞ SÜTUNLARI — Hubble 2014 fotoğrafına göre: üç sütun, sol en uzun ve tepesi sağa kıvrık
+    '  vec2 q = p*2.0;',
+    '  float n1 = fbm(vec3(q*1.6, 2.0)), n2 = fbm(vec3(q*5.0, 7.0)), n3v = fbm(vec3(q*12.0, 11.0));',
+    // omurga noktaları (x, y, yarıçap) — fotoğraftan ölçüldü (görüntü koordinatı → q = (u−0.5, 0.5−v)·3)
+    '  float d = 9.0;',
+    '  vec3 L0 = vec3(-0.70,-1.50,0.55), L1 = vec3(-0.60,-0.60,0.38), L2 = vec3(-0.44,0.15,0.30), L3 = vec3(-0.30,0.72,0.25), L4 = vec3(-0.05,0.98,0.20);',
+    '  vec3 M0 = vec3(0.36,-1.05,0.30), M1 = vec3(0.30,-0.15,0.21), M2 = vec3(0.22,0.52,0.19), M3 = vec3(0.24,0.70,0.17);',
+    '  vec3 R0 = vec3(0.72,-1.05,0.28), R1 = vec3(0.66,-0.35,0.20), R2 = vec3(0.62,0.10,0.19), R3 = vec3(0.76,0.24,0.16);',
+    '  d = min(d, seg(q, L0, L1)); d = min(d, seg(q, L1, L2)); d = min(d, seg(q, L2, L3)); d = min(d, seg(q, L3, L4));',
+    '  d = min(d, seg(q, M0, M1)); d = min(d, seg(q, M1, M2)); d = min(d, seg(q, M2, M3));',
+    '  d = min(d, seg(q, R0, R1)); d = min(d, seg(q, R1, R2)); d = min(d, seg(q, R2, R3));',
+    '  d = min(d, (length((q - vec2(0.0, -1.85)) / vec2(1.6, 0.55)) - 1.0) * 0.5);',            // sütunları birleştiren alt kütle
+    '  float er = (n1 - 0.5)*0.36 + (n2 - 0.5)*0.16 + (n3v - 0.5)*0.06;',                      // rüzgârla aşınmış, pürüzlü kenarlar
+    '  float de = d + er;',
+    '  float D = smoothstep(0.03, -0.06, de);',
+    // ışık yukarıdan: ışığa doğru biraz kayınca dışarıda kalan noktalar = aydınlanan kenar
+    '  vec2 lq = q + vec2(-0.03, 0.07);',
+    '  float dl = 9.0;',
+    '  dl = min(dl, seg(lq, L0, L1)); dl = min(dl, seg(lq, L1, L2)); dl = min(dl, seg(lq, L2, L3)); dl = min(dl, seg(lq, L3, L4));',
+    '  dl = min(dl, seg(lq, M0, M1)); dl = min(dl, seg(lq, M1, M2)); dl = min(dl, seg(lq, M2, M3));',
+    '  dl = min(dl, seg(lq, R0, R1)); dl = min(dl, seg(lq, R1, R2)); dl = min(dl, seg(lq, R2, R3));',
+    '  dl = min(dl, (length((lq - vec2(0.0, -1.85)) / vec2(1.6, 0.55)) - 1.0) * 0.5);',
+    '  float lit = clamp(D - smoothstep(0.03, -0.06, dl + er), 0.0, 1.0);',
+    // arka gaz: üstte koyu mavi, ortada deniz yeşili, sağ altta sıcak zeytin-sarı
+    '  vec3 gw = vec3(q*0.7, t*0.015);',
+    '  float g1 = fbm(gw + 0.5*vec3(fbm(gw + 3.0), fbm(gw + 9.0), 0.0)), g2 = fbm(vec3(q*2.2, 5.0 + t*0.02));',
+    '  vec3 gas = mix(vec3(0.03, 0.12, 0.22), vec3(0.10, 0.42, 0.48), smoothstep(-1.6, 0.6, -q.y*0.6 + g1*1.2));',
+    '  gas = mix(gas, vec3(0.30, 0.62, 0.62), smoothstep(0.55, 0.85, g1)*0.6);',
+    '  gas = mix(gas, vec3(0.62, 0.55, 0.28), smoothstep(0.2, 1.4, q.x - q.y*0.6)*0.55*(0.6 + 0.6*g2));',
+    '  gas *= 0.75 + 0.5*g2;',
+    // toz: içi koyu kahve-pas, yüzeyi turuncu-kahve; derinlerde koyu damarlar
+    '  float depth = smoothstep(0.0, -0.35, de);',
+    '  vec3 dust = mix(vec3(0.15, 0.07, 0.04), vec3(0.60, 0.35, 0.19), clamp(0.25 + 0.75*(1.0 - depth)*(0.55 + 0.6*n2) + 0.15*(n3v - 0.5), 0.0, 1.0));',   // kenara yakın açık, içi koyu
+    '  dust *= (1.0 - 0.5*depth*smoothstep(0.4, 0.7, n1)) * (0.78 + 0.44*n3v);',
+    '  dust = mix(dust, vec3(0.40, 0.50, 0.53), smoothstep(-0.10, 0.02, de)*0.55);',             // yarı saydam, mavimsi gri kenar sisi
+    '  dust *= 0.75 + 0.35*smoothstep(-1.6, 1.0, q.y);',                                       // yukarısı daha aydınlık
+    '  vec3 C1 = mix(gas, dust, D);',
+    '  C1 += vec3(1.0, 0.86, 0.66) * lit * (0.6 + 0.6*smoothstep(-0.5, 1.0, q.y));',             // ışık alan kenar (tepelerde daha parlak)
+    '  C1 += vec3(0.55, 0.92, 1.0) * exp(-max(de, 0.0)*32.0) * (1.0 - D) * 0.3;',               // camgöbeği ince dış kabuk (buharlaşan gaz)
+    '  C1 += vec3(0.6, 0.9, 1.0) * exp(-max(de, 0.0)*6.0) * (1.0 - D) * 0.12 * smoothstep(-0.5, 1.0, q.y);',
+    // Hubble gibi 4 dikenli yıldızlar (turuncu ve beyaz)
+    '  for (int i = 0; i < 7; i++) {',
     '    float fi = float(i);',
-    '    vec2 sp = vec2(h3(vec3(fi, 3.0, 1.0)), h3(vec3(fi, 8.0, 2.0)))*3.0 - 1.5; vec2 dv = p - sp;',
-    '    float dl = length(dv), aa = atan(dv.y, dv.x), spk = pow(abs(cos(aa*3.0)), 60.0) * exp(-dl*(5.0 + fi)) + exp(-dl*dl*700.0);',
-    '    vec3 scol = mix(vec3(1.0, 0.85, 0.7), vec3(0.75, 0.88, 1.0), h3(vec3(fi, 1.0, 9.0)));',
-    '    C += scol * spk * (1.0 - dust) * (0.75 + 0.25*sin(t*1.5 + fi)) * (i < 3 ? 1.0 : 0.5);',
+    '    vec2 sp = vec2(h3(vec3(fi, 3.0, 1.0)), h3(vec3(fi, 8.0, 2.0)))*vec2(3.2, 3.0) - vec2(1.6, 1.3); vec2 dv = q - sp;',
+    '    float dl2 = length(dv), aa = atan(dv.y, dv.x) - 0.785;',
+    '    float spk = pow(abs(cos(aa*2.0)), 90.0) * exp(-dl2*(6.0 + fi*1.5)) + exp(-dl2*dl2*900.0)*1.4;',
+    '    vec3 scol = mix(vec3(1.0, 0.72, 0.45), vec3(0.95, 0.97, 1.0), h3(vec3(fi, 1.0, 9.0)));',
+    '    C1 += scol * spk * (1.0 - D) * (i < 3 ? 1.0 : 0.55) * (0.85 + 0.15*sin(t*1.5 + fi));',
     '  }',
-    '  A = clamp(dust*0.88 + gn*0.2, 0.0, 0.92) * quad;',
+    '  vec2 gs = floor(q*40.0); C1 += vec3(0.9, 0.95, 1.0) * step(0.985, h3(vec3(gs, 4.0))) * smoothstep(0.25, 0.0, length(fract(q*40.0) - 0.5)) * (1.0 - D) * 0.6;',
+    '  C = C1 * quad;',
+    '  A = clamp(D*0.95 + (g1*0.35 + 0.1), 0.0, 0.95) * quad;',
     '#else',                                              // ANDROMEDA: eğik sarmal galaksi
     '  vec2 q = rot(p - vec2(0.95, 0.05), -0.45); q.y /= 0.32;',   // merkez ekrana kaydırıldı
     '  float r = length(q), ang = atan(q.y, q.x);',
@@ -1224,8 +1232,10 @@ window.KK = window.KK || {};
       var hp3 = (t * 0.35) % 3, i3 = Math.floor(hp3), f3 = hp3 - i3, w2 = 0.5 + 0.5 * Math.sin(t * 2.3 + 1.0);
       f3 = f3 * f3 * (3 - 2 * f3);
       skA.copy(FYST_HC[i3]).lerp(FYST_HC[(i3 + 1) % 3], f3);
-      planeMat.color.copy(skA).lerp(skW, 0.12 * w2); planeMat.emissive.copy(skA); planeMat.emissiveIntensity = 0.5 + 0.2 * w2 + 0.45 * beat;
-      outlineMat.color.set('#1e0b40').lerp(skB.set('#ff4fb0'), Math.min(1, 0.2 + 0.2 * Math.sin(t * 3.0) + 0.6 * beat));
+      // v3.1.2: Halil beyazı seviyor → gövde inci beyazı, renk sadece hafif yanardöner bir parıltı (%22–30), ek kanatlar mor kalır
+      planeMat.color.copy(skW).lerp(skA, 0.18 + 0.08 * w2); planeMat.emissive.copy(skW).lerp(skA, 0.4); planeMat.emissiveIntensity = 0.45 + 0.15 * w2 + 0.45 * beat;
+      skA.lerp(skW, 0.35);                                  // hale ve iz de pastel (inci) tonda
+      outlineMat.color.copy(skW).lerp(skB.set('#ff8fd0'), 0.5 + 0.5 * Math.sin(t * 3.0));
       haloMat.color.copy(skA); haloMat.opacity = 0.6 + 0.2 * w2 + 0.2 * beat;
       if (halo) halo.scale.set(2.5 + 0.3 * beat, 1.8 + 0.2 * beat, 1);
       headCol.copy(skW); tailCol.copy(skA);
