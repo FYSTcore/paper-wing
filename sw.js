@@ -1,11 +1,11 @@
 // Paper Wing service worker: oyunun tüm dosyalarını telefona kaydeder, internetsiz de açılır.
 // Oyunu güncellediğinde VERSION'ı artır ki telefonlar yeni sürümü indirsin.
-var VERSION = 'paper-wing-v40';  // v40 = oyun sürümü 3.1.5 (TON 618 tam çözünürlük)
+var VERSION = 'paper-wing-v41';  // v41 = oyun sürümü 3.1.6 (bira skininin yeni adı, Türkçe harfler)
 // v2.5: aynı alan adında test deposu da var → sadece KENDİ önbelleklerimizi silelim, sadece kendi önbelleğimizden okuyalım
 var PREFIX = 'paper-wing-v';
 var FILES = [
   './', 'index.html', 'manifest.webmanifest', 'game.js', 'render3d.js', 'ui.js', 'music.js', 'intro.js', 'online.js', 'ui.css', 'three.min.js',
-  'fonts/bungee-latin-400-normal.woff2', 'fonts/anton-latin-400-normal.woff2', 'fonts/figtree-latin-400-normal.woff2',
+  'fonts/bungee-latin-400-normal.woff2', 'fonts/bungee-latin-ext-400-normal.woff2', 'fonts/anton-latin-400-normal.woff2', 'fonts/figtree-latin-400-normal.woff2',
   'fonts/figtree-latin-600-normal.woff2', 'fonts/figtree-latin-800-normal.woff2',
   'icons/icon-v2-192.png', 'icons/icon-v2-512.png', 'icons/maskable-v2-512.png', 'icons/apple-touch-icon-v2.png'
 ];

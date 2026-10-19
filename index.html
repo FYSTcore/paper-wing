@@ -16,6 +16,8 @@
 <meta name="apple-mobile-web-app-title" content="Paper Wing">
 <style>
   @font-face { font-family: "Bungee"; src: url("fonts/bungee-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+  /* v3.1.6: Türkçe büyük harfler (İ, Ş, Ğ) için genişletilmiş Latin alt kümesi — sadece bu harfler gerekince indirilir */
+  @font-face { font-family: "Bungee"; src: url("fonts/bungee-latin-ext-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1E9F, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113; }
   @font-face { font-family: "Figtree"; src: url("fonts/figtree-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: swap; }
   @font-face { font-family: "Figtree"; src: url("fonts/figtree-latin-600-normal.woff2") format("woff2"); font-weight: 600; font-display: swap; }
   @font-face { font-family: "Figtree"; src: url("fonts/figtree-latin-800-normal.woff2") format("woff2"); font-weight: 800; font-display: swap; }
@@ -78,7 +80,7 @@
 <script>
   window.KK = window.KK || {};
   // Her güncellemede bunu ve sw.js'deki VERSION'ı birlikte artır
-  KK.APP_VERSION = '3.1.5';
+  KK.APP_VERSION = '3.1.6';
   KK.W = 360; KK.H = 640; KK.GROUND_Y = 584;
   KK.PALETTE = { skyTop:'#1b1838', skyMid:'#5a3a6e', skyLow:'#e9825a', sun:'#ffcf6b', cityFar:'#3a2f5c', cityNear:'#26203f', tower:'#2e2852', towerEdge:'#4a3f7a', clockFace:'#f3ead8', clockInk:'#1b1838', paper:'#fbf7ef', paperShade:'#d9d0c0', ground:'#171430', groundTop:'#3d335f', glow:'#ffcf6b', text:'#fbf7ef' };
 </script>

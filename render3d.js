@@ -1110,7 +1110,7 @@ window.KK = window.KK || {};
     { id: 'genesis', extra: ['canard', 'winglet', 'fin', 'blade', 'twinfin'], name: 'GENESIS ★10', stars: 10, shape: 'dart', paper: '#ffcf6b', shade: '#1fb8a0', line: '#2a1404', glow: 0.8, head: '#fffbe8', tail: '#30d0b0', spark: '#ffe7a0', halo: '#ffd27a', trail: 'rainbow', anim: 'genesis', glints: ['#ffe7a0', '#5af0d0'] },
     // v3.0: kodla açılan özel skinler (secret). AGA = Halil'in annesine, CHEERS = arkadaşına (bira şişesi)
     { id: 'aga',      name: 'AGA', secret: true, shape: 'delta', extra: ['canard', 'winglet'], paper: '#3fd58a', shade: '#1c8a52', line: '#062a18', glow: 0.55, head: '#e6ffef', tail: '#2fff8a', spark: '#c8ffd8', halo: '#5affa8', trail: 'ribbon', anim: 'leaf' },
-    { id: 'cheers',   name: 'CHEERS', secret: true, shape: 'bottle', paper: '#8a4b12', shade: '#5e2f08', line: '#1a0a02', glow: 0.35, head: '#fff6d8', tail: '#ffb347', spark: '#fffbe8', halo: '#ffcf6b', trail: 'comet', anim: 'roll' },
+    { id: 'cheers',   name: 'BİRADAN KAYNAKLIMI ?', secret: true, shape: 'bottle', paper: '#8a4b12', shade: '#5e2f08', line: '#1a0a02', glow: 0.35, head: '#fff6d8', tail: '#ffb347', spark: '#fffbe8', halo: '#ffcf6b', trail: 'comet', anim: 'roll' },
     // v3.1.1 FYST: daha renkli (pembe → mavi → mor döngüsü, beyaz azaldı), koyu mor kontur, mor ek kanatlar (canard, kanat ucu, çift kuyruk),
     // izin arkasından 4 renkli yıldız tozu dökülür
     { id: 'fyst',     name: 'FYST', secret: true, shape: 'dart', extra: ['canard', 'winglet', 'blade', 'twinfin'], paper: '#ffffff', shade: '#8a5cff', line: '#2a0e54', glow: 0.6, head: '#ffffff', tail: '#ff6fbf', spark: '#ffffff', halo: '#ff7cc6', trail: 'holo', anim: 'holo',

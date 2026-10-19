@@ -681,7 +681,7 @@
     var l = skinList(), k = findSkin(browse) || l[0], i = l.indexOf(k);
     if (!findSkin(skinSel) || !skinUnlocked(findSkin(skinSel))) skinSel = 'paper';
     el.skinName.textContent = k ? k.name : '';
-    el.skinName.style.fontSize = k && k.name.length > 12 ? '1em' : '';   // v3.0.3: uzun isimler biraz küçük (1.1 → 1em) — "..." ile kesilmesin
+    el.skinName.style.fontSize = !k ? '' : k.name.length > 16 ? '0.74em' : k.name.length > 12 ? '1em' : '';   // v3.1.6: çok uzun isimler (20 harf) daha küçük   // v3.0.3: uzun isimler biraz küçük (1.1 → 1em) — "..." ile kesilmesin
     el.skinLock.textContent = !k ? '' : skinUnlocked(k) ? (i + 1) + ' / ' + l.length : (k.stars ? 'LOCKED · finish the journey' + (k.stars > 1 ? ' ' + k.stars + '×' : '') : 'LOCKED · reach ' + k.req);
     el.skins.classList.toggle('is-locked', !!k && !skinUnlocked(k));
     // v3.0: isim stilleri — DEV FYST holografik logo yazısı, AGA yeşil-altın, CHEERS bira köpüğü, ★ skinler gökkuşağı
