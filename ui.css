@@ -438,6 +438,11 @@
 }
 /* v3.0: CHEERS — kehribar bira, köpük beyazı */
 .kk-skins.is-cheers .kk-skin-name {
+  /* v3.1.7: "Biradan Kaynaklımı ?" — küçük harfli yazılsın diye Bungee (sadece büyük harf) yerine Figtree kalın */
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 1.12em;
+  letter-spacing: .01em;
   background: linear-gradient(180deg, #fffbe8 0 34%, #ffc547 38%, #d9861a 100%);
   -webkit-background-clip: text; background-clip: text;
   color: transparent;
