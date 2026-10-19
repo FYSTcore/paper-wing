@@ -69,6 +69,7 @@
       A.master.connect(pre); pre.connect(drive); drive.connect(hp); hp.connect(lim); lim.connect(out); out.connect(A.ctx.destination);
       // v3.1.1: ses bekçisi — çıkışta bozuk sayı (NaN) görülürse tüm ses zinciri baştan kurulur (aşağıda audioWatchdog)
       A.an = A.ctx.createAnalyser(); A.an.fftSize = 256; out.connect(A.an); A.wdBuf = new Float32Array(256); A.wdT = 0;
+      if (skinSel === 'burger') loadBurger();          // v3.2: hamburger sesi ilk dokunuştan önce hazır olsun
       A.out = out;                                   // test kancası (kayıt için)
       // v2.5: ayrı kanallar — efektler ve müzik kendi ses seviyeleriyle ana sese (sessiz düğmesi) bağlanır
       A.sfx = A.ctx.createGain(); A.sfx.gain.value = volGain(volSfx); A.sfx.connect(A.master);
@@ -121,6 +122,17 @@
     envelope(g, t, peak, 0.003, dur); chain(src, f, g, A.sfx); src.start(t, Math.random() * 0.8); src.stop(t + dur + 0.02);
   }
   var flapN = 0;                                       // melodik skinlerde sıradaki nota
+  // v3.2: hamburger ses kaydını (base64 WAV, sfxburger.js) bir kez çöz
+  function loadBurger() {
+    if (A.burgerLoading || !A.ctx || !KK.SFX_BURGER) return;
+    A.burgerLoading = true;
+    try {
+      var bin = atob(KK.SFX_BURGER.split(',')[1]), u8 = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+      var ctx = A.ctx, ok = function (buf) { if (A.ctx === ctx) A.burgerBuf = buf; }, bad = function () { A.burgerLoading = false; };
+      var p = ctx.decodeAudioData(u8.buffer, ok, bad); if (p && p.catch) p.catch(bad);
+    } catch (e) { A.burgerLoading = false; }
+  }
   function vary(f) { return f * (0.97 + Math.random() * 0.06); }   // her vuruş ±%3 farklı (makine tekrarı gibi duyulmasın)
   // Notalar Hz: pentatonik diziler (her sıra uyumlu, hangi notada kesilse kulağı rahatsız etmez)
   var FYST_NOTES = [1318.5, 1568, 1760, 2093, 1760, 1568];      // E6 G6 A6 C7 A6 G6 — holografik arpej
@@ -153,6 +165,14 @@
     singularity: function () { hiss('lowpass', 900, 250, 1.5, 0.12, 0.3); tone('sine', vary(520), 150, 0.16, 0.38); tone('triangle', 260, 160, 0.12, 0.12); },
     // v3.1.1 ★6 ECLIPSE: alçak, yuvarlak bir gong + yumuşak hava
     eclipse: function () { hiss('lowpass', 1200, 400, 0.6, 0.12, 0.25); tone('sine', vary(440), 432, 0.32, 0.16); tone('triangle', 660, 655, 0.22, 0.06); },
+    // v3.2 hamburger: Halil'in gönderdiği ses kaydı. Kayıt çözülene kadar (ilk birkaç ms) kısa bir "hap" sesi çalar.
+    burger: function () {
+      if (!A.burgerBuf) { loadBurger(); hiss('bandpass', 1800, 900, 1.2, 0.07, 0.3); tone('sine', vary(340), 210, 0.07, 0.3); return; }
+      var c = A.ctx, t = c.currentTime;
+      if (A.burgerSrc) { try { A.burgerG.gain.setTargetAtTime(0, t, 0.008); A.burgerSrc.stop(t + 0.04); } catch (e) { /* yoksay */ } }   // önceki ses hızlıca söner, üst üste binmez
+      var src = c.createBufferSource(), g = c.createGain(); src.buffer = A.burgerBuf; g.gain.value = 0.9;
+      chain(src, g, A.sfx); src.start(t); A.burgerSrc = src; A.burgerG = g;
+    },
     // ★7 COMET: buz gibi ince ıslık + kristal parıltı
     comet: function () { hiss('highpass', 6500, 3000, 0.7, 0.09, 0.28); tone('sine', vary(2637), 2637, 0.12, 0.08); tone('sine', 3951, 3951, 0.08, 0.04, 0.03); },
     // ★8 BOREALIS: titreşen iki kayık ton (perde gibi dalgalanır) + hafif rüzgâr
@@ -478,7 +498,7 @@
     try { if (music) music.stop(); } catch (e) { /* yoksay */ }
     music = null; beats.length = 0;            // eski bağlamın zaman damgaları yeni bağlamda geçersiz
     var old = A.ctx;
-    ['ctx', 'master', 'noise', 'out', 'sfx', 'mus', 'reverb', 'reverbM', 'an', 'wdBuf'].forEach(function (k) { A[k] = null; });
+    ['ctx', 'master', 'noise', 'out', 'sfx', 'mus', 'reverb', 'reverbM', 'an', 'wdBuf', 'burgerBuf', 'burgerLoading', 'burgerSrc', 'burgerG'].forEach(function (k) { A[k] = null; });
     try { if (old) old.close(); } catch (e) { /* yoksay */ }
     unlockAudio();
   }
@@ -524,7 +544,8 @@
   var CODE_SKINS = {
     '078af0359ac79e276cb61799f7312c35298086ceb461f2eb0909933cfa1543aa': { id: 'fyst',   msg: 'Dev gift unlocked ✦' },
     '2f76b5a7a11b2f436cccbf9306f1d3c5a02b74d91332de55e701131a27db11bf': { id: 'aga',    msg: 'AGA unlocked ♥' },
-    'b8eb0345bf8a22d06380b4a5665f9a6c00de553ed9d5b8515c7d0d842bf2b4a8': { id: 'cheers', msg: 'Cheers! 🍺' }
+    'b8eb0345bf8a22d06380b4a5665f9a6c00de553ed9d5b8515c7d0d842bf2b4a8': { id: 'cheers', msg: 'Cheers! 🍺' },
+    '0ef47760e523a7066cfebbaf97ac3bf65a905c1f9b7461f6a9c88851d3d1ec0c': { id: 'burger', msg: 'Bigmac menü hazır 🍔' }
   };
   var owned = {};          // açılmış gizli skinler: { fyst: true, ... }
   function readCodes() { try { var a = JSON.parse(readStore(CODES_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
@@ -681,12 +702,12 @@
     var l = skinList(), k = findSkin(browse) || l[0], i = l.indexOf(k);
     if (!findSkin(skinSel) || !skinUnlocked(findSkin(skinSel))) skinSel = 'paper';
     el.skinName.textContent = k ? k.name : '';
-    el.skinName.style.fontSize = !k || k.id === 'cheers' ? '' : k.name.length > 16 ? '0.74em' : k.name.length > 12 ? '1em' : '';   // v3.1.6: çok uzun isimler daha küçük (bira skininin kendi boyutu var)   // v3.0.3: uzun isimler biraz küçük (1.1 → 1em) — "..." ile kesilmesin
+    el.skinName.style.fontSize = !k || k.id === 'cheers' || k.id === 'burger' ? '' : k.name.length > 16 ? '0.74em' : k.name.length > 12 ? '1em' : '';   // v3.1.6: çok uzun isimler daha küçük (bira skininin kendi boyutu var)   // v3.0.3: uzun isimler biraz küçük (1.1 → 1em) — "..." ile kesilmesin
     el.skinLock.textContent = !k ? '' : skinUnlocked(k) ? (i + 1) + ' / ' + l.length : (k.stars ? 'LOCKED · finish the journey' + (k.stars > 1 ? ' ' + k.stars + '×' : '') : 'LOCKED · reach ' + k.req);
     el.skins.classList.toggle('is-locked', !!k && !skinUnlocked(k));
     // v3.0: isim stilleri — DEV FYST holografik logo yazısı, AGA yeşil-altın, CHEERS bira köpüğü, ★ skinler gökkuşağı
-    var st = !k ? '' : k.id === 'fyst' ? 'dev' : k.id === 'aga' ? 'aga' : k.id === 'cheers' ? 'cheers' : k.stars ? 'star' : '';
-    ['dev', 'aga', 'cheers', 'star'].forEach(function (c) { el.skins.classList.toggle('is-' + c, st === c); });
+    var st = !k ? '' : k.id === 'fyst' ? 'dev' : k.id === 'aga' ? 'aga' : k.id === 'cheers' ? 'cheers' : k.id === 'burger' ? 'burger' : k.stars ? 'star' : '';
+    ['dev', 'aga', 'cheers', 'burger', 'star'].forEach(function (c) { el.skins.classList.toggle('is-' + c, st === c); });
   }
 
   function pause() {

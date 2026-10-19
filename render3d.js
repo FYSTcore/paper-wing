@@ -1110,6 +1110,8 @@ window.KK = window.KK || {};
     { id: 'genesis', extra: ['canard', 'winglet', 'fin', 'blade', 'twinfin'], name: 'GENESIS ★10', stars: 10, shape: 'dart', paper: '#ffcf6b', shade: '#1fb8a0', line: '#2a1404', glow: 0.8, head: '#fffbe8', tail: '#30d0b0', spark: '#ffe7a0', halo: '#ffd27a', trail: 'rainbow', anim: 'genesis', glints: ['#ffe7a0', '#5af0d0'] },
     // v3.0: kodla açılan özel skinler (secret). AGA = Halil'in annesine, CHEERS = arkadaşına (bira şişesi)
     { id: 'aga',      name: 'AGA', secret: true, shape: 'delta', extra: ['canard', 'winglet'], paper: '#3fd58a', shade: '#1c8a52', line: '#062a18', glow: 0.55, head: '#e6ffef', tail: '#2fff8a', spark: '#c8ffd8', halo: '#5affa8', trail: 'ribbon', anim: 'leaf' },
+    // v3.2: ikinci arkadaşa — uçan hamburger (kodla açılır)
+    { id: 'burger',   name: 'Anne biz bigmac menümüyüz', secret: true, shape: 'burger', paper: '#ff9a40', shade: '#ffffff', line: '#2a1206', glow: 0.22, head: '#ffd23a', tail: '#e0301e', spark: '#ffe08a', halo: '#ffb347', trail: 'ribbon', anim: 'spin' },
     { id: 'cheers',   name: 'Biradan Kaynaklımı ?', secret: true, shape: 'bottle', paper: '#8a4b12', shade: '#5e2f08', line: '#1a0a02', glow: 0.35, head: '#fff6d8', tail: '#ffb347', spark: '#fffbe8', halo: '#ffcf6b', trail: 'comet', anim: 'roll' },
     // v3.1.1 FYST: daha renkli (pembe → mavi → mor döngüsü, beyaz azaldı), koyu mor kontur, mor ek kanatlar (canard, kanat ucu, çift kuyruk),
     // izin arkasından 4 renkli yıldız tozu dökülür
@@ -1150,6 +1152,30 @@ window.KK = window.KK || {};
         var C1 = [p1[0], p1[1] * Math.cos(a1), p1[1] * Math.sin(a1)], D1 = [p0[0], p0[1] * Math.cos(a1), p0[1] * Math.sin(a1)];
         var cc2 = p1[2];
         tris.push([A1, B1, C1]); cols.push(cc2); tris.push([A1, C1, D1]); cols.push(cc2);
+      }
+    }
+    if (skin.shape === 'burger') {          // v3.2 hamburger: y ekseni etrafında döndürülmüş katmanlar (16 dilim) + peynir köşeleri + susam
+      tris = []; cols = [];
+      // [y, yarıçap, renk]: alt ekmek → köfte → peynir → marul → domates → üst ekmek (kubbe)
+      var BG = [[-6.5, 0, '#c9772e'], [-6.5, 8.6, '#c9772e'], [-5.6, 9.6, '#c9772e'], [-3.6, 9.6, '#c9772e'],
+                [-3.6, 10.3, '#5a2e14'], [-1.5, 10.3, '#4a240f'], [-1.5, 10.6, '#ffc21a'], [-1.0, 10.6, '#ffc21a'],
+                [-1.0, 11.0, '#5fbf3a'], [-0.3, 11.0, '#4fa82e'], [-0.3, 9.9, '#d8341f'], [0.5, 9.9, '#d8341f'],
+                [0.5, 9.9, '#d98b3a'], [2.4, 9.7, '#d98b3a'], [4.4, 8.1, '#e09a45'], [5.9, 5.0, '#e6a650'], [6.7, 0, '#eab35a']];
+      var SG = 16;
+      for (var bj = 0; bj < BG.length - 1; bj++) for (var bq = 0; bq < SG; bq++) {
+        var b0 = bq / SG * Math.PI * 2, b1 = (bq + 1) / SG * Math.PI * 2, r0 = BG[bj], r1 = BG[bj + 1];
+        var P1 = [r0[1] * Math.cos(b0), r0[0], r0[1] * Math.sin(b0)], P2 = [r1[1] * Math.cos(b0), r1[0], r1[1] * Math.sin(b0)];
+        var P3 = [r1[1] * Math.cos(b1), r1[0], r1[1] * Math.sin(b1)], P4 = [r0[1] * Math.cos(b1), r0[0], r0[1] * Math.sin(b1)];
+        tris.push([P1, P3, P2]); cols.push(r1[2]); tris.push([P1, P4, P3]); cols.push(r1[2]);
+      }
+      [[1, 1], [1, -1], [-1, 1], [-1, -1]].forEach(function (cq) {       // peynirin sarkan köşeleri
+        var cx2 = cq[0] * 9.2, cz2 = cq[1] * 9.2;
+        tris.push([[cx2 * 0.8, -1.1, cz2 * 0.55], [cx2 * 0.55, -1.1, cz2 * 0.8], [cx2 * 1.02, -2.6, cz2 * 1.02]]); cols.push('#ffc21a');
+      });
+      for (var si = 0; si < 14; si++) {                                  // susamlar
+        var sa = si * 2.4, sr = 2.5 + (si % 4) * 1.3, sy = 6.7 - Math.pow(sr / 9.9, 2) * 6.0 + 0.15;
+        var sx = sr * Math.cos(sa), sz = sr * Math.sin(sa);
+        tris.push([[sx - 0.5, sy, sz], [sx + 0.5, sy, sz + 0.2], [sx, sy + 0.25, sz - 0.4]]); cols.push('#fff4d6');
       }
     }
     function mir(t, c) { tris.push(t); cols.push(c); tris.push(t.map(function (v) { return [v[0], v[1], -v[2]]; }).reverse()); cols.push(c); }
@@ -1207,7 +1233,7 @@ window.KK = window.KK || {};
     if (pos) { planeGroup.position.copy(pos); planeGroup.rotation.copy(rot); }
     scene.add(planeGroup);
     headCol.set(skin.head); tailCol.set(skin.tail); shared.sparkMat.color.set(skin.spark);
-    var wx = skin.shape === 'dart' ? -15 : skin.shape === 'delta' ? -13 : skin.shape === 'bottle' ? -14 : -12, wz = skin.shape === 'dart' ? 16 : skin.shape === 'delta' ? 19 : skin.shape === 'bottle' ? 3.5 : 12, k2 = 1.35 / S;  // iz kanat uçlarından çıksın (şişede dipten)
+    var wx = skin.shape === 'dart' ? -15 : skin.shape === 'delta' ? -13 : skin.shape === 'bottle' ? -14 : skin.shape === 'burger' ? -2 : -12, wz = skin.shape === 'dart' ? 16 : skin.shape === 'delta' ? 19 : skin.shape === 'bottle' ? 3.5 : skin.shape === 'burger' ? 9 : 12, k2 = 1.35 / S;  // iz kanat uçlarından çıksın (şişede dipten)
     trailDefs[0].local.set(wx * k2, 3 * k2, -wz * k2); trailDefs[1].local.set(wx * k2, 3 * k2, wz * k2);
   }
   // Dev hediyesi: yanardöner (holografik) kağıt — renk tonu zamanla döner, kontur ve iz zıt tonda
@@ -1291,6 +1317,10 @@ window.KK = window.KK || {};
       var lf = 0.5 + 0.5 * Math.sin(t * 1.8);
       planeMat.emissive.set('#1fbf6a').lerp(skB.set('#d8f06a'), 0.35 * lf); planeMat.emissiveIntensity = 0.45 + 0.3 * lf + 0.35 * beat;
       haloMat.color.set('#5affa8').lerp(skB.set('#ffe9a0'), 0.4 * lf); haloMat.opacity = 0.5 + 0.2 * lf + 0.2 * beat;
+    } else if (a === 'spin') {                 // v3.2 hamburger: uçan daire gibi kendi ekseninde döner, hafifçe sallanır
+      if (planeGroup.userData.inner) { planeGroup.userData.inner.rotation.y = t * 2.2; planeGroup.userData.inner.rotation.z = 0.12 * Math.sin(t * 3.1); }
+      planeMat.emissiveIntensity = 0.2 + 0.3 * beat;
+      shared.sparkMat.color.set(Math.sin(t * 9) > 0 ? '#ffd23a' : '#e0301e');   // hardal ve ketçap
     } else if (a === 'roll') {                 // v3.0 CHEERS: şişe kendi ekseninde döner, köpük gibi parlar
       if (planeGroup.userData.inner) planeGroup.userData.inner.rotation.x = t * 2.4;
       planeMat.emissiveIntensity = 0.3 + 0.35 * beat;

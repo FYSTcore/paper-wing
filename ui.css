@@ -401,6 +401,21 @@
   opacity: .75;
 }
 .kk-skins.is-locked .kk-skin-name { color: var(--paper); opacity: .55; }
+/* v3.2: "Anne biz bigmac menümüyüz" — iki satır, hardal-ketçap rengi */
+.kk-skins.is-burger .kk-skin-name {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 1.08em;
+  line-height: 1.12;
+  white-space: normal;
+  text-align: center;
+  overflow: visible;
+  text-shadow: none;
+  background: linear-gradient(180deg, #ffe066 0%, #ffb02e 50%, #e0301e 100%);
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 0 #2a1206) drop-shadow(0 0 6px rgba(255, 176, 46, .45));
+}
 .kk-skins.is-star .kk-skin-name {
   /* v3.0: yıldızla açılan skinler — gökkuşağı akan isim */
   background: linear-gradient(90deg, #ff6ad5, #ffd36a, #6affd2, #6a9bff, #ff6ad5);
