@@ -12,7 +12,9 @@
   // v2.5: ayrı müzik / efekt seviyesi (0..100). Kazanç = (v/100)² → %50 ≈ −12 dB, kulağa "yarı ses" gelir
   var VOL_MUS_KEY = 'kk.vol.mus', VOL_SFX_KEY = 'kk.vol.sfx';
   function readVol(k) { var v = parseInt(readStoreEarly(k), 10); return v >= 0 && v <= 100 ? v : 100; }
-  function readStoreEarly(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  // v3.1.3: tanıtım turu (KK.TOUR) aynı sitede çalışır → kayıtları ayrı tutulur ('tour.' öneki), asıl oyundaki rekor/yıldız/skinler bozulmaz
+  var SP = (window.KK && KK.TOUR) ? 'tour.' : '';
+  function readStoreEarly(k) { try { return localStorage.getItem(SP + k); } catch (e) { return null; } }
   var volMus = readVol(VOL_MUS_KEY), volSfx = readVol(VOL_SFX_KEY);
   if (readStoreEarly(VOL_MUS_KEY) == null && readStoreEarly('kk.music') === '0') volMus = 0;   // eski 'Music: Off' ayarı korunur
   function volGain(v) { return Math.pow(v / 100, 2); }
@@ -23,10 +25,10 @@
 
   // ---------- Kalıcı depolama (her erişim try/catch) ----------
   function readStore(key) {
-    try { return window.localStorage.getItem(key); } catch (e) { return null; }
+    try { return window.localStorage.getItem(SP + key); } catch (e) { return null; }
   }
   function writeStore(key, val) {
-    try { window.localStorage.setItem(key, String(val)); } catch (e) { /* bellekte kalır */ }
+    try { window.localStorage.setItem(SP + key, String(val)); } catch (e) { /* bellekte kalır */ }
   }
 
   var best = parseInt(readStore(BEST_KEY), 10);

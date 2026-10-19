@@ -28,19 +28,19 @@
     FIRE_LEVELS: [10, 50, 100],  // seri bu sayılara ulaşınca ateş 1 / 2 / 3. seviyeye çıkar
     // v2.5: KALKAN — ayrı bir ek. Hazırken çarparsan can gitmez, hız düşmez; kalkan patlar, kule yıkılır.
     SHIELD: true,
-    SHIELD_FIRST: KK.TEST_BUILD ? 5 : 20,      // turdaki ilk kalkan bu kadar kulede dolar (test sayfasında kısa)
-    SHIELD_RECHARGE: KK.TEST_BUILD ? 20 : 200, // kullanıldıktan sonra bir sonraki kalkan için gereken kule (çarpmalar sayacı sıfırlamaz)
+    SHIELD_FIRST: KK.TEST_BUILD ? 5 : KK.TOUR ? 10 : 20,      // turdaki ilk kalkan bu kadar kulede dolar (test sayfasında kısa)
+    SHIELD_RECHARGE: KK.TEST_BUILD ? 20 : KK.TOUR ? 40 : 200, // kullanıldıktan sonra bir sonraki kalkan için gereken kule (çarpmalar sayacı sıfırlamaz)
     SHIELD_INVULN: 0.5,          // kalkan patlayınca kısa dokunulmazlık (sn): aynı kuleye iki kez çarpılmasın
     // v2.2: Bölüm zorluğu. h = bölüm/(son bölüm) + REBIRTH_HARD·★  (en fazla HARD_CAP)
     //   en dar boşluk = GAP_MIN − 22·h,  hareket genliği = MOVE_AMP_MAX + 22·h,
     //   sapma = GAP_SHIFT_MAX + 30·h,  hız tavanı = SPEED_MULT_MAX + 0.3·h
-    CHECKPOINT_EVERY: KK.TEST_BUILD ? 20 : 400,   // her 2 gök cisminde bir checkpoint (test sayfasında gök cisimleri 10'da bir)
+    CHECKPOINT_EVERY: KK.TEST_BUILD ? 20 : KK.TOUR ? 40 : 400,   // her 2 gök cisminde bir checkpoint (test sayfasında gök cisimleri 10'da bir)
     // v3.0: her ★ daha belirgin zorlaşır (0.1 → 0.15), tavan 1.3 → 1.6 (★4'te dolar).
     // İyi oyuncu botu, son bölüm (3200→3600) geçme oranı: ★0 %73→%57, ★1 %54→%35, ★3 %35→%10
     REBIRTH_HARD: 0.15,     // her ★ bir sonraki turu bu kadar zorlaştırır
     HARD_CAP: 1.6,
     HARD_GAP: 7.5, HARD_AMP: 10, HARD_SHIFT: 13, HARD_SPEED: 0.1,   // h başına artışlar (v3.0: 7/9/12 → 7.5/10/13, bir tık zor)
-    LIFE_REFILL: KK.TEST_BUILD ? 10 : 200,   // v2.2: her yeni gök cisminde kayıp bir çarpma hakkı geri gelir (0 = kapalı)
+    LIFE_REFILL: KK.TEST_BUILD ? 10 : KK.TOUR ? 20 : 200,   // v2.2: her yeni gök cisminde kayıp bir çarpma hakkı geri gelir (0 = kapalı)
     INVULN: 1.6,          // çarpmadan sonra dokunulmazlık (sn): bu sürede değdiğin kule yıkılır
     RAMP_SCORE: 50,       // zorluk eğrisi: k = 1 - e^(-skor/50) (v1.4: 32 → 50, daha yavaş artar)
     SPACING_MIN: 290,     // v1.5: kuleler arası mesafe sabit 290
